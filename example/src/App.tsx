@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useRef, useState } from 'react';
 import {
   Image,
   Linking,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -116,16 +117,27 @@ const LivePlayerComponent = ({
   const handleRecorderAction = async () => {
     if (recorderState === RecorderState.stopped) {
       let hasPermission = await checkHasAudioRecorderPermission();
-
-      if (hasPermission === PermissionStatus.granted) {
-        startRecording();
-      } else if (hasPermission === PermissionStatus.undetermined) {
-        const permissionStatus = await getAudioRecorderPermission();
-        if (permissionStatus === PermissionStatus.granted) {
+      if (Platform.OS === 'ios') {
+        if (hasPermission === PermissionStatus.granted) {
           startRecording();
+        } else if (hasPermission === PermissionStatus.undetermined) {
+          const permissionStatus = await getAudioRecorderPermission();
+          if (permissionStatus === PermissionStatus.granted) {
+            startRecording();
+          }
+        } else {
+          Linking.openSettings();
         }
-      } else {
-        Linking.openSettings();
+      }
+      if (Platform.OS === 'android') {
+        if (hasPermission === PermissionStatus.granted) {
+          startRecording();
+        } else if (hasPermission === PermissionStatus.denied) {
+          const permissionStatus = await getAudioRecorderPermission();
+          if (permissionStatus === PermissionStatus.granted) {
+            startRecording();
+          }
+        }
       }
     } else {
       ref.current?.stopRecord().then(path => {
@@ -164,7 +176,11 @@ const App = () => {
   const [shouldScroll, setShouldScroll] = useState(true);
 
   const { fs } = RNFetchBlob;
-  const filePath = `${fs.dirs.MainBundleDir}`;
+  const filePath =
+    Platform.OS === 'ios'
+      ? `${fs.dirs.MainBundleDir}`
+      : `${fs.dirs.DownloadDir}`;
+
   const [list, setList] = useState<ListItem[]>([
     {
       fromCurrentUser: false,

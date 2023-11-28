@@ -194,6 +194,7 @@ export const Waveform: <T extends StaticOrLive>(
     try {
       const play = await playPlayer({
         playerKey: `PlayerFor${path}`,
+        finishMode: FinishMode.stop,
         ...args,
       });
 

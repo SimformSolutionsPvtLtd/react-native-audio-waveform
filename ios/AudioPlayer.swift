@@ -135,10 +135,14 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     
     func startListening() {
       stopListening()
+      if #available(iOS 10.0, *) {
         DispatchQueue.main.async { [weak self] in
           guard let strongSelf = self else {return }
             strongSelf.timer = Timer.scheduledTimer(timeInterval: TimeInterval((Float(strongSelf.updateFrequency.rawValue) / 1000)), target: strongSelf, selector: #selector(strongSelf.timerUpdate(_:)), userInfo: nil, repeats: true)
         }
+      } else {
+        // Fallback on earlier versions
+      }
     }
   
   func stopListening() {
