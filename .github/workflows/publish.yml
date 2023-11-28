@@ -1,0 +1,23 @@
+name: "🚀 Publish"
+
+on:
+    push:
+        branches:
+          - main
+
+jobs:
+    release:
+        name: 🚀 Publish
+        runs-on: macos-11
+        steps:
+            - name: 📚 checkout
+              uses: actions/checkout@v2.4.2
+            - name: 🟢 node
+              uses: actions/setup-node@v3.3.0
+              with:
+                  node-version: 16
+                  registry-url: https://registry.npmjs.org
+            - name: 🚀 Build & Publish
+              run: yarn install && yarn build && yarn publish --access public
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}

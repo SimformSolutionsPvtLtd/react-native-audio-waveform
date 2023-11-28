@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "jsx": "react",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "noFallthroughCasesInSwitch": true,
+    // Changed `noImplicitReturns` to false so that we don't have to return in else statements if there is just a if statement
+    //https://typescript.tv/errors/#ts7030
+    "noImplicitReturns": false,
+    "noImplicitUseStrict": false,
+    "noStrictGenericChecks": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "noEmitOnError": true,
+    "outDir": "./lib",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ESNext",
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true
+  },
+  "exclude": ["example/node_modules/**", "node_modules/**", "**/__tests__/*"],
+  "include": ["src"]
+}
