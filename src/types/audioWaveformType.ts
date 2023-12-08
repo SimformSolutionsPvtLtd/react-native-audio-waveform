@@ -69,14 +69,20 @@ export interface IOnCurrentRecordingWaveForm {
 }
 
 export interface IAudioWaveforms extends NativeModule {
-  checkHasPermission(): Promise<PermissionStatus>;
-  getAudioPermission(): Promise<PermissionStatus>;
+  //Permissions
+  checkHasAudioReadPermission(): Promise<PermissionStatus>;
+  getAudioReadPermission(): Promise<PermissionStatus>;
+  checkHasAudioRecorderPermission(): Promise<PermissionStatus>;
+  getAudioRecorderPermission(): Promise<PermissionStatus>;
+
+  //Recorder
   startRecording(args?: Partial<IStartRecording>): Promise<boolean>;
   stopRecording(): Promise<Array<string>>;
   pauseRecording(): Promise<boolean>;
   resumeRecording(): Promise<boolean>;
   extractWaveformData(args: IExtractWaveform): Promise<Array<Array<number>>>;
   getDecibel(): Promise<number>;
+
   // Player
   preparePlayer(args: IPreparePlayer): Promise<boolean>;
   startPlayer(args: IStartPlayer): Promise<boolean>;

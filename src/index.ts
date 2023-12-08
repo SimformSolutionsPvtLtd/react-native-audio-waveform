@@ -10,4 +10,4 @@ export {
   RecorderState,
   UpdateFrequency,
 } from './constants';
-export { useRecorderPermission } from './hooks';
+export { useAudioPermission } from './hooks';

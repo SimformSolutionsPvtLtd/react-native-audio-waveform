@@ -42,12 +42,22 @@ class AudioWaveform: RCTEventEmitter {
     return ["AudioPlayerEvent"]
   }
   
-  @objc func checkHasPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
-    audioRecorder.checkHasPermission(resolve)
+  @objc func checkHasAudioRecorderPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+    audioRecorder.checkHasAudioRecorderPermission(resolve)
   }
+    
+    @objc func checkHasAudioReadPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+        // iOS does not need to ask for permission to read files so this will resolve "granted" every time
+        resolve("granted")
+    }
+
+    @objc func getAudioReadPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+        // iOS does not need to ask for permission to read files so this will resolve "granted" every time
+        resolve("granted")
+    }
   
-  @objc func getAudioPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
-    audioRecorder.getAudioPermission(resolve)
+  @objc func getAudioRecorderPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+    audioRecorder.getAudioRecorderPermission(resolve)
   }
   
   @objc func startRecording(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {

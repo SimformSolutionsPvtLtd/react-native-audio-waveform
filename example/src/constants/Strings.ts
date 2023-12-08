@@ -3,4 +3,5 @@ export default {
   start: 'Start',
   pause: 'Pause',
   resume: 'Resume',
+  getAudioReadPermission: 'Get Audio Read Permission',
 };
