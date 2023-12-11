@@ -1,7 +1,5 @@
-import { Dimensions, StyleSheet, type ScaledSize } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Colors } from '../../theme';
-
-const { width }: ScaledSize = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -12,12 +10,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   waveformContainer: {
-    backgroundColor: Colors.waveContainerBackground,
-    borderRadius: 10,
+    backgroundColor: Colors.transparent,
     height: 60,
-    marginHorizontal: 10,
-    maxWidth: width * 0.8,
-    paddingHorizontal: 10,
     paddingVertical: 2,
   },
   waveformInnerContainer: {
