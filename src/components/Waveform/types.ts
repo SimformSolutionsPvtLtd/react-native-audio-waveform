@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { FinishMode, PlayerState, RecorderState } from '../../constants';
 import type { IStartRecording } from '../../types';
 
@@ -8,7 +8,7 @@ export type StaticOrLive = 'static' | 'live';
 interface BaseWaveform {
   candleSpace?: number;
   candleWidth?: number;
-  containerStyle?: ViewStyle;
+  containerStyle?: StyleProp<ViewStyle>;
   waveColor?: string;
   mode: StaticOrLive;
 }

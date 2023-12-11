@@ -3,9 +3,12 @@ const colors = {
   black: '#000000',
   blue: '#05259b',
   transparent: 'transparent',
-  waveStickBackground: '#545454',
+  waveStickBackground: '#989898',
   waveStickCompleteBackground: '#7b7b7b',
-  waveContainerBackground: '#a1a1a1',
+  waveContainerBackground: '#DADADA',
+  simformPink: '#DD5F68',
+  fromMeBackground: '#3968f3',
+  fromOtherBackground: '#333141',
 };
 
 export default colors;
