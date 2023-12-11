@@ -12,10 +12,15 @@
 
 @interface RCT_EXTERN_MODULE(AudioWaveform, RCTEventEmitter)
 
-RCT_EXTERN_METHOD(checkHasPermission:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(checkHasAudioRecorderPermission:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(getAudioPermission:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(getAudioRecorderPermission:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(checkHasAudioReadPermission:(RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getAudioReadPermission:(RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(startRecording:(NSDictionary *)args
                   resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)

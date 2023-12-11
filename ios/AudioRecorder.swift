@@ -146,7 +146,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       resolve(getDecibelLevel())
   }
   
-  public func checkHasPermission(_ resolve: RCTPromiseResolveBlock) -> Void{
+  public func checkHasAudioRecorderPermission(_ resolve: RCTPromiseResolveBlock) -> Void{
     var hasPermission = ""
     switch AVAudioSession.sharedInstance().recordPermission{
     case .granted:
@@ -163,7 +163,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
     resolve(hasPermission)
   }
   
-  public func getAudioPermission(_ resolve: @escaping RCTPromiseResolveBlock) -> Void{
+  public func getAudioRecorderPermission(_ resolve: @escaping RCTPromiseResolveBlock) -> Void{
     AVAudioSession.sharedInstance().requestRecordPermission() { allowed in
       DispatchQueue.main.async {
         print("Permission \(allowed)")

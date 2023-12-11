@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Linking, SafeAreaView, ScrollView, View } from 'react-native';
 import {
   FinishMode,
@@ -9,7 +9,7 @@ import {
   RecorderState,
   UpdateFrequency,
   Waveform,
-  useRecorderPermission,
+  useAudioPermission,
 } from 'react-native-audio-waveform';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -71,8 +71,8 @@ const ListItem = ({
 const LivePlayerComponent = () => {
   const newRef = useRef<IRecordWaveformRef>(null);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
-  const { checkHasRecorderPermission, getAudioRecorderPermission } =
-    useRecorderPermission();
+  const { checkHasAudioRecorderPermission, getAudioRecorderPermission } =
+    useAudioPermission();
 
   const startRecording = () => {
     newRef.current
@@ -89,7 +89,7 @@ const LivePlayerComponent = () => {
           title={Strings.start}
           disabled={recorderState !== RecorderState.stopped}
           onPress={async () => {
-            let hasPermission = await checkHasRecorderPermission();
+            let hasPermission = await checkHasAudioRecorderPermission();
 
             if (hasPermission === PermissionStatus.granted) {
               startRecording();
@@ -136,27 +136,57 @@ const LivePlayerComponent = () => {
 
 const App = () => {
   const [shouldScroll, setShouldScroll] = useState(true);
+  const [list, setList] = useState<string[]>([]);
+  const [hasAudioReadPermission, setHasAudioReadPermission] = useState(
+    PermissionStatus.granted
+  );
   const { fs } = RNFetchBlob;
   const filePath = `${fs.dirs.MainBundleDir}`;
-  const list = [
-    `${filePath}/file_example_MP3_1MG.mp3`,
-    `${filePath}/file_example_MP3_700KB.mp3`,
-  ];
+
+  const { checkHasAudioReadPermission, getAudioReadPermission } =
+    useAudioPermission();
+  const checkAudioReadPermission = useCallback(async () => {
+    const hasPermission = await checkHasAudioReadPermission();
+    setHasAudioReadPermission(hasPermission);
+    if (hasPermission) {
+      const newList = [
+        `${filePath}/file_example_MP3_1MG.mp3`,
+        `${filePath}/file_example_MP3_700KB.mp3`,
+      ];
+      setList(newList);
+    }
+  }, []);
+
+  const getPermissionForAudioRead = async () => {
+    const hasPermission = await getAudioReadPermission();
+    setHasAudioReadPermission(hasPermission);
+  };
+
+  useEffect(() => {
+    checkAudioReadPermission();
+  }, [checkHasAudioReadPermission]);
+
   return (
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView style={styles.container}>
         <View style={styles.container}>
           <LivePlayerComponent />
-          <ScrollView scrollEnabled={shouldScroll}>
-            {list.map((item, index) => (
-              <ListItem
-                key={`${item}${index}`}
-                index={index}
-                item={item}
-                onPanStateChange={value => setShouldScroll(!value)}
-              />
-            ))}
-          </ScrollView>
+          {hasAudioReadPermission === PermissionStatus.granted ? (
+            <ScrollView scrollEnabled={shouldScroll}>
+              {list.map((item, index) => (
+                <ListItem
+                  key={`${item}${index}`}
+                  index={index}
+                  item={item}
+                  onPanStateChange={value => setShouldScroll(!value)}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Button
+              title={Strings.getAudioReadPermission}
+              onPress={getPermissionForAudioRead}></Button>
+          )}
         </View>
       </GestureHandlerRootView>
     </SafeAreaView>

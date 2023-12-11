@@ -26,7 +26,7 @@ import {
 import {
   useAudioPlayer,
   useAudioRecorder,
-  useRecorderPermission,
+  useAudioPermission,
 } from '../../hooks';
 import type { IStartRecording } from '../../types';
 import { WaveformCandle } from '../WaveformCandle';
@@ -95,7 +95,7 @@ export const Waveform: <T extends StaticOrLive>(
     resumeRecording,
   } = useAudioRecorder();
 
-  const { checkHasRecorderPermission } = useRecorderPermission();
+  const { checkHasAudioRecorderPermission } = useAudioPermission();
 
   const preparePlayerForPath = async () => {
     if (!isNil(path) && !isEmpty(path)) {
@@ -230,7 +230,7 @@ export const Waveform: <T extends StaticOrLive>(
 
   const startRecordingAction = async (args?: Partial<IStartRecording>) => {
     try {
-      const hasPermission = await checkHasRecorderPermission();
+      const hasPermission = await checkHasAudioRecorderPermission();
 
       if (hasPermission === PermissionStatus.granted) {
         const start = await startRecording(args);
@@ -296,7 +296,7 @@ export const Waveform: <T extends StaticOrLive>(
 
   const resumeRecordingAction = async () => {
     try {
-      const hasPermission = await checkHasRecorderPermission();
+      const hasPermission = await checkHasAudioRecorderPermission();
       if (hasPermission === PermissionStatus.granted) {
         const resume = await resumeRecording();
         if (!isNil(resume)) {
