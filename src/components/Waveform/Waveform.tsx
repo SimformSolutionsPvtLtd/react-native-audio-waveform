@@ -193,7 +193,9 @@ export const Waveform: <T extends StaticOrLive>(
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     try {
       const play = await playPlayer({
+        finishMode: FinishMode.loop,
         playerKey: `PlayerFor${path}`,
+        path: path,
         ...args,
       });
 
@@ -389,7 +391,9 @@ export const Waveform: <T extends StaticOrLive>(
     });
     const subscribeData2 = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
-        setCurrentProgress(data.currentDuration);
+        if (!panMoving) {
+          setCurrentProgress(data.currentDuration);
+        }
       }
     });
     const subscribeData3 = onCurrentExtractedWaveformData(() => {
@@ -412,7 +416,7 @@ export const Waveform: <T extends StaticOrLive>(
       subscribeData3.remove();
       subscribeData4.remove();
     };
-  }, []);
+  }, [panMoving]);
 
   useEffect(() => {
     if (!isNil(onPlayerStateChange)) {
@@ -451,7 +455,6 @@ export const Waveform: <T extends StaticOrLive>(
     startPlayer: startPlayerAction,
     stopPlayer: stopPlayerAction,
     pausePlayer: pausePlayerAction,
-    resumePlayer: startPlayerAction,
     startRecord: startRecordingAction,
     pauseRecord: pauseRecordingAction,
     stopRecord: stopRecordingAction,

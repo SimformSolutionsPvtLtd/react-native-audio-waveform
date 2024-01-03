@@ -490,6 +490,8 @@ PODS:
     - React-perflogger (= 0.72.7)
   - rn-fetch-blob (0.12.0):
     - React-Core
+  - RNFS (2.20.0):
+    - React-Core
   - RNGestureHandler (2.14.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
@@ -563,6 +565,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
+  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -665,6 +668,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   rn-fetch-blob:
     :path: "../node_modules/rn-fetch-blob"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   Yoga:
@@ -723,6 +728,7 @@ SPEC CHECKSUMS:
   React-utils: 56838edeaaf651220d1e53cd0b8934fb8ce68415
   ReactCommon: 5f704096ccf7733b390f59043b6fa9cc180ee4f6
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 32a01c29ecc9bb0b5bf7bc0a33547f61b4dc2741
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 4c3aa327e4a6a23eeacd71f61c81df1bcdf677d5
