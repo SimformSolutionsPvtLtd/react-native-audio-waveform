@@ -78,8 +78,10 @@ enum FinishMode : Int{
   case stop = 2
 }
 
+//Note: If you are making change here, please make sure to make change in Android and React Native side as well other wise there will be mismatch in value
+//Use same values in Android and React native side as well
 enum UpdateFrequency : Double {
-  case high = 250.0
+    case high = 250.0
   case medium = 500.0
   case low = 1000.0
 }

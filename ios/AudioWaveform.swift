@@ -63,7 +63,7 @@ class AudioWaveform: RCTEventEmitter {
   @objc func startRecording(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     audioRecorder.startRecording(args?[Constants.path] as? String,
                                  encoder: args?[Constants.encoder] as? Int,
-                                 updateFrequency: args?[Constants.updateFrequency] as? UpdateFrequency ?? UpdateFrequency.medium,
+                                 updateFrequency: UpdateFrequency(rawValue: (args?[Constants.updateFrequency]) as? Double ?? 0) ?? UpdateFrequency.medium,
                                  sampleRate: args?[Constants.sampleRate] as? Int,
                                  bitRate: args?[Constants.bitRate] as? Int,
                                  fileNameFormat: args?[Constants.fileNameFormat] as? String,
@@ -130,7 +130,7 @@ class AudioWaveform: RCTEventEmitter {
       initPlayer(playerKey: key!)
       audioPlayers[key!]?.preparePlayer(args?[Constants.path] as? String,
                                         volume: args?[Constants.volume] as? Double,
-                                        updateFrequency: args?[Constants.updateFrequency] as? UpdateFrequency ?? UpdateFrequency.medium,
+                                        updateFrequency: UpdateFrequency(rawValue: (args?[Constants.updateFrequency]) as? Double ?? 0) ?? UpdateFrequency.medium,
                                         resolver: resolve,
                                         rejecter: reject)
     } else {

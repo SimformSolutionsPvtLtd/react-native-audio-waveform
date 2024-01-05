@@ -10,7 +10,7 @@ export const useAudioPermission = () => {
   };
 
   const checkHasAudioReadPermission = () => {
-    return AudioWaveform.checkHasAudioRecorderPermission();
+    return AudioWaveform.checkHasAudioReadPermission();
   };
 
   const getAudioReadPermission = () => {
