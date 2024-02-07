@@ -1,4 +1,10 @@
-import { Dispatch, SetStateAction, useRef, useState } from 'react';
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   Image,
   Linking,
@@ -19,70 +25,81 @@ import {
   useAudioPermission,
 } from 'react-native-audio-waveform';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import RNFetchBlob from 'rn-fetch-blob';
 import { Icons } from './assets';
+import { audioListArray, type ListItem } from './constants';
 import styles from './styles';
 import { Colors } from './theme';
 
-interface ListItem {
-  fromCurrentUser: boolean;
-  path: string;
-}
+const ListItem = React.memo(
+  ({
+    item,
+    currentPlaying,
+    setCurrentPlaying,
+    onPanStateChange,
+  }: {
+    item: ListItem;
+    currentPlaying: string;
+    setCurrentPlaying: Dispatch<SetStateAction<string>>;
+    onPanStateChange: (value: boolean) => void;
+  }) => {
+    const ref = useRef<IPlayWaveformRef>(null);
+    const [playerState, setPlayerState] = useState(PlayerState.stopped);
 
-const ListItem = ({
-  item,
-  index,
-  onPanStateChange,
-}: {
-  item: ListItem;
-  index: number;
-  onPanStateChange: (value: boolean) => void;
-}) => {
-  const ref = useRef<IPlayWaveformRef>(null);
-  const [playerState, setPlayerState] = useState(PlayerState.stopped);
+    const handleButtonAction = () => {
+      if (playerState === PlayerState.stopped) {
+        setCurrentPlaying(item.path);
+      } else {
+        setCurrentPlaying('');
+      }
+    };
 
-  const handleButtonAction = () => {
-    if (playerState === PlayerState.stopped) {
-      ref.current?.startPlayer({ finishMode: FinishMode.stop });
-    } else {
-      ref.current?.stopPlayer();
-    }
-  };
+    useEffect(() => {
+      if (currentPlaying !== item.path) {
+        ref.current?.stopPlayer();
+      } else {
+        ref.current?.startPlayer({ finishMode: FinishMode.stop });
+      }
+    }, [currentPlaying]);
 
-  return (
-    <View
-      key={`${item}${index}`}
-      style={[styles({ currentUser: item.fromCurrentUser }).listItemContainer]}>
+    return (
       <View
-        style={[styles({ currentUser: item.fromCurrentUser }).buttonContainer]}>
-        <Pressable
-          onPress={handleButtonAction}
-          style={styles().playBackControlPressable}>
-          <Image
-            source={
-              playerState === PlayerState.stopped ? Icons.play : Icons.stop
-            }
-            style={styles().buttonImage}
-            resizeMode="contain"
+        key={item.path} // Use a more unique key, such as the item's path
+        style={[
+          styles({ currentUser: item.fromCurrentUser }).listItemContainer,
+        ]}>
+        <View
+          style={[
+            styles({ currentUser: item.fromCurrentUser }).buttonContainer,
+          ]}>
+          <Pressable
+            onPress={handleButtonAction}
+            style={styles().playBackControlPressable}>
+            <Image
+              source={
+                playerState === PlayerState.stopped ? Icons.play : Icons.stop
+              }
+              style={styles().buttonImage}
+              resizeMode="contain"
+            />
+          </Pressable>
+          <Waveform<'static'>
+            containerStyle={styles().staticWaveformView}
+            mode="static"
+            key={item.path}
+            ref={ref}
+            path={item.path}
+            candleSpace={2}
+            candleWidth={4}
+            scrubColor={Colors.white}
+            waveColor={Colors.waveStickBackground}
+            onPlayerStateChange={setPlayerState}
+            onPanStateChange={onPanStateChange}
           />
-        </Pressable>
-        <Waveform<'static'>
-          containerStyle={styles().staticWaveformView}
-          mode="static"
-          key={`${item}${index}`}
-          ref={ref}
-          path={item.path}
-          candleSpace={2}
-          candleWidth={4}
-          scrubColor={Colors.white}
-          waveColor={Colors.waveStickBackground}
-          onPlayerStateChange={setPlayerState}
-          onPanStateChange={onPanStateChange}
-        />
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  }
+);
 
 const LivePlayerComponent = ({
   setList,
@@ -151,28 +168,10 @@ const LivePlayerComponent = ({
 };
 
 const App = () => {
-  const [shouldScroll, setShouldScroll] = useState(true);
+  const [shouldScroll, setShouldScroll] = useState<boolean>(true);
+  const [currentPlaying, setCurrentPlaying] = useState<string>('');
 
-  const { fs } = RNFetchBlob;
-  const filePath = `${fs.dirs.MainBundleDir}`;
-  const [list, setList] = useState<ListItem[]>([
-    {
-      fromCurrentUser: false,
-      path: `${filePath}/file_example_mp3_1mg.mp3`,
-    },
-    {
-      fromCurrentUser: true,
-      path: `${filePath}/file_example_mp3_700kb.mp3`,
-    },
-    {
-      fromCurrentUser: false,
-      path: `${filePath}/file_example_mp3_12s.mp3`,
-    },
-    {
-      fromCurrentUser: true,
-      path: `${filePath}/file_example_mp3_15s.mp3`,
-    },
-  ]);
+  const [list, setList] = useState<ListItem[]>(audioListArray);
 
   return (
     <SafeAreaView style={styles().appContainer}>
@@ -186,10 +185,11 @@ const App = () => {
             />
           </View>
           <ScrollView scrollEnabled={shouldScroll}>
-            {list.map((item, index) => (
+            {list.map(item => (
               <ListItem
-                key={`${item}${index}`}
-                index={index}
+                key={item.path}
+                currentPlaying={currentPlaying}
+                setCurrentPlaying={setCurrentPlaying}
                 item={item}
                 onPanStateChange={value => setShouldScroll(!value)}
               />

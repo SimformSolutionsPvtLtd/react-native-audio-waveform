@@ -92,4 +92,7 @@ dependencies {
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
+
+  // Android Audio Playback Dependency
+  implementation "com.google.android.exoplayer:exoplayer:2.17.1"
 }
