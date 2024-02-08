@@ -309,13 +309,13 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     args.putDouble(Constants.currentDecibel, currentDecibel/1000)
                 }
             }
-            handler.postDelayed(this, 500)
+            handler.postDelayed(this, UpdateFrequency.Low.value)
             reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(Constants.onCurrentRecordingWaveformData, args)
         }
     }
 
     private fun startEmittingRecorderValue() {
-        handler.postDelayed(emitLiveRecordValue, 500)
+        handler.postDelayed(emitLiveRecordValue, UpdateFrequency.Low.value)
     }
 
     private fun stopEmittingRecorderValue() {
