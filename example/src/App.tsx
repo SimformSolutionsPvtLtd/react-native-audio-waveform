@@ -7,10 +7,11 @@ import React, {
 } from 'react';
 import {
   Image,
+  ImageBackground,
   Linking,
   Pressable,
-  SafeAreaView,
   ScrollView,
+  StatusBar,
   View,
 } from 'react-native';
 import {
@@ -25,9 +26,13 @@ import {
   useAudioPermission,
 } from 'react-native-audio-waveform';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Icons } from './assets';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import { Gifs, Icons } from './assets';
 import { audioListArray, type ListItem } from './constants';
-import styles from './styles';
+import stylesheet from './styles';
 import { Colors } from './theme';
 
 const ListItem = React.memo(
@@ -44,6 +49,7 @@ const ListItem = React.memo(
   }) => {
     const ref = useRef<IPlayWaveformRef>(null);
     const [playerState, setPlayerState] = useState(PlayerState.stopped);
+    const styles = stylesheet({ currentUser: item.fromCurrentUser });
 
     const handleButtonAction = () => {
       if (playerState === PlayerState.stopped) {
@@ -62,39 +68,40 @@ const ListItem = React.memo(
     }, [currentPlaying]);
 
     return (
-      <View
-        key={item.path} // Use a more unique key, such as the item's path
-        style={[
-          styles({ currentUser: item.fromCurrentUser }).listItemContainer,
-        ]}>
-        <View
-          style={[
-            styles({ currentUser: item.fromCurrentUser }).buttonContainer,
-          ]}>
-          <Pressable
-            onPress={handleButtonAction}
-            style={styles().playBackControlPressable}>
-            <Image
-              source={
-                playerState === PlayerState.stopped ? Icons.play : Icons.stop
-              }
-              style={styles().buttonImage}
-              resizeMode="contain"
+      <View key={item.path} style={[styles.listItemContainer]}>
+        <View style={styles.listItemWidth}>
+          <ImageBackground
+            source={
+              item.fromCurrentUser
+                ? Gifs.audioBackground1
+                : Gifs.audioBackground2
+            }
+            style={[styles.buttonContainer]}>
+            <Pressable
+              onPress={handleButtonAction}
+              style={styles.playBackControlPressable}>
+              <Image
+                source={
+                  playerState === PlayerState.stopped ? Icons.play : Icons.stop
+                }
+                style={styles.buttonImage}
+                resizeMode="contain"
+              />
+            </Pressable>
+            <Waveform<'static'>
+              containerStyle={styles.staticWaveformView}
+              mode="static"
+              key={item.path}
+              ref={ref}
+              path={item.path}
+              candleSpace={2}
+              candleWidth={4}
+              scrubColor={Colors.white}
+              waveColor={Colors.gray}
+              onPlayerStateChange={setPlayerState}
+              onPanStateChange={onPanStateChange}
             />
-          </Pressable>
-          <Waveform<'static'>
-            containerStyle={styles().staticWaveformView}
-            mode="static"
-            key={item.path}
-            ref={ref}
-            path={item.path}
-            candleSpace={2}
-            candleWidth={4}
-            scrubColor={Colors.white}
-            waveColor={Colors.waveStickBackground}
-            onPlayerStateChange={setPlayerState}
-            onPanStateChange={onPanStateChange}
-          />
+          </ImageBackground>
         </View>
       </View>
     );
@@ -108,6 +115,7 @@ const LivePlayerComponent = ({
 }) => {
   const ref = useRef<IRecordWaveformRef>(null);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
+  const styles = stylesheet();
   const { checkHasAudioRecorderPermission, getAudioRecorderPermission } =
     useAudioPermission();
 
@@ -142,24 +150,24 @@ const LivePlayerComponent = ({
   };
 
   return (
-    <View style={styles().liveWaveformContainer}>
+    <View style={styles.liveWaveformContainer}>
       <Waveform<'live'>
         mode="live"
-        containerStyle={styles().liveWaveformView}
+        containerStyle={styles.liveWaveformView}
         ref={ref}
         candleSpace={2}
-        candleWidth={4}
+        candleWidth={2}
         waveColor={Colors.simformPink}
         onRecorderStateChange={setRecorderState}
       />
       <Pressable
         onPress={handleRecorderAction}
-        style={styles().recordAudioPressable}>
+        style={styles.recordAudioPressable}>
         <Image
           source={
             recorderState === RecorderState.stopped ? Icons.mic : Icons.stop
           }
-          style={styles().buttonImageLive}
+          style={styles.buttonImageLive}
           resizeMode="contain"
         />
       </Pressable>
@@ -167,38 +175,57 @@ const LivePlayerComponent = ({
   );
 };
 
-const App = () => {
+const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
   const [currentPlaying, setCurrentPlaying] = useState<string>('');
-
   const [list, setList] = useState<ListItem[]>(audioListArray);
 
+  const { top, bottom } = useSafeAreaInsets();
+  const styles = stylesheet({ top, bottom });
+
   return (
-    <SafeAreaView style={styles().appContainer}>
-      <GestureHandlerRootView style={styles().appContainer}>
-        <View style={styles().container}>
-          <View style={styles().simformImageContainer}>
-            <Image
-              source={Icons.simform}
-              style={styles().simformImage}
-              resizeMode="contain"
-            />
-          </View>
-          <ScrollView scrollEnabled={shouldScroll}>
-            {list.map(item => (
-              <ListItem
-                key={item.path}
-                currentPlaying={currentPlaying}
-                setCurrentPlaying={setCurrentPlaying}
-                item={item}
-                onPanStateChange={value => setShouldScroll(!value)}
+    <View style={styles.appContainer}>
+      <StatusBar
+        barStyle={'dark-content'}
+        backgroundColor={'transparent'}
+        animated
+        translucent
+      />
+      <GestureHandlerRootView style={styles.appContainer}>
+        <ImageBackground
+          source={Gifs.appBackground}
+          style={styles.screenBackground}>
+          <View style={styles.container}>
+            <View style={styles.simformImageContainer}>
+              <Image
+                source={Icons.simform}
+                style={styles.simformImage}
+                resizeMode="contain"
               />
-            ))}
-          </ScrollView>
-        </View>
-        <LivePlayerComponent setList={setList} />
+            </View>
+            <ScrollView scrollEnabled={shouldScroll}>
+              {list.map(item => (
+                <ListItem
+                  key={item.path}
+                  currentPlaying={currentPlaying}
+                  setCurrentPlaying={setCurrentPlaying}
+                  item={item}
+                  onPanStateChange={value => setShouldScroll(!value)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+          <LivePlayerComponent setList={setList} />
+        </ImageBackground>
       </GestureHandlerRootView>
-    </SafeAreaView>
+    </View>
   );
 };
-export default App;
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContainer />
+    </SafeAreaProvider>
+  );
+}
