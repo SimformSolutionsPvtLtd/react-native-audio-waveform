@@ -193,7 +193,7 @@ export const Waveform: <T extends StaticOrLive>(
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     try {
       const play = await playPlayer({
-        finishMode: FinishMode.loop,
+        finishMode: FinishMode.stop,
         playerKey: `PlayerFor${path}`,
         path: path,
         ...args,
@@ -391,15 +391,12 @@ export const Waveform: <T extends StaticOrLive>(
     });
     const subscribeData2 = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
-        if (!panMoving) {
-          setCurrentProgress(data.currentDuration);
-        }
+        setCurrentProgress(data.currentDuration);
       }
     });
     const subscribeData3 = onCurrentExtractedWaveformData(() => {
       // write logic for subscription
     });
-
     const subscribeData4 = onCurrentRecordingWaveformData(result => {
       if (mode === 'live') {
         if (!isNil(result.currentDecibel)) {
@@ -416,7 +413,7 @@ export const Waveform: <T extends StaticOrLive>(
       subscribeData3.remove();
       subscribeData4.remove();
     };
-  }, [panMoving]);
+  }, []);
 
   useEffect(() => {
     if (!isNil(onPlayerStateChange)) {
@@ -430,15 +427,24 @@ export const Waveform: <T extends StaticOrLive>(
     }
   }, [recorderState]);
 
+  useEffect(() => {
+    if (panMoving) {
+      if (playerState === PlayerState.playing) {
+        pausePlayerAction();
+      }
+    } else {
+      if (playerState === PlayerState.paused) {
+        startPlayerAction();
+      }
+    }
+  }, [panMoving]);
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         setPanMoving(true);
         (onPanStateChange as Function)(true);
-        if (playerState === PlayerState.playing) {
-          pausePlayerAction();
-        }
       },
       onPanResponderStart: () => {},
       onPanResponderMove: event => {

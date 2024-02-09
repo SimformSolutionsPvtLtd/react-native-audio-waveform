@@ -151,7 +151,7 @@ class AudioPlayer(
 
     private fun startListening(promise: Promise) {
         try {
-            audioPlaybackListener = object : CountDownTimer(player.duration, 10) {
+            audioPlaybackListener = object : CountDownTimer(player.duration, UpdateFrequency.Low.value) {
                 override fun onTick(millisUntilFinished: Long) {
                     val currentPosition = player.currentPosition.toString()
                     val args: WritableMap = Arguments.createMap()
