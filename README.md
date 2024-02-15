@@ -1,6 +1,6 @@
 # react-native-audio-waveform
 
-[![react-native-audio-waveform on npm](https://img.shields.io/npm/v/react-native-audio-waveform.svg?style=flat)](https://www.npmjs.com/package/react-native-audio-waveform) [![react-native-audio-waveform downloads](https://img.shields.io/npm/dm/react-native-audio-waveform)](https://www.npmtrends.com/react-native-audio-waveform) [![react-native-audio-waveform install size](https://packagephobia.com/badge?p=react-native-audio-waveform)](https://packagephobia.com/result?p=react-native-audio-waveform) [![Android](https://img.shields.io/badge/Platform-Android-green?logo=android)](https://www.android.com) [![iOS](https://img.shields.io/badge/Platform-iOS-green?logo=apple)](https://developer.apple.com/ios) [![MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
+[![react-native-audio-waveform on npm](https://img.shields.io/npm/v/react-native-audio-waveform.svg?&logo=npm&logoColor=white&color=red&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmjs.com/package/react-native-audio-waveform) [![react-native-audio-waveform downloads](https://img.shields.io/npm/dm/react-native-audio-waveform?&logo=npm&logoColor=white&color=blue&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmtrends.com/react-native-audio-waveform) [![react-native-audio-waveform install size](https://packagephobia.com/badge?p=react-native-audio-waveform?&icon=disk&logoColor=white&color=yellow&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://packagephobia.com/result?p=react-native-audio-waveform) [![Android](https://img.shields.io/badge/Platform-Android-green?logo=android&logoColor=white&labelColor=grey)](https://www.android.com) [![iOS](https://img.shields.io/badge/Platform-iOS-green?logo=apple&logoColor=white&labelColor=grey)](https://developer.apple.com/ios) [![MIT](https://img.shields.io/badge/License-MIT-green&labelColor=grey)](https://opensource.org/licenses/MIT)
 
 ---
 
@@ -10,7 +10,9 @@ A React Native package featuring native modules for generating and rendering aud
 
 ## 🎬 Preview
 
-## <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="202" height="400" alt="SimformSolutions" src="./assets/audio_waveform.gif"> </a>
+| Audio Playback Waveform                                                                                                                                                                  | Audio Record Waveform                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;"  height="640px;" alt="AudioPlaybackWaveform" src="./assets/audio_playback.gif"> </a> | <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;"  height="640px;" alt="AudioRecordWaveform" src="./assets/audio_record.gif"> </a> |
 
 ## Quick Access
 
@@ -35,7 +37,7 @@ npm install react-native-audio-waveform react-native-gesture-handler
 ###### --- or ---
 
 ```sh
-yarn add react-native-audio-waveform  react-native-gesture-handler
+yarn add react-native-audio-waveform react-native-gesture-handler
 ```
 
 ##### 2. Install cocoapods in the ios project
@@ -46,15 +48,25 @@ npx pod-install
 
 ##### Know more about [react-native-gesture-handler](https://www.npmjs.com/package/react-native-gesture-handler)
 
-##### 3. Add Permission in iOS
+##### 3. Add Audio Recording Permissions
 
-if you want to use recorder features in iOS side you have to add **NSMicrophoneUsageDescription** permission in info.plist and add description based on your use-case.
+##### iOS
 
-here is a sample for info.plist permission and description
+If you want to use recorder features in iOS, you have to add **NSMicrophoneUsageDescription** permission in info.plist and add description based on your use-case.
 
-```plist
+Here is a sample for info.plist permission and description
+
+```
 <key>NSMicrophoneUsageDescription</key>
- <string>Needed permission to record audio</string>
+<string>Needed permission to record audio</string>
+```
+
+##### Android
+
+If you want to use recorder features in Android, you have to add **RECORD_AUDIO** permission in AndroidManifest.xml
+
+```xml
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
 ### Usage
@@ -66,7 +78,7 @@ When you want to show a waveform for pre-existing audio file you need to use `st
 Check below example for more information.
 
 ```tsx
-import { IPlayWaveformRef, Waveform } from 'react-native-audio-waveform';
+import { Waveform, type IPlayWaveformRef } from 'react-native-audio-waveform';
 
 const path = ''; // path to the audio file for which you want to show waveform
 const ref = useRef<IPlayWaveformRef>(null);
@@ -84,12 +96,12 @@ const ref = useRef<IPlayWaveformRef>(null);
 
 #### 2. Live recording waveform
 
-When you are want to record a audio and show waveform that recording at that time you need to create waveform with `live` mode. Same as `static` mode we have type safety for ref. You can only provide `IRecordWaveformRef` to `live` mode waveform.
+When you want to record a audio and show waveform for that recording, you need to create waveform with `live` mode. Same as `static` mode we have type safety for ref. You can only provide `IRecordWaveformRef` to `live` mode waveform.
 
 Check below example for more information.
 
 ```tsx
-import { IRecordWaveformRef, Waveform } from 'react-native-audio-waveform';
+import { Waveform, type IRecordWaveformRef } from 'react-native-audio-waveform';
 
 const ref = useRef<IRecordWaveformRef>(null);
 <Waveform<'live'>
@@ -306,7 +318,7 @@ This command will our example audio sample files to iOS bundle so that we can ac
 
 ```sh
 yarn
-yarn example ios   // For ios
+yarn example ios   // For iOS
 yarn example android   // For Android
 ```
 

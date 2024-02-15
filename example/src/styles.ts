@@ -4,6 +4,8 @@ import { Colors, scale } from './theme';
 export type StyleSheetParams =
   | Partial<{
       currentUser: boolean;
+      top: number;
+      bottom: number;
     }>
   | undefined;
 
@@ -17,24 +19,28 @@ const styles = (params: StyleSheetParams = {}) =>
     appContainer: {
       flex: 1,
     },
+    screenBackground: {
+      flex: 1,
+      paddingBottom: params.bottom,
+    },
     container: {
       flex: 1,
+      paddingTop: params.top,
       paddingHorizontal: scale(16),
       marginBottom: scale(24),
     },
     buttonContainer: {
       flexDirection: 'row',
-      marginBottom: scale(8),
-      width: '90%',
-      borderRadius: scale(8),
+      borderRadius: scale(10),
       alignItems: 'center',
-      backgroundColor: params.currentUser
-        ? Colors.fromMeBackground
-        : Colors.fromOtherBackground,
+      overflow: 'hidden',
     },
     listItemContainer: {
       marginTop: scale(16),
       alignItems: params.currentUser ? 'flex-end' : 'flex-start',
+    },
+    listItemWidth: {
+      width: '90%',
     },
     buttonImage: {
       height: '100%',
@@ -42,6 +48,7 @@ const styles = (params: StyleSheetParams = {}) =>
     },
     staticWaveformView: {
       flex: 1,
+      height: scale(75),
       paddingEnd: scale(10),
     },
     playBackControlPressable: {
@@ -66,8 +73,8 @@ const styles = (params: StyleSheetParams = {}) =>
       width: scale(200),
     },
     liveWaveformView: {
-      backgroundColor: Colors.waveContainerBackground,
       flex: 1,
+      borderWidth: scale(0.5),
       borderRadius: scale(8),
       paddingHorizontal: scale(10),
     },
