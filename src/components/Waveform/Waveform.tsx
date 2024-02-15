@@ -83,17 +83,11 @@ export const Waveform: <T extends StaticOrLive>(
     pausePlayer,
     onCurrentDuration,
     onDidFinishPlayingAudio,
-    onCurrentExtractedWaveformData,
     onCurrentRecordingWaveformData,
   } = useAudioPlayer();
 
-  const {
-    // getDecibel,
-    startRecording,
-    stopRecording,
-    pauseRecording,
-    resumeRecording,
-  } = useAudioRecorder();
+  const { startRecording, stopRecording, pauseRecording, resumeRecording } =
+    useAudioRecorder();
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
 
@@ -354,33 +348,8 @@ export const Waveform: <T extends StaticOrLive>(
     }
   }, [seekPosition, panMoving, mode, songDuration]);
 
-  // TODO: to use this we have to remove conditions from onCurrentRecordingWaveformData and remove that code from native side also
-  // useEffect(() => {
-  //   if (mode === 'live') {
-  //     const timerInterval = setInterval(() => {
-  //       if (isRecording) {
-  //         getDecibel()
-  //           .then((result: any) => {
-  //             setWaveform(prev => [...prev, result]);
-  //             if (scrollRef.current) {
-  //               scrollRef.current.scrollToEnd({ animated: true });
-  //             }
-  //           })
-  //           .catch((error: any) => {
-  //             console.error(`Error: ${error}`);
-  //           });
-  //       } else {
-  //         clearInterval(timerInterval);
-  //       }
-  //     }, updateTime);
-  //     return () => clearInterval(timerInterval);
-  //   } else {
-  //     return;
-  //   }
-  // }, [getDecibel, isRecording, updateTime, mode]);
-
   useEffect(() => {
-    const subscribeData = onDidFinishPlayingAudio(async data => {
+    const tracePlayerState = onDidFinishPlayingAudio(async data => {
       if (data.playerKey === `PlayerFor${path}`) {
         if (data.finishType === FinishMode.stop) {
           setPlayerState(PlayerState.stopped);
@@ -389,29 +358,29 @@ export const Waveform: <T extends StaticOrLive>(
         }
       }
     });
-    const subscribeData2 = onCurrentDuration(data => {
+
+    const tracePlaybackValue = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
         setCurrentProgress(data.currentDuration);
       }
     });
-    const subscribeData3 = onCurrentExtractedWaveformData(() => {
-      // write logic for subscription
-    });
-    const subscribeData4 = onCurrentRecordingWaveformData(result => {
-      if (mode === 'live') {
-        if (!isNil(result.currentDecibel)) {
-          setWaveform(prev => [...prev, result.currentDecibel]);
-          if (scrollRef.current) {
-            scrollRef.current.scrollToEnd({ animated: true });
+
+    const traceRecorderWaveformValue = onCurrentRecordingWaveformData(
+      result => {
+        if (mode === 'live') {
+          if (!isNil(result.currentDecibel)) {
+            setWaveform(prev => [...prev, result.currentDecibel]);
+            if (scrollRef.current) {
+              scrollRef.current.scrollToEnd({ animated: true });
+            }
           }
         }
       }
-    });
+    );
     return () => {
-      subscribeData.remove();
-      subscribeData2.remove();
-      subscribeData3.remove();
-      subscribeData4.remove();
+      tracePlayerState.remove();
+      tracePlaybackValue.remove();
+      traceRecorderWaveformValue.remove();
     };
   }, []);
 
