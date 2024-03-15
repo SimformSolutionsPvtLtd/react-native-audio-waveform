@@ -6,7 +6,7 @@ const colors = {
   transparent: 'transparent',
   waveStickBackground: '#989898',
   waveStickCompleteBackground: '#7b7b7b',
-  simformPink: '#DD5F68',
+  pink: '#DD5F68',
 };
 
 export default colors;

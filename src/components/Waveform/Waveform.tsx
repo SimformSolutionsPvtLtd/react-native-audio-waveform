@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { clamp, floor, head, isEmpty, isNil } from 'lodash';
 import React, {
   forwardRef,
@@ -6,7 +5,6 @@ import React, {
   useImperativeHandle,
   useRef,
   useState,
-  type ReactElement,
 } from 'react';
 import {
   PanResponder,
@@ -24,29 +22,22 @@ import {
   UpdateFrequency,
 } from '../../constants';
 import {
+  useAudioPermission,
   useAudioPlayer,
   useAudioRecorder,
-  useAudioPermission,
 } from '../../hooks';
 import type { IStartRecording } from '../../types';
 import { WaveformCandle } from '../WaveformCandle';
-import styles from './styles';
+import styles from './WaveformStyles';
 import {
   type IStartPlayerRef,
   type IWaveform,
+  type IWaveformRef,
   type LiveWaveform,
-  type StaticOrLive,
   type StaticWaveform,
-  type WaveformRefProps,
-  type WaveformWithStandardRef,
-} from './types';
+} from './WaveformTypes';
 
-export const Waveform: <T extends StaticOrLive>(
-  props: WaveformWithStandardRef<T>
-) => ReactElement | null = forwardRef<
-  WaveformRefProps<StaticOrLive>,
-  IWaveform<StaticOrLive>
->((props, ref) => {
+export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
     mode,
     path,
@@ -165,98 +156,130 @@ export const Waveform: <T extends StaticOrLive>(
   };
 
   const stopPlayerAction = async () => {
-    try {
-      const result = await stopPlayer({
-        playerKey: `PlayerFor${path}`,
-      });
-      await preparePlayerForPath();
-      if (!isNil(result) && result) {
-        setCurrentProgress(0);
-        setPlayerState(PlayerState.stopped);
-        return Promise.resolve(result);
-      } else {
-        return Promise.reject(
-          new Error(`error in stopping player for path: ${path}`)
-        );
+    if (mode === 'static') {
+      try {
+        const result = await stopPlayer({
+          playerKey: `PlayerFor${path}`,
+        });
+        await preparePlayerForPath();
+        if (!isNil(result) && result) {
+          setCurrentProgress(0);
+          setPlayerState(PlayerState.stopped);
+          return Promise.resolve(result);
+        } else {
+          return Promise.reject(
+            new Error(`error in stopping player for path: ${path}`)
+          );
+        }
+      } catch (err) {
+        return Promise.reject(err);
       }
-    } catch (err) {
-      return Promise.reject(err);
+    } else {
+      return Promise.reject(
+        new Error('error in stopping player: mode is not static')
+      );
     }
   };
 
   const startPlayerAction = async (args?: IStartPlayerRef) => {
-    try {
-      const play = await playPlayer({
-        finishMode: FinishMode.stop,
-        playerKey: `PlayerFor${path}`,
-        path: path,
-        ...args,
-      });
+    if (mode === 'static') {
+      try {
+        const play = await playPlayer({
+          finishMode: FinishMode.stop,
+          playerKey: `PlayerFor${path}`,
+          path: path,
+          ...args,
+        });
 
-      if (play) {
-        setPlayerState(PlayerState.playing);
-        return Promise.resolve(true);
-      } else {
-        return Promise.reject(
-          new Error(`error in starting player for path: ${path}`)
-        );
+        if (play) {
+          setPlayerState(PlayerState.playing);
+          return Promise.resolve(true);
+        } else {
+          return Promise.reject(
+            new Error(`error in starting player for path: ${path}`)
+          );
+        }
+      } catch (error) {
+        return Promise.reject(error);
       }
-    } catch (error) {
-      return Promise.reject(error);
+    } else {
+      return Promise.reject(
+        new Error('error in starting player: mode is not static')
+      );
     }
   };
 
   const pausePlayerAction = async () => {
-    try {
-      const pause = await pausePlayer({
-        playerKey: `PlayerFor${path}`,
-      });
-      if (pause) {
-        setPlayerState(PlayerState.paused);
-        return Promise.resolve(true);
-      } else {
-        return Promise.reject(
-          new Error(`error in pause player for path: ${path}`)
-        );
+    if (mode === 'static') {
+      try {
+        const pause = await pausePlayer({
+          playerKey: `PlayerFor${path}`,
+        });
+        if (pause) {
+          setPlayerState(PlayerState.paused);
+          return Promise.resolve(true);
+        } else {
+          return Promise.reject(
+            new Error(`error in pause player for path: ${path}`)
+          );
+        }
+      } catch (error) {
+        return Promise.reject(error);
       }
-    } catch (error) {
-      return Promise.reject(error);
+    } else {
+      return Promise.reject(
+        new Error('error in pausing player: mode is not static')
+      );
     }
   };
 
   const startRecordingAction = async (args?: Partial<IStartRecording>) => {
-    try {
-      const hasPermission = await checkHasAudioRecorderPermission();
+    if (mode === 'live') {
+      try {
+        const hasPermission = await checkHasAudioRecorderPermission();
 
-      if (hasPermission === PermissionStatus.granted) {
-        const start = await startRecording(args);
-        if (!isNil(start) && start) {
-          setRecorderState(RecorderState.recording);
-          return Promise.resolve(true);
+        if (hasPermission === PermissionStatus.granted) {
+          const start = await startRecording(args);
+          if (!isNil(start) && start) {
+            setRecorderState(RecorderState.recording);
+            return Promise.resolve(true);
+          } else {
+            return Promise.reject(new Error('error in start recording action'));
+          }
         } else {
-          return Promise.reject(new Error('error in start recording action'));
+          return Promise.reject(
+            new Error(
+              'error in start recording: audio recording permission is not granted'
+            )
+          );
         }
-      } else {
-        return Promise.reject(
-          new Error(
-            'error in start recording: audio recording permission is not granted'
-          )
-        );
+      } catch (err) {
+        return Promise.reject(err);
       }
-    } catch (err) {
-      return Promise.reject(err);
+    } else {
+      return Promise.reject(
+        new Error('error in start recording: mode is not live')
+      );
     }
   };
 
   const stopRecordingAction = async () => {
-    try {
-      const data = await stopRecording();
-      if (!isNil(data) && !isEmpty(data)) {
-        setWaveform([]);
-        const pathData = head(data);
-        if (!isNil(pathData)) {
-          setRecorderState(RecorderState.stopped);
-          return Promise.resolve(pathData);
+    if (mode === 'live') {
+      try {
+        const data = await stopRecording();
+        if (!isNil(data) && !isEmpty(data)) {
+          setWaveform([]);
+          const pathData = head(data);
+          if (!isNil(pathData)) {
+            setRecorderState(RecorderState.stopped);
+            return Promise.resolve(pathData);
+          } else {
+            return Promise.reject(
+              new Error(
+                'error in stopping recording. can not get path of recording'
+              )
+            );
+          }
         } else {
           return Promise.reject(
             new Error(
@@ -264,52 +287,62 @@ export const Waveform: <T extends StaticOrLive>(
             )
           );
         }
-      } else {
-        return Promise.reject(
-          new Error(
-            'error in stopping recording. can not get path of recording'
-          )
-        );
+      } catch (err) {
+        return Promise.reject(err);
       }
-    } catch (err) {
-      return Promise.reject(err);
+    } else {
+      return Promise.reject(
+        new Error('error in stop recording: mode is not live')
+      );
     }
   };
 
   const pauseRecordingAction = async () => {
-    try {
-      const pause = await pauseRecording();
-      if (!isNil(pause) && pause) {
-        setRecorderState(RecorderState.paused);
-        return Promise.resolve(pause);
-      } else {
-        return Promise.reject(new Error('Error in pausing recording audio'));
+    if (mode === 'live') {
+      try {
+        const pause = await pauseRecording();
+        if (!isNil(pause) && pause) {
+          setRecorderState(RecorderState.paused);
+          return Promise.resolve(pause);
+        } else {
+          return Promise.reject(new Error('Error in pausing recording audio'));
+        }
+      } catch (err) {
+        return Promise.reject(err);
       }
-    } catch (err) {
-      return Promise.reject(err);
+    } else {
+      return Promise.reject(
+        new Error('error in pause recording: mode is not live')
+      );
     }
   };
 
   const resumeRecordingAction = async () => {
-    try {
-      const hasPermission = await checkHasAudioRecorderPermission();
-      if (hasPermission === PermissionStatus.granted) {
-        const resume = await resumeRecording();
-        if (!isNil(resume)) {
-          setRecorderState(RecorderState.recording);
-          return Promise.resolve(resume);
+    if (mode === 'live') {
+      try {
+        const hasPermission = await checkHasAudioRecorderPermission();
+        if (hasPermission === PermissionStatus.granted) {
+          const resume = await resumeRecording();
+          if (!isNil(resume)) {
+            setRecorderState(RecorderState.recording);
+            return Promise.resolve(resume);
+          } else {
+            return Promise.reject(new Error('Error in resume recording'));
+          }
         } else {
-          return Promise.reject(new Error('Error in resume recording'));
+          return Promise.reject(
+            new Error(
+              'error in resume recording: audio recording permission is not granted'
+            )
+          );
         }
-      } else {
-        return Promise.reject(
-          new Error(
-            'error in resume recording: audio recording permission is not granted'
-          )
-        );
+      } catch (err) {
+        return Promise.reject(err);
       }
-    } catch (err) {
-      return Promise.reject(err);
+    } else {
+      return Promise.reject(
+        new Error('error in resume recording: mode is not live')
+      );
     }
   };
 
@@ -323,6 +356,7 @@ export const Waveform: <T extends StaticOrLive>(
         getAudioWaveFormForPath(getNumberOfSamples);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewLayout, mode, candleWidth, candleSpace]);
 
   useEffect(() => {
@@ -346,6 +380,7 @@ export const Waveform: <T extends StaticOrLive>(
         setCurrentProgress(clampedSeekAmount * songDuration);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seekPosition, panMoving, mode, songDuration]);
 
   useEffect(() => {
@@ -382,18 +417,21 @@ export const Waveform: <T extends StaticOrLive>(
       tracePlaybackValue.remove();
       traceRecorderWaveformValue.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!isNil(onPlayerStateChange)) {
       (onPlayerStateChange as Function)(playerState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerState]);
 
   useEffect(() => {
     if (!isNil(onRecorderStateChange)) {
       (onRecorderStateChange as Function)(recorderState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recorderState]);
 
   useEffect(() => {
@@ -406,6 +444,7 @@ export const Waveform: <T extends StaticOrLive>(
         startPlayerAction();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panMoving]);
 
   const panResponder = useRef(
@@ -430,6 +469,7 @@ export const Waveform: <T extends StaticOrLive>(
     startPlayer: startPlayerAction,
     stopPlayer: stopPlayerAction,
     pausePlayer: pausePlayerAction,
+    resumePlayer: startPlayerAction,
     startRecord: startRecordingAction,
     pauseRecord: pauseRecordingAction,
     stopRecord: stopRecordingAction,
@@ -473,6 +513,4 @@ export const Waveform: <T extends StaticOrLive>(
       </View>
     </View>
   );
-}) as <T extends StaticOrLive>(
-  props: WaveformWithStandardRef<T>
-) => ReactElement | null;
+});

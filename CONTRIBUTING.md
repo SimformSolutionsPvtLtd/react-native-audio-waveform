@@ -2,7 +2,7 @@
 
 We welcome code changes that improve this library or fix a problem, and please make sure to follow all best practices and test all the changes/fixes before committing and creating a pull request. 🚀 🚀
 
-### Commiting and Pushing Changes
+### Committing and Pushing Changes
 
 Commit messages should be formatted as:
 

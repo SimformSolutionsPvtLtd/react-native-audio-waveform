@@ -14,11 +14,11 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		4A3054DD28F34283AA8FEE0D /* file_example_mp3_15s.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C2A26BD00D7D401B9804E1AA /* file_example_mp3_15s.mp3 */; };
 		578F19E664D14A79A203A29B /* file_example_mp3_12s.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D09FCEB6D8A04D349E9422A5 /* file_example_mp3_12s.mp3 */; };
-		6393E563479648F7B8E27E90 /* file_example_mp3_700kb.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2026064602944A9C9A1F84D3 /* file_example_mp3_700kb.mp3 */; };
-		75825DA638CD44CCB89B4B48 /* index.ts in Resources */ = {isa = PBXBuildFile; fileRef = 4879BE3405234CBFAFAD88DB /* index.ts */; };
 		7699B88040F8A987B510C191 /* libPods-AudioWaveformExample-AudioWaveformExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-AudioWaveformExample-AudioWaveformExampleTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		75825DA638CD44CCB89B4B48 /* index.ts in Resources */ = {isa = PBXBuildFile; fileRef = 4879BE3405234CBFAFAD88DB /* index.ts */; };
 		F754817CD5E04214A63ED292 /* file_example_mp3_1mg.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3D92446673D84104B7DBB5E8 /* file_example_mp3_1mg.mp3 */; };
+		6393E563479648F7B8E27E90 /* file_example_mp3_700kb.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2026064602944A9C9A1F84D3 /* file_example_mp3_700kb.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,10 +42,7 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AudioWaveformExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudioWaveformExample/main.m; sourceTree = "<group>"; };
 		19F6CBCC0A4E27FBF8BF4A61 /* libPods-AudioWaveformExample-AudioWaveformExampleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudioWaveformExample-AudioWaveformExampleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2026064602944A9C9A1F84D3 /* file_example_mp3_700kb.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_700kb.mp3; path = ../src/assets/audio/file_example_mp3_700kb.mp3; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-AudioWaveformExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioWaveformExample.debug.xcconfig"; path = "Target Support Files/Pods-AudioWaveformExample/Pods-AudioWaveformExample.debug.xcconfig"; sourceTree = "<group>"; };
-		3D92446673D84104B7DBB5E8 /* file_example_mp3_1mg.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_1mg.mp3; path = ../src/assets/audio/file_example_mp3_1mg.mp3; sourceTree = "<group>"; };
-		4879BE3405234CBFAFAD88DB /* index.ts */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = index.ts; path = ../src/assets/audio/index.ts; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-AudioWaveformExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioWaveformExample.release.xcconfig"; path = "Target Support Files/Pods-AudioWaveformExample/Pods-AudioWaveformExample.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-AudioWaveformExample-AudioWaveformExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioWaveformExample-AudioWaveformExampleTests.debug.xcconfig"; path = "Target Support Files/Pods-AudioWaveformExample-AudioWaveformExampleTests/Pods-AudioWaveformExample-AudioWaveformExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-AudioWaveformExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudioWaveformExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,6 +51,9 @@
 		C2A26BD00D7D401B9804E1AA /* file_example_mp3_15s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_15s.mp3; path = ../src/assets/audio/file_example_mp3_15s.mp3; sourceTree = "<group>"; };
 		D09FCEB6D8A04D349E9422A5 /* file_example_mp3_12s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_12s.mp3; path = ../src/assets/audio/file_example_mp3_12s.mp3; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		4879BE3405234CBFAFAD88DB /* index.ts */ = {isa = PBXFileReference; name = "index.ts"; path = "../src/assets/audio/index.ts"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3D92446673D84104B7DBB5E8 /* file_example_mp3_1mg.mp3 */ = {isa = PBXFileReference; name = "file_example_mp3_1mg.mp3"; path = "../src/assets/audio/file_example_mp3_1mg.mp3"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		2026064602944A9C9A1F84D3 /* file_example_mp3_700kb.mp3 */ = {isa = PBXFileReference; name = "file_example_mp3_700kb.mp3"; path = "../src/assets/audio/file_example_mp3_700kb.mp3"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

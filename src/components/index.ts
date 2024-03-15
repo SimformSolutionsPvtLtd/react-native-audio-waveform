@@ -1,2 +1,2 @@
-export * from './WaveformCandle';
 export * from './Waveform';
+export * from './WaveformCandle';
