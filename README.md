@@ -86,14 +86,14 @@ import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
 const path = ''; // path to the audio file for which you want to show waveform
 const ref = useRef<IWaveformRef>(null);
 <Waveform
-mode="static"
-ref={ref}
-path={item}
-candleSpace={2}
-candleWidth={4}
-scrubColor="white"
-onPlayerStateChange={playerState=>console.log(playerState)}
-onPanStateChange={isMoving=>console.log(isMoving)}
+    mode="static"
+    ref={ref}
+    path={item}
+    candleSpace={2}
+    candleWidth={4}
+    scrubColor="white"
+    onPlayerStateChange={playerState=>console.log(playerState)}
+    onPanStateChange={isMoving=>console.log(isMoving)}
 />;
 ```
 
@@ -108,12 +108,12 @@ import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
 
 const ref = useRef<IWaveformRef>(null);
 <Waveform
-mode="live"
-ref={ref}
-candleSpace={2}
-candleWidth={4}
-onRecorderStateChange={recorderState=>console.log(recorderState)}
-/>;
+    mode="live"
+    ref={ref}
+    candleSpace={2}
+    candleWidth={4}
+    onRecorderStateChange={recorderState => console.log(recorderState)}
+/>
 ```
 
 You can check out the full example at [Example](./example/src/App.tsx).
@@ -140,7 +140,7 @@ You can check out the full example at [Example](./example/src/App.tsx).
 
 ---
 
-#### IWaveformRef methods
+#### IWaveformRef Methods
 
 #### For Static mode
 
@@ -148,7 +148,7 @@ You can check out the full example at [Example](./example/src/App.tsx).
 
 ```ts
 startPlayer({
-finishMode?: FinishMode;
+    finishMode?: FinishMode;
 }): Promise<boolean>
 ```
 
@@ -186,13 +186,13 @@ It returns a boolean indicating whether playback is resumed again.
 
 ```ts
 startRecord({
-encoder:number;
-sampleRate: number;
-bitRate: number;
-fileNameFormat: string;
-useLegacy: boolean;
-updateFrequency?: UpdateFrequency;
-}): Promise<boolean>;
+    encoder:number;
+    sampleRate: number;
+    bitRate: number;
+    fileNameFormat: string;
+    useLegacy: boolean;
+    updateFrequency?: UpdateFrequency;
+}): Promise<boolean>
 ```
 
 Start a new audio recording with the given parameters. It will return whether the recording was started or not.
@@ -248,17 +248,17 @@ By combining this with checkHasAudioRecorderPermission you can ask for permissio
 Check out the following example:
 
 ```ts
-let hasPermission: PermissionStatus = await checkHasAudioRecorderPermission();
+let hasPermission = await checkHasAudioRecorderPermission();
 
 if (hasPermission === PermissionStatus.granted) {
-startRecording();
+    startRecording();
 } else if (hasPermission === PermissionStatus.undetermined) {
-constpermissionStatus = awaitgetAudioRecorderPermission();
-if (permissionStatus === PermissionStatus.granted) {
-startRecording();
-}
+    const permissionStatus = await getAudioRecorderPermission();
+    if (permissionStatus === PermissionStatus.granted) {
+        startRecording();
+    }
 } else {
-Linking.openSettings();
+    Linking.openSettings();
 }
 ```
 
@@ -268,9 +268,9 @@ Linking.openSettings();
 
 ```ts
 enum PlayerState {
-playing = 'playing',
-paused = 'paused',
-stopped = 'stopped',
+    playing = 'playing',
+    paused = 'paused',
+    stopped = 'stopped',
 }
 ```
 
@@ -278,9 +278,9 @@ stopped = 'stopped',
 
 ```ts
 enum RecorderState {
-recording = 'recording',
-paused = 'paused',
-stopped = 'stopped',
+    recording = 'recording',
+    paused = 'paused',
+    stopped = 'stopped',
 }
 ```
 
@@ -289,9 +289,9 @@ stopped = 'stopped',
 ```ts
 // Update frequency in milliseconds
 enum UpdateFrequency {
-high = 250.0,
-medium = 500.0,
-low = 1000.0,
+    high = 250.0,
+    medium = 500.0,
+    low = 1000.0,
 }
 ```
 
@@ -299,9 +299,9 @@ low = 1000.0,
 
 ```ts
 enum PermissionStatus {
-denied = 'denied',
-undetermined = 'undetermined',
-granted = 'granted',
+    denied = 'denied',
+    undetermined = 'undetermined',
+    granted = 'granted',
 }
 ```
 
