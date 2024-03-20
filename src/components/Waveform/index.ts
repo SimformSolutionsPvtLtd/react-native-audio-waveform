@@ -1,2 +1,2 @@
 export * from './Waveform';
-export * from './types';
+export * from './WaveformTypes';

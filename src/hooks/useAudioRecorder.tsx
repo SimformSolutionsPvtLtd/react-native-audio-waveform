@@ -1,26 +1,17 @@
-import { AudioWaveform } from '../audioWaveform';
+import { AudioWaveform } from '../AudioWaveform';
 import type { IStartRecording } from '../types';
 
 export const useAudioRecorder = () => {
-  const startRecording = (args?: Partial<IStartRecording>) => {
-    return AudioWaveform.startRecording(args);
-  };
+  const startRecording = (args?: Partial<IStartRecording>) =>
+    AudioWaveform.startRecording(args);
 
-  const stopRecording = () => {
-    return AudioWaveform.stopRecording();
-  };
+  const stopRecording = () => AudioWaveform.stopRecording();
 
-  const pauseRecording = () => {
-    return AudioWaveform.pauseRecording();
-  };
+  const pauseRecording = () => AudioWaveform.pauseRecording();
 
-  const resumeRecording = () => {
-    return AudioWaveform.resumeRecording();
-  };
+  const resumeRecording = () => AudioWaveform.resumeRecording();
 
-  const getDecibel = () => {
-    return AudioWaveform.getDecibel();
-  };
+  const getDecibel = () => AudioWaveform.getDecibel();
 
   return {
     getDecibel,

@@ -81,7 +81,7 @@ const styles = (params: StyleSheetParams = {}) =>
     buttonImageLive: {
       height: '100%',
       width: '100%',
-      tintColor: Colors.simformPink,
+      tintColor: Colors.pink,
     },
     simformImageContainer: {
       alignItems: 'center',

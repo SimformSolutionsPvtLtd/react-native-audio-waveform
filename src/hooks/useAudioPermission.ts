@@ -1,21 +1,16 @@
-import { AudioWaveform } from '../audioWaveform';
+import { AudioWaveform } from '../AudioWaveform';
 
 export const useAudioPermission = () => {
-  const checkHasAudioRecorderPermission = () => {
-    return AudioWaveform.checkHasAudioRecorderPermission();
-  };
+  const checkHasAudioRecorderPermission = () =>
+    AudioWaveform.checkHasAudioRecorderPermission();
 
-  const getAudioRecorderPermission = () => {
-    return AudioWaveform.getAudioRecorderPermission();
-  };
+  const getAudioRecorderPermission = () =>
+    AudioWaveform.getAudioRecorderPermission();
 
-  const checkHasAudioReadPermission = () => {
-    return AudioWaveform.checkHasAudioReadPermission();
-  };
+  const checkHasAudioReadPermission = () =>
+    AudioWaveform.checkHasAudioReadPermission();
 
-  const getAudioReadPermission = () => {
-    return AudioWaveform.getAudioReadPermission();
-  };
+  const getAudioReadPermission = () => AudioWaveform.getAudioReadPermission();
 
   return {
     checkHasAudioRecorderPermission,

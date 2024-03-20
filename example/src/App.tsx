@@ -16,8 +16,7 @@ import {
 } from 'react-native';
 import {
   FinishMode,
-  IPlayWaveformRef,
-  IRecordWaveformRef,
+  IWaveformRef,
   PermissionStatus,
   PlayerState,
   RecorderState,
@@ -47,7 +46,7 @@ const ListItem = React.memo(
     setCurrentPlaying: Dispatch<SetStateAction<string>>;
     onPanStateChange: (value: boolean) => void;
   }) => {
-    const ref = useRef<IPlayWaveformRef>(null);
+    const ref = useRef<IWaveformRef>(null);
     const [playerState, setPlayerState] = useState(PlayerState.stopped);
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
 
@@ -88,7 +87,7 @@ const ListItem = React.memo(
                 resizeMode="contain"
               />
             </Pressable>
-            <Waveform<'static'>
+            <Waveform
               containerStyle={styles.staticWaveformView}
               mode="static"
               key={item.path}
@@ -113,7 +112,7 @@ const LivePlayerComponent = ({
 }: {
   setList: Dispatch<SetStateAction<ListItem[]>>;
 }) => {
-  const ref = useRef<IRecordWaveformRef>(null);
+  const ref = useRef<IWaveformRef>(null);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
   const styles = stylesheet();
   const { checkHasAudioRecorderPermission, getAudioRecorderPermission } =
@@ -151,13 +150,13 @@ const LivePlayerComponent = ({
 
   return (
     <View style={styles.liveWaveformContainer}>
-      <Waveform<'live'>
+      <Waveform
         mode="live"
         containerStyle={styles.liveWaveformView}
         ref={ref}
         candleSpace={2}
         candleWidth={2}
-        waveColor={Colors.simformPink}
+        waveColor={Colors.pink}
         onRecorderStateChange={setRecorderState}
       />
       <Pressable

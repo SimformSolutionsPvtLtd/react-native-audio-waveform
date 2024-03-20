@@ -1,7 +1,7 @@
 {
   "name": "react-native-audio-waveform",
-  "version": "0.0.1",
-  "description": "A React Native component to show audio waveform",
+  "version": "1.0.0",
+  "description": "A React Native component to show audio waveform with ease in react native application",
   "main": "lib/index",
   "types": "lib/index.d.ts",
   "contributors": [],
@@ -15,7 +15,15 @@
     "react",
     "react-native",
     "typescript",
-    "rn"
+    "rn",
+    "audio",
+    "waveform",
+    "audio-waveform",
+    "react-native-audio-waveform",
+    "react-native-audio",
+    "react-native-waveform",
+    "audio-chat",
+    "chat-audio"
   ],
   "license": "MIT",
   "files": [
@@ -27,7 +35,7 @@
   "scripts": {
     "prepare": "husky install && yarn build",
     "clean": "rm -rf node_modules",
-    "build": "rm -rf lib && tsc -p . && cp -R ./src/assets ./lib/ ",
+    "build": "rm -rf lib && tsc -p .",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' -c .eslintrc --fix ",
     "build:local": "yarn build && yarn pack",

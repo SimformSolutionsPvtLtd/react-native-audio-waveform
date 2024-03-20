@@ -1,1 +1,1 @@
-export * from './audioWaveformType';
+export * from './AudioWaveformTypes';

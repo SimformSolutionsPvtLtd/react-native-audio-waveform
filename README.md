@@ -1,3 +1,4 @@
+
 ![Audio Waveform - Simform](./assets/react_native_audiowave.gif)
 
 # react-native-audio-waveform
@@ -12,9 +13,9 @@ A React Native package featuring native modules for generating and rendering aud
 
 ## 🎬 Preview
 
-| Audio Playback Waveform                                                                                                                                                                  | Audio Record Waveform                                                                                                                                                                |
+| Audio Playback Waveform | Audio Record Waveform |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;"  height="640px;" alt="AudioPlaybackWaveform" src="./assets/audio_playback.gif"> </a> | <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;"  height="640px;" alt="AudioRecordWaveform" src="./assets/audio_record.gif"> </a> |
+| <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;" height="640px;" alt="AudioPlaybackWaveform" src="./assets/audio_playback.gif"> </a> | <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;" height="640px;" alt="AudioRecordWaveform" src="./assets/audio_record.gif"> </a> |
 
 ## Quick Access
 
@@ -42,7 +43,7 @@ npm install react-native-audio-waveform react-native-gesture-handler
 yarn add react-native-audio-waveform react-native-gesture-handler
 ```
 
-##### 2. Install cocoapods in the ios project
+##### 2. Install CocoaPods in the iOS project
 
 ```bash
 npx pod-install
@@ -50,13 +51,13 @@ npx pod-install
 
 ##### Know more about [react-native-gesture-handler](https://www.npmjs.com/package/react-native-gesture-handler)
 
-##### 3. Add Audio Recording Permissions
+##### 3. Add audio recording permissions
 
 ##### iOS
 
-If you want to use recorder features in iOS, you have to add **NSMicrophoneUsageDescription** permission in info.plist and add description based on your use-case.
+If you want to use recorder features in iOS, you have to add **NSMicrophoneUsageDescription** permission in info.plist and add a description based on your use case.
 
-Here is a sample for info.plist permission and description
+Here is a sample for info.plist permission and a description.
 
 ```
 <key>NSMicrophoneUsageDescription</key>
@@ -65,7 +66,7 @@ Here is a sample for info.plist permission and description
 
 ##### Android
 
-If you want to use recorder features in Android, you have to add **RECORD_AUDIO** permission in AndroidManifest.xml
+If you want to use recorder features in Android, you have to add **RECORD_AUDIO** permission in AndroidManifest.xml.
 
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -75,85 +76,85 @@ If you want to use recorder features in Android, you have to add **RECORD_AUDIO*
 
 #### 1. Static waveform
 
-When you want to show a waveform for pre-existing audio file you need to use `static` mode for the waveform. We have provided type safety for forward ref so that if you pass the `static` mode then you can only assign ref type of `IPlayWaveformRef` to the waveform.
+When you want to show a waveform for a pre-existing audio file, you need to use `static` mode for the waveform. We have provided type safety for forward ref so that if you pass the `static` mode then you can only access methods which are available for static mode other methods will reject promise.
 
-Check below example for more information.
+Check the example below for more information.
 
 ```tsx
-import { Waveform, type IPlayWaveformRef } from 'react-native-audio-waveform';
+import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
 
 const path = ''; // path to the audio file for which you want to show waveform
-const ref = useRef<IPlayWaveformRef>(null);
-<Waveform<'static'>
-  mode="static"
-  ref={ref}
-  path={item}
-  candleSpace={2}
-  candleWidth={4}
-  scrubColor="white"
-  onPlayerStateChange={playerState => console.log(playerState)}
-  onPanStateChange={isMoving => console.log(isMoving)}
+const ref = useRef<IWaveformRef>(null);
+<Waveform
+mode="static"
+ref={ref}
+path={item}
+candleSpace={2}
+candleWidth={4}
+scrubColor="white"
+onPlayerStateChange={playerState=>console.log(playerState)}
+onPanStateChange={isMoving=>console.log(isMoving)}
 />;
 ```
 
 #### 2. Live recording waveform
 
-When you want to record a audio and show waveform for that recording, you need to create waveform with `live` mode. Same as `static` mode we have type safety for ref. You can only provide `IRecordWaveformRef` to `live` mode waveform.
+When you want to record audio and show a waveform for that recording, you need to create a waveform with `live` mode. Same as `static` mode, we have safety for ref methods.
 
-Check below example for more information.
+Check the example below for more information.
 
 ```tsx
-import { Waveform, type IRecordWaveformRef } from 'react-native-audio-waveform';
+import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
 
-const ref = useRef<IRecordWaveformRef>(null);
-<Waveform<'live'>
-  mode="live"
-  ref={ref}
-  candleSpace={2}
-  candleWidth={4}
-  onRecorderStateChange={recorderState => console.log(recorderState)}
+const ref = useRef<IWaveformRef>(null);
+<Waveform
+mode="live"
+ref={ref}
+candleSpace={2}
+candleWidth={4}
+onRecorderStateChange={recorderState=>console.log(recorderState)}
 />;
 ```
 
-you can check full example at [Example](./example/src/App.tsx).
+You can check out the full example at [Example](./example/src/App.tsx).
 
 ---
 
 ## Properties
 
-| **Props**             | **defult** | **Available for** | **type**                                  | **description**                                                                                                                                                                                                                                                                                                                                              |
-| --------------------- | ---------- | ----------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| mode\*                | -          | both              | 'live' or 'static'                        | Type of waveform. It can be either `static` for resources file or `live` if you want to record audio                                                                                                                                                                                                                                                         |
-| ref\*                 | -          | both              | IPlayWaveformRef or IRecordWaveformRef    | Type of ref provided to waveform component. If waveform mode is `static`, ref type must be `IPlayWaveformRef` and if waveform mode is `live`, ref type must be `IRecordWaveformRef`.<br> Check [IPlayWaveformRef](#iplaywaveformref-methods) and [IRecordWaveformRef](#irecordwaveformref-methods) for more details about which methods these refs provides. |
-| path\*                | -          | static            | string                                    | Used for `static` type. It is resource path of audio source file.                                                                                                                                                                                                                                                                                            |
-| candleSpace           | 2          | both              | number                                    | Space between two candlestick of waveform                                                                                                                                                                                                                                                                                                                    |
-| candleWidth           | 5          | both              | number                                    | Width of single candlestick of waveform                                                                                                                                                                                                                                                                                                                      |
-| containerStyle        | -          | both              | `StyleProp<ViewStyle>`                    | style of the container                                                                                                                                                                                                                                                                                                                                       |
-| waveColor             | #545454    | both              | string                                    | colour of candlestick of waveform                                                                                                                                                                                                                                                                                                                            |
-| scrubColor            | #7b7b7b    | static            | string                                    | colour of candlestick of waveform which has played                                                                                                                                                                                                                                                                                                           |
-| onPlayerStateChange   | -          | static            | ( playerState : PlayerState ) => void     | callback function which returns player state whenever player state changes.                                                                                                                                                                                                                                                                                  |
-| onPanStateChange      | -          | static            | ( panMoving : boolean ) => void           | callback function which returns boolean indicating whether pan gesture is active or not.                                                                                                                                                                                                                                                                     |
-| onRecorderStateChange | -          | live              | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details                                                                                                                                                                                                                                 |
+| **Props** | **Default** | **Static Mode** | **Live Mode** | **Type** | **Description** |
+| --------------------- | ---------- | --------------- | ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| mode\* | - | ✅ | ✅ | 'live' or 'static' | Type of waveform. It can be either `static` for the resource file or `live` if you want to record audio |
+| ref\* | - | ✅ | ✅ | IWaveformRef | Type of ref provided to waveform component. If waveform mode is `static`, some methods from ref will throw error and same for `live`.<br> Check [IWaveformRef](#iwaveformref-methods) for more details about which methods these refs provides. |
+| path\* | - | ✅ | ❌ | string | Used for `static` type. It is the resource path of an audio source file. |
+| candleSpace | 2 | ✅ | ✅ | number | Space between two candlesticks of waveform |
+| candleWidth | 5 | ✅ | ✅ | number | Width of single candlestick of waveform |
+| containerStyle | - | ✅ | ✅ | `StyleProp<ViewStyle>` | style of the container |
+| waveColor | #545454 | ✅ | ✅ | string | color of candlestick of waveform |
+| scrubColor | #7b7b7b | ✅ | ❌ | string | color of candlestick of waveform which has played |
+| onPlayerStateChange | - | ✅ | ❌ | ( playerState : PlayerState ) => void | callback function, which returns player state whenever player state changes. |
+| onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether pan gesture is active or not. |
+| onRecorderStateChange | - | ❌ | ✅ | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)
 
 ---
 
-### Methods
+#### IWaveformRef methods
 
-#### IPlayWaveformRef methods
+#### For Static mode
 
 #### startPlayer()
 
 ```ts
 startPlayer({
-  finishMode?: FinishMode;
+finishMode?: FinishMode;
 }): Promise<boolean>
 ```
 
-starts playing the audio with the specified finish mode. If finish mode is not specified it will defaults to `FinishMode.stop`.
+starts playing the audio with the specified finish mode. If finish mode is not specified, it will default to `FinishMode.stop`.
 
-It returns boolean indicating whether playback is started.
+It returns a boolean indicating whether playback is started.
 
 #### stopPlayer()
 
@@ -161,7 +162,7 @@ It returns boolean indicating whether playback is started.
 stopPlayer(): Promise<boolean>
 ```
 
-It returns boolean indicating whether playback is stopped.
+It returns a boolean indicating whether playback is stopped.
 
 #### pausePlayer()
 
@@ -169,7 +170,7 @@ It returns boolean indicating whether playback is stopped.
 pausePlayer(): Promise<boolean>
 ```
 
-It returns boolean indicating whether playback is paused.
+It returns a boolean indicating whether playback is paused.
 
 #### resumePlayer()
 
@@ -177,28 +178,28 @@ It returns boolean indicating whether playback is paused.
 resumePlayer(): Promise<boolean>
 ```
 
-It returns boolean indicating whether playback is resumed again.
+It returns a boolean indicating whether playback is resumed again.
 
-#### IRecordWaveformRef methods
+#### For Live mode
 
 #### startRecord()
 
 ```ts
 startRecord({
-  encoder: number;
-  sampleRate: number;
-  bitRate: number;
-  fileNameFormat: string;
-  useLegacy: boolean;
-  updateFrequency?: UpdateFrequency;
+encoder:number;
+sampleRate: number;
+bitRate: number;
+fileNameFormat: string;
+useLegacy: boolean;
+updateFrequency?: UpdateFrequency;
 }): Promise<boolean>;
 ```
 
-Start a new audio recording with given parameters. It will return the if recording was started or not.
+Start a new audio recording with the given parameters. It will return whether the recording was started or not.
 
 Check [UpdateFrequency](#updatefrequency) to know more.
 
-> Note: Before starting the recording, User must have to allow **NSMicrophoneUsageDescription** for iOS. You can check the permissions by using **_checkHasAudioRecorderPermission_** from **_useAudioPermission_**. Check [useAudioPermission](#useaudiopermission-hook) to know more about various methods.
+> Note: Before starting the recording, the user must allow **NSMicrophoneUsageDescription** for iOS. You can check the permissions by using **_checkHasAudioRecorderPermission_** from **_useAudioPermission_**. Check [useAudioPermission](#useaudiopermission-hook) to know more about various methods.
 
 #### stopRecord()
 
@@ -206,7 +207,7 @@ Check [UpdateFrequency](#updatefrequency) to know more.
 stopRecord(): Promise<string>
 ```
 
-It returns string representing the current recorded audio file path.
+It returns a string representing the current recorded audio file path.
 
 #### pauseRecord()
 
@@ -214,7 +215,7 @@ It returns string representing the current recorded audio file path.
 pauseRecord(): Promise<boolean>
 ```
 
-It returns boolean indicating whether recording is paused.
+It returns a boolean indicating whether the recording is paused.
 
 #### resumeRecord()
 
@@ -222,17 +223,17 @@ It returns boolean indicating whether recording is paused.
 resumeRecord(): Promise<boolean>
 ```
 
-It returns boolean indicating whether recording is resumed again.
+It returns a boolean indicating whether the recording is resumed again.
 
 ### useAudioPermission hook
 
-By using this hook you can check and ask for permission from user for **NSMicrophoneUsageDescription** permission.
+By using this hook, you can check and ask for permission from the user for **NSMicrophoneUsageDescription** permission.
 
 #### checkHasAudioRecorderPermission()
 
-This method checks whether user has permission to use Microphone for recording new audio. It will return [PermissionStatus](#permissionstatus).
+This method checks whether the user has permission to use a microphone for recording new audio. It will return [PermissionStatus](#permissionstatus).
 
-you can use this method as shown below:
+You can use this method as shown below:
 
 ```ts
 const hasPermission: PermissionStatus = await checkHasAudioRecorderPermission();
@@ -240,24 +241,24 @@ const hasPermission: PermissionStatus = await checkHasAudioRecorderPermission();
 
 #### getAudioRecorderPermission()
 
-This method lets you ask for **NSMicrophoneUsageDescription** permission from user. It will return PermissionStatus.
+This method lets you ask for **NSMicrophoneUsageDescription** permission from the user. It will return PermissionStatus.
 
-By combining this and checkHasAudioRecorderPermission you can ask for permission and start recording if permission is granted.
+By combining this with checkHasAudioRecorderPermission you can ask for permission and start recording if permission is granted.
 
-Check the following example for example:
+Check out the following example:
 
 ```ts
 let hasPermission: PermissionStatus = await checkHasAudioRecorderPermission();
 
 if (hasPermission === PermissionStatus.granted) {
-  startRecording();
+startRecording();
 } else if (hasPermission === PermissionStatus.undetermined) {
-  const permissionStatus = await getAudioRecorderPermission();
-  if (permissionStatus === PermissionStatus.granted) {
-    startRecording();
-  }
+constpermissionStatus = awaitgetAudioRecorderPermission();
+if (permissionStatus === PermissionStatus.granted) {
+startRecording();
+}
 } else {
-  Linking.openSettings();
+Linking.openSettings();
 }
 ```
 
@@ -267,9 +268,9 @@ if (hasPermission === PermissionStatus.granted) {
 
 ```ts
 enum PlayerState {
-  playing = 'playing',
-  paused = 'paused',
-  stopped = 'stopped',
+playing = 'playing',
+paused = 'paused',
+stopped = 'stopped',
 }
 ```
 
@@ -277,9 +278,9 @@ enum PlayerState {
 
 ```ts
 enum RecorderState {
-  recording = 'recording',
-  paused = 'paused',
-  stopped = 'stopped',
+recording = 'recording',
+paused = 'paused',
+stopped = 'stopped',
 }
 ```
 
@@ -288,9 +289,9 @@ enum RecorderState {
 ```ts
 // Update frequency in milliseconds
 enum UpdateFrequency {
-  high = 250.0,
-  medium = 500.0,
-  low = 1000.0,
+high = 250.0,
+medium = 500.0,
+low = 1000.0,
 }
 ```
 
@@ -298,9 +299,9 @@ enum UpdateFrequency {
 
 ```ts
 enum PermissionStatus {
-  denied = 'denied',
-  undetermined = 'undetermined',
-  granted = 'granted',
+denied = 'denied',
+undetermined = 'undetermined',
+granted = 'granted',
 }
 ```
 
@@ -308,29 +309,29 @@ enum PermissionStatus {
 
 ## Example
 
-you check out the example app for react-native-audio-waveform in [Example](./example/src/App.tsx)
+You can check out the example app for react-native-audio-waveform in [Example](./example/src/App.tsx)
 
-To use example app you need to first run below
+To use example app you need to first run below command
 
 ```bash
 cd example && npx react-native-asset
 ```
 
-This command will our example audio sample files to iOS bundle so that we can access them inside iOS app.
+This command will add our example audio sample files to the iOS bundle so that we can access them inside the iOS app.
 
 ```sh
 yarn
-yarn example ios   // For iOS
-yarn example android   // For Android
+yarn example ios // For iOS
+yarn example android // For Android
 ```
 
 ## Find this library useful? ❤️
 
 Support it by joining [stargazers](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/stargazers) for this repository.⭐
 
-## Bugs / Feature requests / Feedbacks
+## Bugs / Feature requests / Feedback
 
-For bugs, feature requests, and discussion please use [GitHub Issues](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=bug&late=BUG_REPORT.md&title=%5BBUG%5D%3A), [GitHub New Feature](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=enhancement&late=FEATURE_REQUEST.md&title=%5BFEATURE%5D%3A), [GitHub Feedback](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=enhancement&late=FEATURE_REQUEST.md&title=%5BFEEDBACK%5D%3A)
+For bugs, feature requests, and discussion, please use [GitHub Issues](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=bug&late=BUG_REPORT.md&title=%5BBUG%5D%3A), [GitHub New Feature](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=enhancement&late=FEATURE_REQUEST.md&title=%5BFEATURE%5D%3A), [GitHub Feedback](https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform/issues/new?labels=enhancement&late=FEATURE_REQUEST.md&title=%5BFEEDBACK%5D%3A)
 
 ## 🤝 How to Contribute
 

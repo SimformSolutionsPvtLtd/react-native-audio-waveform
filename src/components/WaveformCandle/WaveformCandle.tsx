@@ -1,8 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Colors } from '../../theme';
-import styles from './styles';
-import type { IWaveformCandle } from './types';
+import styles from './WaveformCandleStyles';
+import type { IWaveformCandle } from './WaveformCandleTypes';
 
 export const WaveformCandle = ({
   index,
