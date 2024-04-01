@@ -133,8 +133,9 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | waveColor | #545454 | ✅ | ✅ | string | color of candlestick of waveform |
 | scrubColor | #7b7b7b | ✅ | ❌ | string | color of candlestick of waveform which has played |
 | onPlayerStateChange | - | ✅ | ❌ | ( playerState : PlayerState ) => void | callback function, which returns player state whenever player state changes. |
-| onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether pan gesture is active or not. |
+| onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether audio seeking is active or not. |
 | onRecorderStateChange | - | ❌ | ✅ | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details |
+| onError | - | ✅ | ❌ | ( error : Error ) => void | callback function which returns the error for static audio waveform |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)
 
