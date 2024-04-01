@@ -99,6 +99,9 @@ const ListItem = React.memo(
               waveColor={Colors.gray}
               onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
+              onError={error => {
+                console.log(error, 'we are in example');
+              }}
             />
           </ImageBackground>
         </View>

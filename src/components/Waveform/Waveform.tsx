@@ -49,6 +49,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onPlayerStateChange,
     onRecorderStateChange,
     onPanStateChange,
+    onError,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -128,6 +129,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     } catch (err) {
       console.error(err);
+      (onError as Function)(err);
     }
   };
 
@@ -148,9 +150,13 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           }
         }
       } catch (err) {
+        (onError as Function)(err);
         console.error(err);
       }
     } else {
+      (onError as Function)(
+        `Can not find waveform for mode ${mode} path: ${path}`
+      );
       console.error(`Can not find waveform for mode ${mode} path: ${path}`);
     }
   };
