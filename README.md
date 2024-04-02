@@ -3,7 +3,7 @@
 
 # react-native-audio-waveform
 
-[![react-native-audio-waveform on npm](https://img.shields.io/npm/v/react-native-audio-waveform.svg?&logo=npm&logoColor=white&color=red&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmjs.com/package/react-native-audio-waveform) [![react-native-audio-waveform downloads](https://img.shields.io/npm/dm/react-native-audio-waveform?&logo=npm&logoColor=white&color=blue&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmtrends.com/react-native-audio-waveform) [![react-native-audio-waveform install size](https://packagephobia.com/badge?p=react-native-audio-waveform?&icon=disk&logoColor=white&color=yellow&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://packagephobia.com/result?p=react-native-audio-waveform) [![Android](https://img.shields.io/badge/Platform-Android-green?logo=android&logoColor=white&labelColor=grey)](https://www.android.com) [![iOS](https://img.shields.io/badge/Platform-iOS-green?logo=apple&logoColor=white&labelColor=grey)](https://developer.apple.com/ios) [![MIT](https://img.shields.io/badge/License-MIT-green&labelColor=grey)](https://opensource.org/licenses/MIT)
+[![react-native-audio-waveform on npm](https://img.shields.io/npm/v/@simform_solutions/react-native-audio-waveform.svg?&logo=npm&logoColor=white&color=red&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmjs.com/package/@simform_solutions/react-native-audio-waveform) [![react-native-audio-waveform downloads](https://img.shields.io/npm/dm/@simform_solutions/react-native-audio-waveform?&logo=npm&logoColor=white&color=blue&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://www.npmtrends.com/@simform_solutions/react-native-audio-waveform) [![react-native-audio-waveform install size](https://packagephobia.com/badge?p=@simform_solutions/react-native-audio-waveform?&icon=disk&logoColor=white&color=yellow&labelColor=grey&cacheSeconds=3600&maxAge=86400)](https://packagephobia.com/result?p=@simform_solutions/react-native-audio-waveform) [![Android](https://img.shields.io/badge/Platform-Android-green?logo=android&logoColor=white&labelColor=grey)](https://www.android.com) [![iOS](https://img.shields.io/badge/Platform-iOS-green?logo=apple&logoColor=white&labelColor=grey)](https://developer.apple.com/ios) [![MIT](https://img.shields.io/badge/License-MIT-green&labelColor=grey)](https://opensource.org/licenses/MIT)
 
 ---
 
@@ -34,13 +34,13 @@ Here's how to get started with react-native-audio-waveform in your React Native 
 ##### 1. Install the package
 
 ```sh
-npm install react-native-audio-waveform react-native-gesture-handler
+npm install @simform_solutions/react-native-audio-waveform react-native-gesture-handler
 ```
 
 ###### --- or ---
 
 ```sh
-yarn add react-native-audio-waveform react-native-gesture-handler
+yarn add @simform_solutions/react-native-audio-waveform react-native-gesture-handler
 ```
 
 ##### 2. Install CocoaPods in the iOS project
@@ -81,7 +81,7 @@ When you want to show a waveform for a pre-existing audio file, you need to use 
 Check the example below for more information.
 
 ```tsx
-import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
+import { Waveform, type IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
 
 const path = ''; // path to the audio file for which you want to show waveform
 const ref = useRef<IWaveformRef>(null);
@@ -104,7 +104,7 @@ When you want to record audio and show a waveform for that recording, you need t
 Check the example below for more information.
 
 ```tsx
-import { Waveform, type IWaveformRef } from 'react-native-audio-waveform';
+import { Waveform, type IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
 
 const ref = useRef<IWaveformRef>(null);
 <Waveform
