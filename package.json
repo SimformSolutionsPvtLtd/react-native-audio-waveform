@@ -1,5 +1,5 @@
 {
-  "name": "react-native-audio-waveform",
+  "name": "@simform_solutions/react-native-audio-waveform",
   "version": "1.0.0",
   "description": "A React Native component to show audio waveform with ease in react native application",
   "main": "lib/index",

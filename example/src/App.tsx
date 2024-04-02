@@ -23,7 +23,7 @@ import {
   UpdateFrequency,
   Waveform,
   useAudioPermission,
-} from 'react-native-audio-waveform';
+} from '@simform_solutions/react-native-audio-waveform';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
