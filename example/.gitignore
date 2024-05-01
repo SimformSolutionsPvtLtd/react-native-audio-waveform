@@ -21,6 +21,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 ios/.xcode.env.local
+ios/link-assets-manifest.json
 
 # Android/IntelliJ
 #
@@ -31,6 +32,7 @@ local.properties
 *.iml
 *.hprof
 .cxx/
+android/link-assets-manifest.json
 
 # node.js
 #

@@ -320,6 +320,8 @@ To use example app you need to first run below command
 cd example && npx react-native-asset
 ```
 
+> Note: If link-assets-manifest.json file already exists then make sure to delete that before running npx react-native-asset command.
+
 This command will add our example audio sample files to the iOS bundle so that we can access them inside the iOS app.
 
 ```sh
