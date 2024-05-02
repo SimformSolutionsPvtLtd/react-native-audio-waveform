@@ -97,10 +97,19 @@ const ListItem = React.memo(
               candleWidth={4}
               scrubColor={Colors.white}
               waveColor={Colors.gray}
+              candleHeightScale={4}
               onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
+              }}
+              onCurrentProgressChange={(currentProgress, songDuration) => {
+                console.log(
+                  'currentProgress ',
+                  currentProgress,
+                  'songDuration ',
+                  songDuration
+                );
               }}
             />
           </ImageBackground>

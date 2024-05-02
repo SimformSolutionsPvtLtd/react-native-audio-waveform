@@ -10,6 +10,7 @@ interface BaseWaveform {
   containerStyle?: StyleProp<ViewStyle>;
   waveColor?: string;
   mode: StaticOrLive;
+  candleHeightScale?: number;
 }
 
 export interface StaticWaveform extends BaseWaveform {
@@ -19,6 +20,10 @@ export interface StaticWaveform extends BaseWaveform {
   onPlayerStateChange?: (playerState: PlayerState) => void;
   onPanStateChange?: (panMoving: boolean) => void;
   onError?: (error: string) => void;
+  onCurrentProgressChange?: (
+    currentProgress: number,
+    songDuration: number
+  ) => void;
 }
 
 export interface LiveWaveform extends BaseWaveform {

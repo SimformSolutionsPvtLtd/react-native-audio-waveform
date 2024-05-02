@@ -15,6 +15,7 @@ export const WaveformCandle = ({
   currentProgress = 0,
   waveColor,
   scrubColor,
+  candleHeightScale
 }: IWaveformCandle) => {
   const maxHeight = (parentViewLayout?.height ?? 0) - 10;
   const completedIndex = (currentProgress / songDuration) * noOfSamples;
@@ -42,7 +43,7 @@ export const WaveformCandle = ({
             width: candleWidth,
             marginRight: candleSpace,
             maxHeight,
-            height: amplitude * maxHeight * 3, // Adjust the height scale as needed
+            height: amplitude * maxHeight * candleHeightScale, // Adjust the height scale as needed
             minHeight: candleWidth,
             borderRadius: candleWidth,
           },

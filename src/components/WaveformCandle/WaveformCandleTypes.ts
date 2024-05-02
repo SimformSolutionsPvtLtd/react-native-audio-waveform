@@ -11,4 +11,5 @@ export interface IWaveformCandle {
   parentViewLayout: LayoutRectangle | null;
   waveColor?: string;
   scrubColor?: string;
+  candleHeightScale: number;
 }
