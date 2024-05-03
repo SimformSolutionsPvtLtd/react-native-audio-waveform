@@ -137,6 +137,7 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether audio seeking is active or not. |
 | onRecorderStateChange | - | ❌ | ✅ | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details |
 | onCurrentProgressChange | - | ✅ | ❌ | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration. |
+| onChangeWaveformLoadState | - | ✅ | ❌ | ( state : boolean ) => void | callback function which returns the loading state of waveform candlestick. |
 | onError | - | ✅ | ❌ | ( error : Error ) => void | callback function which returns the error for static audio waveform |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)

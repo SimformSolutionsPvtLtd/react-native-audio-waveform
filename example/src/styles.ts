@@ -87,6 +87,9 @@ const styles = (params: StyleSheetParams = {}) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    loadingText: {
+      color: Colors.black,
+    },
   });
 
 export default styles;
