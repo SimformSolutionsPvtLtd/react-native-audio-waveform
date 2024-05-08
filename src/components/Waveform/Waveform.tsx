@@ -50,6 +50,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onRecorderStateChange,
     onPanStateChange,
     onError,
+    onCurrentProgressChange,
+    candleHeightScale = 3
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -471,6 +473,12 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     })
   ).current;
 
+  useEffect(() => {
+    if (!isNil(onCurrentProgressChange)) {
+      (onCurrentProgressChange as Function)(currentProgress, songDuration);
+    }
+  }, [currentProgress, songDuration]);
+
   useImperativeHandle(ref, () => ({
     startPlayer: startPlayerAction,
     stopPlayer: stopPlayerAction,
@@ -512,6 +520,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
                 currentProgress,
                 waveColor,
                 scrubColor,
+                candleHeightScale
               }}
             />
           ))}
