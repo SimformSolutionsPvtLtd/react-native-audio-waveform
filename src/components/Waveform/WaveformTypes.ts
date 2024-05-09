@@ -24,6 +24,7 @@ export interface StaticWaveform extends BaseWaveform {
     currentProgress: number,
     songDuration: number
   ) => void;
+  onChangeWaveformLoadState?: (state: boolean) => void;
 }
 
 export interface LiveWaveform extends BaseWaveform {

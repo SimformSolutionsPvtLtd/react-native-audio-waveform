@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   Linking,
@@ -49,6 +50,7 @@ const ListItem = React.memo(
     const ref = useRef<IWaveformRef>(null);
     const [playerState, setPlayerState] = useState(PlayerState.stopped);
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleButtonAction = () => {
       if (playerState === PlayerState.stopped) {
@@ -77,15 +79,22 @@ const ListItem = React.memo(
             }
             style={[styles.buttonContainer]}>
             <Pressable
+              disabled={isLoading}
               onPress={handleButtonAction}
               style={styles.playBackControlPressable}>
-              <Image
-                source={
-                  playerState === PlayerState.stopped ? Icons.play : Icons.stop
-                }
-                style={styles.buttonImage}
-                resizeMode="contain"
-              />
+              {isLoading ? (
+                <ActivityIndicator color={'#FF0000'} />
+              ) : (
+                <Image
+                  source={
+                    playerState === PlayerState.stopped
+                      ? Icons.play
+                      : Icons.stop
+                  }
+                  style={styles.buttonImage}
+                  resizeMode="contain"
+                />
+              )}
             </Pressable>
             <Waveform
               containerStyle={styles.staticWaveformView}
@@ -110,6 +119,9 @@ const ListItem = React.memo(
                   'songDuration ',
                   songDuration
                 );
+              }}
+              onChangeWaveformLoadState={state => {
+                setIsLoading(state);
               }}
             />
           </ImageBackground>
