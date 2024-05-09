@@ -43,7 +43,7 @@ export const WaveformCandle = ({
             width: candleWidth,
             marginRight: candleSpace,
             maxHeight,
-            height: amplitude * maxHeight * candleHeightScale, // Adjust the height scale as needed
+            height: (isNaN(amplitude) ? 0 : amplitude) * maxHeight * candleHeightScale, // Adjust the height scale as needed
             minHeight: candleWidth,
             borderRadius: candleWidth,
           },

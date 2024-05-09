@@ -47,27 +47,28 @@ class AudioPlayer(
                         }
                     }
                     if (state == Player.STATE_ENDED) {
-                        val args: MutableMap<String, Any?> = HashMap()
+                        val args: WritableMap = Arguments.createMap()
                         when (finishMode) {
                             FinishMode.Loop -> {
                                 player.seekTo(0)
                                 player.play()
-                                args[Constants.finishType] = 0
+                                args.putInt(Constants.finishType, 0)
                             }
                             FinishMode.Pause -> {
                                 player.seekTo(0)
                                 player.playWhenReady = false
                                 stopListening()
-                                args[Constants.finishType] = 1
+                                args.putInt(Constants.finishType, 1)
                             }
                             else -> {
                                 player.stop()
                                 player.release()
                                 stopListening()
-                                args[Constants.finishType] = 2
+                                args.putInt(Constants.finishType, 2)
                             }
                         }
-                        args[Constants.playerKey] = key
+                        args.putString(Constants.playerKey, key)
+                        appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
                     }
                 }
             }
