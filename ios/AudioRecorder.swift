@@ -34,10 +34,11 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       AVFormatIDKey: getEncoder(encoder ?? 0),
       AVSampleRateKey: sampleRate ?? 44100,
       AVNumberOfChannelsKey: 1,
-      AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+      AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
+      AVEncoderBitRateKey: bitRate ?? 128000
     ]
     let settingsWithBitrate = [
-      AVEncoderBitRateKey: bitRate,
+      AVEncoderBitRateKey: bitRate ?? 128000,
       AVFormatIDKey: getEncoder(encoder ?? 0),
       AVSampleRateKey: sampleRate ?? 44100,
       AVNumberOfChannelsKey: 1,

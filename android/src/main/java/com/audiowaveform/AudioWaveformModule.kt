@@ -237,10 +237,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             key = playerKey,
             extractorCallBack = object : ExtractorCallBack {
                 override fun onProgress(value: Float) {
-                    if (value == 1.0F) {
-                        val tempArrayForCommunication : MutableList<MutableList<Float>> = mutableListOf()
-                        extractors[playerKey]?.sampleData?.let { tempArrayForCommunication.add(it) }
-                        promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                     if (value == 1.0F) {
+                        extractors[playerKey]?.sampleData?.let { data ->
+                            val normalizedData = normalizeWaveformData(data, 0.12f)
+                            val tempArrayForCommunication: MutableList<MutableList<Float>> = mutableListOf(normalizedData)
+                            promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                        }
                     }
                 }
             },
@@ -248,6 +250,16 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         )
         extractors[playerKey]?.startDecode()
         extractors[playerKey]?.stop()
+    }
+
+    private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {
+        val filteredData = data.filter { kotlin.math.abs(it) >= threshold }
+        val maxAmplitude = filteredData.maxOrNull() ?: 1.0f
+        return if (maxAmplitude > 0) {
+            data.map { if (kotlin.math.abs(it) < threshold) 0.0f else (it / maxAmplitude) * scale }.toMutableList()
+        } else {
+            data
+        }
     }
 
     private fun getUpdateFrequency(frequency: Int?): UpdateFrequency {
