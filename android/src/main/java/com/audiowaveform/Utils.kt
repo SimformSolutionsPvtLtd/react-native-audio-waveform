@@ -41,6 +41,8 @@ object Constants {
     const val waveformData = "waveformData"
     const val updateFrequency = "updateFrequency"
     const val currentDecibel = "currentDecibel"
+    const val bitRate = "bitRate"
+    const val sampleRate = "sampleRate"
 }
 
 enum class FinishMode(val value:Int) {

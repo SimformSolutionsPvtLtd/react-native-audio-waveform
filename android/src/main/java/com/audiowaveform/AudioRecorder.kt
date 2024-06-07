@@ -91,7 +91,7 @@ class AudioRecorder {
         encoder: Int,
         outputFormat: Int,
         sampleRate: Int,
-        bitRate: Int?,
+        bitRate: Int,
         promise: Promise
     ) {
         if (recorder == null) {

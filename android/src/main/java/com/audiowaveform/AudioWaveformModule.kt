@@ -29,7 +29,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var path: String? = null
     private var outputFormat: Int = 0
     private var sampleRate: Int = 44100
-    private var bitRate: Int? = null
+    private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
 
     companion object {
@@ -51,8 +51,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun initRecorder(promise: Promise) {
-        checkPathAndInitialiseRecorder(encoder, outputFormat, sampleRate, bitRate, promise)
+    fun initRecorder(obj: ReadableMap?, promise: Promise) {
+        checkPathAndInitialiseRecorder(encoder, outputFormat, sampleRate, bitRate, promise, obj)
     }
 
     @ReactMethod
@@ -62,7 +62,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun startRecording(obj: ReadableMap?, promise: Promise) {
-        initRecorder(promise)
+        initRecorder(obj, promise)
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
         startEmittingRecorderValue()
@@ -275,9 +275,24 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         encoder: Int,
         outputFormat: Int,
         sampleRate: Int,
-        bitRate: Int?,
-        promise: Promise
+        bitRate: Int,
+        promise: Promise,
+        obj: ReadableMap?
     ) {
+
+        var sampleRateVal = sampleRate.toInt();
+        var bitRateVal = bitRate.toInt();
+
+        if(obj != null) {
+            if(obj.hasKey(Constants.bitRate)){
+                bitRateVal = obj.getInt(Constants.bitRate);                
+            }
+
+            if(obj.hasKey(Constants.sampleRate)){
+                sampleRateVal = obj.getInt(Constants.sampleRate);
+            }
+        }
+
         try {
             recorder = MediaRecorder()
         } catch (e: Exception) {
@@ -296,8 +311,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     recorder,
                     encoder,
                     outputFormat,
-                    sampleRate,
-                    bitRate,
+                    sampleRateVal,
+                    bitRateVal,
                     promise,
                 )
             } catch (e: IOException) {
@@ -309,8 +324,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 recorder,
                 encoder,
                 outputFormat,
-                sampleRate,
-                bitRate,
+                sampleRateVal,
+                bitRateVal,
                 promise,
             )
         }
