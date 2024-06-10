@@ -54,15 +54,34 @@ class AudioRecorder {
 
     fun getDecibel(recorder: MediaRecorder?): Double? {
         if (useLegacyNormalization) {
-            val db = 20 * log10((recorder?.maxAmplitude?.toDouble() ?: (0.0 / 32768.0)))
-            if (db == Double.NEGATIVE_INFINITY) {
-                Log.e(Constants.LOG_TAG, "Microphone might be turned off")
-            } else {
-                return db
+            if (recorder != null) {
+                try {
+                    val db = 20 * log10((recorder?.maxAmplitude?.toDouble() ?: (0.0 / 32768.0)))
+                    if (db == Double.NEGATIVE_INFINITY) {
+                        Log.e(Constants.LOG_TAG, "Microphone might be turned off")
+                    } else {
+                        return db
+                    }
+                    return db;
+                } catch (e: IllegalStateException) {
+                    e.printStackTrace()
+                    return null
+                }
             }
-            return db;
+            else {
+                return null
+            }
         } else {
-            return recorder?.maxAmplitude?.toDouble() ?: 0.0
+            if (recorder != null) {
+                try {
+                    return recorder?.maxAmplitude?.toDouble() ?: 0.0
+                } catch (e: IllegalStateException) {
+                    e.printStackTrace()
+                    return null
+                }
+            } else {
+                return null
+            }
         }
     }
 
@@ -72,21 +91,29 @@ class AudioRecorder {
         encoder: Int,
         outputFormat: Int,
         sampleRate: Int,
-        bitRate: Int?,
+        bitRate: Int,
         promise: Promise
     ) {
+        if (recorder == null) {
+            promise.reject("RECORDER_NULL", "MediaRecorder instance is null")
+            return
+        }
+
         recorder?.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(getOutputFormat(outputFormat))
-            setAudioEncoder(getEncoder(encoder))
-            setAudioSamplingRate(sampleRate)
-            if (bitRate != null) {
-                setAudioEncodingBitRate(bitRate)
-            }
-            setOutputFile(path)
             try {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(getOutputFormat(outputFormat))
+                setAudioEncoder(getEncoder(encoder))
+                setAudioSamplingRate(sampleRate)
+                if (bitRate != null) {
+                    setAudioEncodingBitRate(bitRate)
+                }
+                setOutputFile(path)
                 prepare()
                 promise.resolve(true)
+            } catch (e: IllegalArgumentException) {
+                Log.e(Constants.LOG_TAG, "Invalid MediaRecorder configuration", e)
+                promise.reject("CONFIGURATION_ERROR", "Invalid MediaRecorder configuration: ${e.message}")
             } catch (e: IOException) {
                 Log.e(Constants.LOG_TAG, "Failed to stop initialize recorder")
             }
@@ -103,10 +130,10 @@ class AudioRecorder {
             val tempArrayForCommunication : MutableList<String> = mutableListOf()
             val duration = getDuration(path)
             tempArrayForCommunication.add(path)
-            tempArrayForCommunication.add(duration)
+            tempArrayForCommunication.add(duration.toString())
             promise.resolve(Arguments.fromList(tempArrayForCommunication))
         } catch (e: IllegalStateException) {
-            Log.e(Constants.LOG_TAG, "Failed to stop recording")
+            Log.e(Constants.LOG_TAG, "Failed to stop recording",e)
         }
     }
 
@@ -127,7 +154,9 @@ class AudioRecorder {
     fun startRecorder(recorder: MediaRecorder?, useLegacy: Boolean, promise: Promise) {
         try {
             useLegacyNormalization = useLegacy
-            recorder?.start()
+            recorder?.apply {
+                start()
+            }
             promise.resolve(true)
         } catch (e: IllegalStateException) {
             Log.e(Constants.LOG_TAG, "Failed to start recording")

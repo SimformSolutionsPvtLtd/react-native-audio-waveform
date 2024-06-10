@@ -111,7 +111,9 @@ class AudioWaveform: RCTEventEmitter {
         let data = newExtractor.extractWaveform(samplesPerPixel: noOfSamples, playerKey: playerKey)
         newExtractor.cancel()
         if(newExtractor.progress == 1.0) {
-          let waveformData = newExtractor.getChannelMean(data: data!)
+          // Normalize the waveform data
+          let normalizedData = normalizeWaveformData(data: data!, scale: 0.12)
+          let waveformData = newExtractor.getChannelMean(data: normalizedData)
           resolve([waveformData])
         }
       } catch let e {
@@ -120,6 +122,15 @@ class AudioWaveform: RCTEventEmitter {
     } else {
       reject(Constants.audioWaveforms, "Audio file path can't be empty or null", NSError())
       
+    }
+  }
+
+  func normalizeWaveformData(data: [[Float]], scale: Float = 0.25, threshold: Float = 0.01) -> [[Float]] {
+    return data.map { channelData in
+      let filteredData = channelData.filter { abs($0) >= threshold }
+      let maxAmplitude = filteredData.max() ?? 1.0
+      guard maxAmplitude > 0 else { return channelData }
+      return channelData.map { (abs($0) < threshold ? 0 : ($0 / maxAmplitude) * scale) }
     }
   }
   

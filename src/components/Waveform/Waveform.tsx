@@ -50,6 +50,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onRecorderStateChange,
     onPanStateChange,
     onError,
+    onCurrentProgressChange,
+    candleHeightScale = 3,
+    onChangeWaveformLoadState,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -136,11 +139,13 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const getAudioWaveFormForPath = async (noOfSample: number) => {
     if (!isNil(path) && !isEmpty(path)) {
       try {
+        (onChangeWaveformLoadState as Function)?.(true);
         const result = await extractWaveformData({
           path: path,
           playerKey: `PlayerFor${path}`,
           noOfSamples: noOfSample,
         });
+        (onChangeWaveformLoadState as Function)?.(false);
 
         if (!isNil(result) && !isEmpty(result)) {
           const waveforms = head(result);
@@ -151,6 +156,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         }
       } catch (err) {
         (onError as Function)(err);
+        (onChangeWaveformLoadState as Function)?.(false);
         console.error(err);
       }
     } else {
@@ -471,6 +477,12 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     })
   ).current;
 
+  useEffect(() => {
+    if (!isNil(onCurrentProgressChange)) {
+      (onCurrentProgressChange as Function)(currentProgress, songDuration);
+    }
+  }, [currentProgress, songDuration, onCurrentProgressChange]);
+
   useImperativeHandle(ref, () => ({
     startPlayer: startPlayerAction,
     stopPlayer: stopPlayerAction,
@@ -512,6 +524,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
                 currentProgress,
                 waveColor,
                 scrubColor,
+                candleHeightScale,
               }}
             />
           ))}

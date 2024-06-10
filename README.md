@@ -129,12 +129,15 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | path\* | - | ✅ | ❌ | string | Used for `static` type. It is the resource path of an audio source file. |
 | candleSpace | 2 | ✅ | ✅ | number | Space between two candlesticks of waveform |
 | candleWidth | 5 | ✅ | ✅ | number | Width of single candlestick of waveform |
+| candleHeightScale | 3 | ✅ | ✅ | number | Scaling height of candlestick of waveform | 
 | containerStyle | - | ✅ | ✅ | `StyleProp<ViewStyle>` | style of the container |
 | waveColor | #545454 | ✅ | ✅ | string | color of candlestick of waveform |
 | scrubColor | #7b7b7b | ✅ | ❌ | string | color of candlestick of waveform which has played |
 | onPlayerStateChange | - | ✅ | ❌ | ( playerState : PlayerState ) => void | callback function, which returns player state whenever player state changes. |
 | onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether audio seeking is active or not. |
 | onRecorderStateChange | - | ❌ | ✅ | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details |
+| onCurrentProgressChange | - | ✅ | ❌ | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration. |
+| onChangeWaveformLoadState | - | ✅ | ❌ | ( state : boolean ) => void | callback function which returns the loading state of waveform candlestick. |
 | onError | - | ✅ | ❌ | ( error : Error ) => void | callback function which returns the error for static audio waveform |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)
@@ -317,6 +320,8 @@ To use example app you need to first run below command
 ```bash
 cd example && npx react-native-asset
 ```
+
+> Note: If link-assets-manifest.json file already exists then make sure to delete that before running npx react-native-asset command.
 
 This command will add our example audio sample files to the iOS bundle so that we can access them inside the iOS app.
 

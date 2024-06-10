@@ -29,7 +29,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var path: String? = null
     private var outputFormat: Int = 0
     private var sampleRate: Int = 44100
-    private var bitRate: Int? = null
+    private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
 
     companion object {
@@ -51,8 +51,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun initRecorder(promise: Promise) {
-        checkPathAndInitialiseRecorder(encoder, outputFormat, sampleRate, bitRate, promise)
+    fun initRecorder(obj: ReadableMap?, promise: Promise) {
+        checkPathAndInitialiseRecorder(encoder, outputFormat, sampleRate, bitRate, promise, obj)
     }
 
     @ReactMethod
@@ -62,7 +62,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun startRecording(obj: ReadableMap?, promise: Promise) {
-        initRecorder(promise)
+        initRecorder(obj, promise)
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
         startEmittingRecorderValue()
@@ -84,9 +84,15 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun stopRecording(promise: Promise) {
+        if (audioRecorder == null || recorder == null || path == null) {
+            promise.reject("STOP_RECORDING_ERROR", "Recording resources not properly initialized")
+            return
+        }
+
         audioRecorder.stopRecording(recorder, path!!, promise)
         stopEmittingRecorderValue()
         recorder = null
+        path = null
     }
 
     @ReactMethod
@@ -231,10 +237,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             key = playerKey,
             extractorCallBack = object : ExtractorCallBack {
                 override fun onProgress(value: Float) {
-                    if (value == 1.0F) {
-                        val tempArrayForCommunication : MutableList<MutableList<Float>> = mutableListOf()
-                        extractors[playerKey]?.sampleData?.let { tempArrayForCommunication.add(it) }
-                        promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                     if (value == 1.0F) {
+                        extractors[playerKey]?.sampleData?.let { data ->
+                            val normalizedData = normalizeWaveformData(data, 0.12f)
+                            val tempArrayForCommunication: MutableList<MutableList<Float>> = mutableListOf(normalizedData)
+                            promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                        }
                     }
                 }
             },
@@ -242,6 +250,16 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         )
         extractors[playerKey]?.startDecode()
         extractors[playerKey]?.stop()
+    }
+
+    private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {
+        val filteredData = data.filter { kotlin.math.abs(it) >= threshold }
+        val maxAmplitude = filteredData.maxOrNull() ?: 1.0f
+        return if (maxAmplitude > 0) {
+            data.map { if (kotlin.math.abs(it) < threshold) 0.0f else (it / maxAmplitude) * scale }.toMutableList()
+        } else {
+            data
+        }
     }
 
     private fun getUpdateFrequency(frequency: Int?): UpdateFrequency {
@@ -257,9 +275,24 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         encoder: Int,
         outputFormat: Int,
         sampleRate: Int,
-        bitRate: Int?,
-        promise: Promise
+        bitRate: Int,
+        promise: Promise,
+        obj: ReadableMap?
     ) {
+
+        var sampleRateVal = sampleRate.toInt();
+        var bitRateVal = bitRate.toInt();
+
+        if(obj != null) {
+            if(obj.hasKey(Constants.bitRate)){
+                bitRateVal = obj.getInt(Constants.bitRate);                
+            }
+
+            if(obj.hasKey(Constants.sampleRate)){
+                sampleRateVal = obj.getInt(Constants.sampleRate);
+            }
+        }
+
         try {
             recorder = MediaRecorder()
         } catch (e: Exception) {
@@ -278,8 +311,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     recorder,
                     encoder,
                     outputFormat,
-                    sampleRate,
-                    bitRate,
+                    sampleRateVal,
+                    bitRateVal,
                     promise,
                 )
             } catch (e: IOException) {
@@ -291,8 +324,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 recorder,
                 encoder,
                 outputFormat,
-                sampleRate,
-                bitRate,
+                sampleRateVal,
+                bitRateVal,
                 promise,
             )
         }
