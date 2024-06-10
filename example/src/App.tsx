@@ -107,7 +107,15 @@ const ListItem = React.memo(
               scrubColor={Colors.white}
               waveColor={Colors.gray}
               candleHeightScale={4}
-              onPlayerStateChange={setPlayerState}
+              onPlayerStateChange={state => {
+                setPlayerState(state);
+                if (
+                  state === PlayerState.stopped &&
+                  currentPlaying === item.path
+                ) {
+                  setCurrentPlaying('');
+                }
+              }}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
