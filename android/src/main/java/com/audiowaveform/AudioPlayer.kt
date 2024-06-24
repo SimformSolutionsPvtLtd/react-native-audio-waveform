@@ -27,6 +27,7 @@ class AudioPlayer(
 
     fun preparePlayer(path: String?, volume: Int?, frequency: UpdateFrequency, promise: Promise) {
         if (path != null) {
+            isPlayerPrepared = false
             updateFrequency = frequency
             val uri = Uri.parse(path)
             val mediaItem = MediaItem.fromUri(uri)
