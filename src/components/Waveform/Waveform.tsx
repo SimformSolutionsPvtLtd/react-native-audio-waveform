@@ -48,9 +48,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     scrubColor,
     onPlayerStateChange,
     onRecorderStateChange,
-    onPanStateChange,
+    onPanStateChange = () => {},
     onError,
-    onCurrentProgressChange,
+    onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState,
   } = props as StaticWaveform & LiveWaveform;
