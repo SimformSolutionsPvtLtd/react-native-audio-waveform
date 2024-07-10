@@ -41,6 +41,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
     mode,
     path,
+    volume,
     candleSpace = 2,
     candleWidth = 5,
     containerStyle = {},
@@ -93,7 +94,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           path,
           playerKey: `PlayerFor${path}`,
           updateFrequency: UpdateFrequency.medium,
-          volume: 10,
+          volume: volume,
         });
         return Promise.resolve(prepare);
       } catch (err) {

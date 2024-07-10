@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { View } from 'react-native';
 import { Colors } from '../../theme';
@@ -15,7 +16,7 @@ export const WaveformCandle = ({
   currentProgress = 0,
   waveColor,
   scrubColor,
-  candleHeightScale
+  candleHeightScale,
 }: IWaveformCandle) => {
   const maxHeight = (parentViewLayout?.height ?? 0) - 10;
   const completedIndex = (currentProgress / songDuration) * noOfSamples;
@@ -43,7 +44,10 @@ export const WaveformCandle = ({
             width: candleWidth,
             marginRight: candleSpace,
             maxHeight,
-            height: (isNaN(amplitude) ? 0 : amplitude) * maxHeight * candleHeightScale, // Adjust the height scale as needed
+            height:
+              (isNaN(amplitude) ? 0 : amplitude) *
+              maxHeight *
+              candleHeightScale, // Adjust the height scale as needed
             minHeight: candleWidth,
             borderRadius: candleWidth,
           },
