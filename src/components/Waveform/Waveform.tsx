@@ -41,7 +41,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
     mode,
     path,
-    volume,
+    volume = 1,
     candleSpace = 2,
     candleWidth = 5,
     containerStyle = {},
