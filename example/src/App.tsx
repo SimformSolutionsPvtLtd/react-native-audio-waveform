@@ -25,6 +25,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -51,16 +52,19 @@ const RenderListItem = React.memo(
     onPanStateChange,
     currentPlaybackSpeed,
     changeSpeed,
+    isExternalUrl = false,
   }: {
     item: ListItem;
     onPanStateChange: (value: boolean) => void;
     currentPlaybackSpeed: PlaybackSpeedType;
     changeSpeed: () => void;
+    isExternalUrl?: boolean;
   }) => {
     const ref = useRef<IWaveformRef>(null);
     const [playerState, setPlayerState] = useState(PlayerState.stopped);
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(isExternalUrl ? false : true);
+    const [isAudioDownloaded, setIsAudioDownloaded] = useState(false);
 
     const handlePlayPauseAction = async () => {
       // If we are recording do nothing
@@ -75,9 +79,13 @@ const RenderListItem = React.memo(
         if (ref.current?.currentState === PlayerState.paused) {
           await ref.current?.resumePlayer();
         } else {
-          await ref.current?.startPlayer({
-            finishMode: FinishMode.stop,
-          });
+          try {
+            await ref.current?.startPlayer({
+              finishMode: FinishMode.stop,
+            });
+          } catch (error) {
+            console.log('Error starting player', error);
+          }
         }
       };
 
@@ -105,9 +113,21 @@ const RenderListItem = React.memo(
     const handleStopAction = async () => {
       ref.current?.stopPlayer();
     };
+    const handleDownloadPress = (): void => {
+      setIsLoading(true);
+      ref.current?.downloadExternalAudio();
+    };
 
     return (
-      <View key={item.path} style={[styles.listItemContainer]}>
+      <View
+        key={item.path}
+        style={[
+          styles.listItemContainer,
+          item.fromCurrentUser &&
+            isExternalUrl &&
+            !isAudioDownloaded &&
+            styles.listItemReverseContainer,
+        ]}>
         <View style={styles.listItemWidth}>
           <View style={[styles.buttonContainer]}>
             <Pressable
@@ -160,9 +180,20 @@ const RenderListItem = React.memo(
               waveColor={Colors.lightWhite}
               candleHeightScale={4}
               onPlayerStateChange={setPlayerState}
+              autoDownloadExternalAudio={false}
+              isExternalUrl={isExternalUrl}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
+              }}
+              onDownloadingStateChange={state => {
+                console.log('Download State', state);
+              }}
+              onDownloadProgressChange={progress => {
+                console.log('Download Progress', `${progress}%`);
+                if (progress === 100) {
+                  setIsAudioDownloaded(true);
+                }
               }}
               onCurrentProgressChange={(currentProgress, songDuration) => {
                 console.log(
@@ -184,6 +215,15 @@ const RenderListItem = React.memo(
             )}
           </View>
         </View>
+        {isExternalUrl && !isAudioDownloaded && !isLoading ? (
+          <TouchableOpacity onPress={handleDownloadPress}>
+            <Image
+              source={Icons.download}
+              style={styles.downloadIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   }
@@ -366,6 +406,7 @@ const AppContainer = () => {
                 <RenderListItem
                   key={item.path}
                   item={item}
+                  isExternalUrl={item.isExternalUrl}
                   onPanStateChange={value => setShouldScroll(!value)}
                   {...{ currentPlaybackSpeed, changeSpeed }}
                 />
