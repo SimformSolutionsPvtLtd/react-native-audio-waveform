@@ -4,4 +4,5 @@ export const Icons = {
   simform: require('./simform.png'),
   mic: require('./mic.png'),
   logo: require('./logo.png'),
+  download: require('./download.png'),
 };

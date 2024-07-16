@@ -5,6 +5,7 @@ import { globalMetrics } from '../../src/theme';
 export interface ListItem {
   fromCurrentUser: boolean;
   path: string;
+  isExternalUrl?: boolean;
 }
 
 /**
@@ -69,6 +70,11 @@ const audioAssetArray = [
   'file_example_mp3_15s.mp3',
 ];
 
+const externalAudioAssetArray = [
+  'https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3',
+  'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3',
+];
+
 /**
  * Generate a list of file objects with information about successfully copied files (Android)
  * or all files (iOS).
@@ -78,8 +84,18 @@ export const generateAudioList = async (): Promise<ListItem[]> => {
   const audioAssets = await copyFilesToNativeResources();
 
   // Generate the final list based on the copied or available files
-  return audioAssets?.map?.((value, index) => ({
+  const localAssetList = audioAssets?.map?.((value, index) => ({
     fromCurrentUser: index % 2 !== 0,
     path: `${filePath}/${value}`,
   }));
+
+  const externalAudioList: ListItem[] = externalAudioAssetArray.map(
+    (value, index) => ({
+      fromCurrentUser: index % 2 !== 0,
+      path: value,
+      isExternalUrl: true,
+    })
+  );
+
+  return [...localAssetList, ...externalAudioList];
 };
