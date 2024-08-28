@@ -173,4 +173,8 @@ class AudioPlayer(
             audioPlaybackListener.cancel()
         }
     }
+
+    fun isHoldingAudioTrack(): Boolean {
+        return ::audioPlaybackListener.isInitialized
+    }
 }

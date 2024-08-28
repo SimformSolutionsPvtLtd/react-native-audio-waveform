@@ -10,6 +10,7 @@ import {
   PanResponder,
   ScrollView,
   View,
+  type LayoutChangeEvent,
   type LayoutRectangle,
   type NativeTouchEvent,
 } from 'react-native';
@@ -174,7 +175,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const result = await stopPlayer({
           playerKey: `PlayerFor${path}`,
         });
-        await preparePlayerForPath();
         if (!isNil(result) && result) {
           setCurrentProgress(0);
           setPlayerState(PlayerState.stopped);
@@ -197,6 +197,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     if (mode === 'static') {
       try {
+        if (playerState === PlayerState.stopped) {
+          await preparePlayerForPath();
+        }
+
         const play = await playPlayer({
           finishMode: FinishMode.stop,
           playerKey: `PlayerFor${path}`,
@@ -500,10 +504,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       <View
         ref={viewRef}
         style={styles.waveformInnerContainer}
-        onLayout={() => {
-          viewRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
-            setViewLayout({ height, width, x: pageX, y: pageY });
-          });
+        onLayout={(event: LayoutChangeEvent) => {
+          const { height, width, x, y } = event.nativeEvent.layout;
+          setViewLayout({ height, width, x, y });
         }}
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
         <ScrollView

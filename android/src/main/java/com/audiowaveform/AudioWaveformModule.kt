@@ -34,6 +34,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     companion object {
         const val NAME = "AudioWaveform"
+        const val MAX_NUMBER_OF_AUDIO_PLAYER = 30
     }
 
     override fun getName(): String {
@@ -100,6 +101,10 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         obj: ReadableMap,
         promise: Promise
     ) {
+        if(audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
+            promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
+        }
+
         val path = obj.getString(Constants.path)
         val key = obj.getString(Constants.playerKey)
         val frequency = obj.getInt(Constants.updateFrequency)
@@ -133,6 +138,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val key = obj.getString(Constants.playerKey)
         if (key != null) {
             audioPlayers[key]?.stop(promise)
+            audioPlayers[key] = null // Release the player after stopping it
         } else {
             promise.reject("stopPlayer Error", "Player key can't be null")
         }
