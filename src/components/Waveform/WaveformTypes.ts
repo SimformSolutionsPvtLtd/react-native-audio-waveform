@@ -16,6 +16,7 @@ interface BaseWaveform {
 export interface StaticWaveform extends BaseWaveform {
   mode: 'static';
   path: string;
+  volume?: number;
   scrubColor?: string;
   onPlayerStateChange?: (playerState: PlayerState) => void;
   onPanStateChange?: (panMoving: boolean) => void;
