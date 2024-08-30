@@ -115,7 +115,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         durationType: DurationType.max,
       });
       if (!isNil(duration)) {
-        setSongDuration(duration);
+        const audioDuration = Number(duration);
+        setSongDuration(audioDuration > 0 ? audioDuration : 0);
+        return Promise.resolve(audioDuration);
       } else {
         return Promise.reject(
           new Error(`Could not get duration for path: ${path}`)
@@ -130,7 +132,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     try {
       const prepare = await preparePlayerForPath();
       if (prepare) {
-        await getAudioDuration();
+        const duration = await getAudioDuration();
+        if (duration < 0) {
+          await getAudioDuration();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -413,7 +418,13 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
     const tracePlaybackValue = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
-        setCurrentProgress(data.currentDuration);
+        const currentAudioDuration = Number(data.currentDuration);
+
+        if (!isNaN(currentAudioDuration)) {
+          setCurrentProgress(currentAudioDuration);
+        } else {
+          setCurrentProgress(0);
+        }
       }
     });
 
