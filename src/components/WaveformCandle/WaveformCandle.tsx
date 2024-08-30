@@ -4,7 +4,7 @@ import { Colors } from '../../theme';
 import styles from './WaveformCandleStyles';
 import type { IWaveformCandle } from './WaveformCandleTypes';
 
-export const WaveformCandle = ({
+export const WaveformCandle: React.FC<IWaveformCandle> = ({
   index,
   amplitude,
   parentViewLayout,
@@ -15,8 +15,8 @@ export const WaveformCandle = ({
   currentProgress = 0,
   waveColor,
   scrubColor,
-  candleHeightScale
-}: IWaveformCandle) => {
+  candleHeightScale,
+}) => {
   const maxHeight = (parentViewLayout?.height ?? 0) - 10;
   const completedIndex = (currentProgress / songDuration) * noOfSamples;
 
@@ -43,7 +43,10 @@ export const WaveformCandle = ({
             width: candleWidth,
             marginRight: candleSpace,
             maxHeight,
-            height: (isNaN(amplitude) ? 0 : amplitude) * maxHeight * candleHeightScale, // Adjust the height scale as needed
+            height:
+              (isNaN(amplitude) ? 0 : amplitude) *
+              maxHeight *
+              candleHeightScale, // Adjust the height scale as needed
             minHeight: candleWidth,
             borderRadius: candleWidth,
           },
