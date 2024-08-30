@@ -40,6 +40,8 @@ import {
 
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
+    // The maximum number of candles set in the waveform. Once this limit is reached, the oldest candle will be removed as a new one is added to the waveform.
+    maxCandlesToRender = 300,
     mode,
     path,
     volume = 3,
@@ -432,7 +434,18 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       result => {
         if (mode === 'live') {
           if (!isNil(result.currentDecibel)) {
-            setWaveform(prev => [...prev, result.currentDecibel]);
+            setWaveform((previousWaveform: number[]) => {
+              // Add the new decibel to the waveform
+              const updatedWaveform: number[] = [
+                ...previousWaveform,
+                result.currentDecibel,
+              ];
+
+              // Limit the size of the waveform array to 'maxCandlesToRender'
+              return updatedWaveform.length > maxCandlesToRender
+                ? updatedWaveform.slice(1)
+                : updatedWaveform;
+            });
             if (scrollRef.current) {
               scrollRef.current.scrollToEnd({ animated: true });
             }

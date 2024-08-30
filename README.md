@@ -1,4 +1,3 @@
-
 ![Audio Waveform - Simform](./assets/react_native_audiowave.gif)
 
 # react-native-audio-waveform
@@ -13,8 +12,8 @@ A React Native package featuring native modules for generating and rendering aud
 
 ## 🎬 Preview
 
-| Audio Playback Waveform | Audio Record Waveform |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Audio Playback Waveform                                                                                                                                                                 | Audio Record Waveform                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;" height="640px;" alt="AudioPlaybackWaveform" src="./assets/audio_playback.gif"> </a> | <a href="https://github.com/SimformSolutionsPvtLtd/react-native-audio-waveform"><img width="352px;" height="640px;" alt="AudioRecordWaveform" src="./assets/audio_record.gif"> </a> |
 
 ## Quick Access
@@ -81,19 +80,22 @@ When you want to show a waveform for a pre-existing audio file, you need to use 
 Check the example below for more information.
 
 ```tsx
-import { Waveform, type IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
+import {
+  Waveform,
+  type IWaveformRef,
+} from '@simform_solutions/react-native-audio-waveform';
 
 const path = ''; // path to the audio file for which you want to show waveform
 const ref = useRef<IWaveformRef>(null);
 <Waveform
-    mode="static"
-    ref={ref}
-    path={item}
-    candleSpace={2}
-    candleWidth={4}
-    scrubColor="white"
-    onPlayerStateChange={playerState=>console.log(playerState)}
-    onPanStateChange={isMoving=>console.log(isMoving)}
+  mode="static"
+  ref={ref}
+  path={item}
+  candleSpace={2}
+  candleWidth={4}
+  scrubColor="white"
+  onPlayerStateChange={playerState => console.log(playerState)}
+  onPanStateChange={isMoving => console.log(isMoving)}
 />;
 ```
 
@@ -104,16 +106,19 @@ When you want to record audio and show a waveform for that recording, you need t
 Check the example below for more information.
 
 ```tsx
-import { Waveform, type IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
+import {
+  Waveform,
+  type IWaveformRef,
+} from '@simform_solutions/react-native-audio-waveform';
 
 const ref = useRef<IWaveformRef>(null);
 <Waveform
-    mode="live"
-    ref={ref}
-    candleSpace={2}
-    candleWidth={4}
-    onRecorderStateChange={recorderState => console.log(recorderState)}
-/>
+  mode="live"
+  ref={ref}
+  candleSpace={2}
+  candleWidth={4}
+  onRecorderStateChange={recorderState => console.log(recorderState)}
+/>;
 ```
 
 You can check out the full example at [Example](./example/src/App.tsx).
@@ -122,23 +127,24 @@ You can check out the full example at [Example](./example/src/App.tsx).
 
 ## Properties
 
-| **Props** | **Default** | **Static Mode** | **Live Mode** | **Type** | **Description** |
-| --------------------- | ---------- | --------------- | ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| mode\* | - | ✅ | ✅ | 'live' or 'static' | Type of waveform. It can be either `static` for the resource file or `live` if you want to record audio |
-| ref\* | - | ✅ | ✅ | IWaveformRef | Type of ref provided to waveform component. If waveform mode is `static`, some methods from ref will throw error and same for `live`.<br> Check [IWaveformRef](#iwaveformref-methods) for more details about which methods these refs provides. |
-| path\* | - | ✅ | ❌ | string | Used for `static` type. It is the resource path of an audio source file. |
-| candleSpace | 2 | ✅ | ✅ | number | Space between two candlesticks of waveform |
-| candleWidth | 5 | ✅ | ✅ | number | Width of single candlestick of waveform |
-| candleHeightScale | 3 | ✅ | ✅ | number | Scaling height of candlestick of waveform | 
-| containerStyle | - | ✅ | ✅ | `StyleProp<ViewStyle>` | style of the container |
-| waveColor | #545454 | ✅ | ✅ | string | color of candlestick of waveform |
-| scrubColor | #7b7b7b | ✅ | ❌ | string | color of candlestick of waveform which has played |
-| onPlayerStateChange | - | ✅ | ❌ | ( playerState : PlayerState ) => void | callback function, which returns player state whenever player state changes. |
-| onPanStateChange | - | ✅ | ❌ | ( panMoving : boolean ) => void | callback function which returns boolean indicating whether audio seeking is active or not. |
-| onRecorderStateChange | - | ❌ | ✅ | ( recorderState : RecorderState ) => void | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details |
-| onCurrentProgressChange | - | ✅ | ❌ | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration. |
-| onChangeWaveformLoadState | - | ✅ | ❌ | ( state : boolean ) => void | callback function which returns the loading state of waveform candlestick. |
-| onError | - | ✅ | ❌ | ( error : Error ) => void | callback function which returns the error for static audio waveform |
+| **Props**                 | **Default** | **Static Mode** | **Live Mode** | **Type**                                                   | **Description**                                                                                                                                                                                                                                 |
+| ------------------------- | ----------- | --------------- | ------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mode\*                    | -           | ✅              | ✅            | 'live' or 'static'                                         | Type of waveform. It can be either `static` for the resource file or `live` if you want to record audio                                                                                                                                         |
+| ref\*                     | -           | ✅              | ✅            | IWaveformRef                                               | Type of ref provided to waveform component. If waveform mode is `static`, some methods from ref will throw error and same for `live`.<br> Check [IWaveformRef](#iwaveformref-methods) for more details about which methods these refs provides. |
+| path\*                    | -           | ✅              | ❌            | string                                                     | Used for `static` type. It is the resource path of an audio source file.                                                                                                                                                                        |
+| candleSpace               | 2           | ✅              | ✅            | number                                                     | Space between two candlesticks of waveform                                                                                                                                                                                                      |
+| candleWidth               | 5           | ✅              | ✅            | number                                                     | Width of single candlestick of waveform                                                                                                                                                                                                         |
+| candleHeightScale         | 3           | ✅              | ✅            | number                                                     | Scaling height of candlestick of waveform                                                                                                                                                                                                       |
+| maxCandlesToRender        | 300         | ❌              | ✅            | number                                                     | Number of candlestick in waveform                                                                                                                                                                                                               |
+| containerStyle            | -           | ✅              | ✅            | `StyleProp<ViewStyle>`                                     | style of the container                                                                                                                                                                                                                          |
+| waveColor                 | #545454     | ✅              | ✅            | string                                                     | color of candlestick of waveform                                                                                                                                                                                                                |
+| scrubColor                | #7b7b7b     | ✅              | ❌            | string                                                     | color of candlestick of waveform which has played                                                                                                                                                                                               |
+| onPlayerStateChange       | -           | ✅              | ❌            | ( playerState : PlayerState ) => void                      | callback function, which returns player state whenever player state changes.                                                                                                                                                                    |
+| onPanStateChange          | -           | ✅              | ❌            | ( panMoving : boolean ) => void                            | callback function which returns boolean indicating whether audio seeking is active or not.                                                                                                                                                      |
+| onRecorderStateChange     | -           | ❌              | ✅            | ( recorderState : RecorderState ) => void                  | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details                                                                                                                    |
+| onCurrentProgressChange   | -           | ✅              | ❌            | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration.                                                                                                                                                             |
+| onChangeWaveformLoadState | -           | ✅              | ❌            | ( state : boolean ) => void                                | callback function which returns the loading state of waveform candlestick.                                                                                                                                                                      |
+| onError                   | -           | ✅              | ❌            | ( error : Error ) => void                                  | callback function which returns the error for static audio waveform                                                                                                                                                                             |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)
 
@@ -255,14 +261,14 @@ Check out the following example:
 let hasPermission = await checkHasAudioRecorderPermission();
 
 if (hasPermission === PermissionStatus.granted) {
-    startRecording();
+  startRecording();
 } else if (hasPermission === PermissionStatus.undetermined) {
-    const permissionStatus = await getAudioRecorderPermission();
-    if (permissionStatus === PermissionStatus.granted) {
-        startRecording();
-    }
+  const permissionStatus = await getAudioRecorderPermission();
+  if (permissionStatus === PermissionStatus.granted) {
+    startRecording();
+  }
 } else {
-    Linking.openSettings();
+  Linking.openSettings();
 }
 ```
 
@@ -272,9 +278,9 @@ if (hasPermission === PermissionStatus.granted) {
 
 ```ts
 enum PlayerState {
-    playing = 'playing',
-    paused = 'paused',
-    stopped = 'stopped',
+  playing = 'playing',
+  paused = 'paused',
+  stopped = 'stopped',
 }
 ```
 
@@ -282,9 +288,9 @@ enum PlayerState {
 
 ```ts
 enum RecorderState {
-    recording = 'recording',
-    paused = 'paused',
-    stopped = 'stopped',
+  recording = 'recording',
+  paused = 'paused',
+  stopped = 'stopped',
 }
 ```
 
@@ -293,9 +299,9 @@ enum RecorderState {
 ```ts
 // Update frequency in milliseconds
 enum UpdateFrequency {
-    high = 250.0,
-    medium = 500.0,
-    low = 1000.0,
+  high = 250.0,
+  medium = 500.0,
+  low = 1000.0,
 }
 ```
 
@@ -303,9 +309,9 @@ enum UpdateFrequency {
 
 ```ts
 enum PermissionStatus {
-    denied = 'denied',
-    undetermined = 'undetermined',
-    granted = 'granted',
+  denied = 'denied',
+  undetermined = 'undetermined',
+  granted = 'granted',
 }
 ```
 
