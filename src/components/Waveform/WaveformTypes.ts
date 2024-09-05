@@ -4,6 +4,8 @@ import type { IStartRecording } from '../../types';
 
 type StaticOrLive = 'static' | 'live';
 
+export type PlaybackSpeedType = 1.0 | 1.5 | 2.0;
+
 interface BaseWaveform {
   candleSpace?: number;
   candleWidth?: number;
@@ -26,6 +28,7 @@ export interface StaticWaveform extends BaseWaveform {
     songDuration: number
   ) => void;
   onChangeWaveformLoadState?: (state: boolean) => void;
+  playbackSpeed?: PlaybackSpeedType;
 }
 
 export interface LiveWaveform extends BaseWaveform {

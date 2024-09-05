@@ -43,6 +43,7 @@ object Constants {
     const val currentDecibel = "currentDecibel"
     const val bitRate = "bitRate"
     const val sampleRate = "sampleRate"
+    const val speed = "speed"
 }
 
 enum class FinishMode(val value:Int) {

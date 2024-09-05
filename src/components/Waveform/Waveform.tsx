@@ -18,6 +18,7 @@ import {
   DurationType,
   FinishMode,
   PermissionStatus,
+  playbackSpeedThreshold,
   PlayerState,
   RecorderState,
   UpdateFrequency,
@@ -45,6 +46,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     mode,
     path,
     volume = 3,
+    // The playback speed of the audio player. A value of 1.0 represents normal playback speed.
+    playbackSpeed = 1.0,
     candleSpace = 2,
     candleWidth = 5,
     containerStyle = {},
@@ -71,6 +74,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const [panMoving, setPanMoving] = useState(false);
   const [playerState, setPlayerState] = useState(PlayerState.stopped);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
+  const audioSpeed: number =
+    playbackSpeed > playbackSpeedThreshold ? 1.0 : playbackSpeed;
 
   const {
     extractWaveformData,
@@ -83,12 +88,33 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentDuration,
     onDidFinishPlayingAudio,
     onCurrentRecordingWaveformData,
+    setPlaybackSpeed,
   } = useAudioPlayer();
 
   const { startRecording, stopRecording, pauseRecording, resumeRecording } =
     useAudioRecorder();
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
+
+  /**
+   * Updates the playback speed of the audio player.
+   *
+   * @param speed - The new playback speed to set.
+   * @returns A Promise that resolves when the playback speed has been updated.
+   * @throws An error if there was a problem updating the playback speed.
+   */
+  const updatePlaybackSpeed = async (speed: number) => {
+    try {
+      await setPlaybackSpeed({ speed, playerKey: `PlayerFor${path}` });
+    } catch (error) {
+      console.error('Error updating playback speed', error);
+    }
+  };
+
+  useEffect(() => {
+    updatePlaybackSpeed(audioSpeed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioSpeed]);
 
   const preparePlayerForPath = async (progress?: number) => {
     if (!isNil(path) && !isEmpty(path)) {
@@ -213,6 +239,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           finishMode: FinishMode.stop,
           playerKey: `PlayerFor${path}`,
           path: path,
+          speed: audioSpeed,
           ...args,
         });
 
