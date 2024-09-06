@@ -10,6 +10,7 @@ import {
   PanResponder,
   ScrollView,
   View,
+  type LayoutChangeEvent,
   type LayoutRectangle,
   type NativeTouchEvent,
 } from 'react-native';
@@ -114,7 +115,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         durationType: DurationType.max,
       });
       if (!isNil(duration)) {
-        setSongDuration(duration);
+        const audioDuration = Number(duration);
+        setSongDuration(audioDuration > 0 ? audioDuration : 0);
+        return Promise.resolve(audioDuration);
       } else {
         return Promise.reject(
           new Error(`Could not get duration for path: ${path}`)
@@ -129,7 +132,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     try {
       const prepare = await preparePlayerForPath();
       if (prepare) {
-        await getAudioDuration();
+        const duration = await getAudioDuration();
+        if (duration < 0) {
+          await getAudioDuration();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -174,7 +180,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const result = await stopPlayer({
           playerKey: `PlayerFor${path}`,
         });
-        await preparePlayerForPath();
         if (!isNil(result) && result) {
           setCurrentProgress(0);
           setPlayerState(PlayerState.stopped);
@@ -197,6 +202,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     if (mode === 'static') {
       try {
+        if (playerState === PlayerState.stopped) {
+          await preparePlayerForPath();
+        }
+
         const play = await playPlayer({
           finishMode: FinishMode.stop,
           playerKey: `PlayerFor${path}`,
@@ -409,7 +418,13 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
     const tracePlaybackValue = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
-        setCurrentProgress(data.currentDuration);
+        const currentAudioDuration = Number(data.currentDuration);
+
+        if (!isNaN(currentAudioDuration)) {
+          setCurrentProgress(currentAudioDuration);
+        } else {
+          setCurrentProgress(0);
+        }
       }
     });
 
@@ -500,10 +515,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       <View
         ref={viewRef}
         style={styles.waveformInnerContainer}
-        onLayout={() => {
-          viewRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
-            setViewLayout({ height, width, x: pageX, y: pageY });
-          });
+        onLayout={(event: LayoutChangeEvent) => {
+          const { height, width, x, y } = event.nativeEvent.layout;
+          setViewLayout({ height, width, x, y });
         }}
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
         <ScrollView
@@ -511,7 +525,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           ref={scrollRef}
           style={styles.scrollContainer}
           scrollEnabled={mode === 'live'}>
-          {waveform.map((amplitude, indexCandle) => (
+          {waveform?.map?.((amplitude, indexCandle) => (
             <WaveformCandle
               key={indexCandle}
               index={indexCandle}

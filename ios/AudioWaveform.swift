@@ -172,6 +172,7 @@ class AudioWaveform: RCTEventEmitter {
     let key = args?[Constants.playerKey] as? String
     if(key != nil){
       audioPlayers[key!]?.stopPlayer(result: resolve)
+      audioPlayers[key!] = nil // Release the player after stopping it
     } else {
       reject(Constants.audioWaveforms, "Can not stop player, Player key is null", NSError())
     }

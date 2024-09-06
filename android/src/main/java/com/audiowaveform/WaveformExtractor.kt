@@ -16,6 +16,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import kotlin.math.pow
 import kotlin.math.sqrt
+import java.io.File
 
 class WaveformExtractor(
     context: ReactApplicationContext,
@@ -66,6 +67,11 @@ class WaveformExtractor(
 
     fun startDecode() {
         try {
+            if (!File(path).exists()) {
+                promise.reject("File Error", "File does not exist at the given path.")
+                return
+            }
+
             val format = getFormat(path) ?: error("No audio format found")
             val mime = format.getString(MediaFormat.KEY_MIME) ?: error("No MIME type found")
             decoder = MediaCodec.createDecoderByType(mime).also {
