@@ -31,7 +31,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { Gifs, Icons } from './assets';
-import { audioListArray, type ListItem } from './constants';
+import { generateAudioList, type ListItem } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
 
@@ -209,10 +209,18 @@ const LivePlayerComponent = ({
 const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
   const [currentPlaying, setCurrentPlaying] = useState<string>('');
-  const [list, setList] = useState<ListItem[]>(audioListArray);
+  const [list, setList] = useState<ListItem[]>([]);
 
   const { top, bottom } = useSafeAreaInsets();
   const styles = stylesheet({ top, bottom });
+
+  useEffect(() => {
+    generateAudioList().then(audioListArray => {
+      if (audioListArray?.length > 0) {
+        setList(audioListArray);
+      }
+    });
+  }, []);
 
   return (
     <View style={styles.appContainer}>
