@@ -35,7 +35,7 @@ import { generateAudioList, type ListItem } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
 
-const ListItem = React.memo(
+const RenderListItem = React.memo(
   ({
     item,
     currentPlaying,
@@ -244,7 +244,7 @@ const AppContainer = () => {
             </View>
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
-                <ListItem
+                <RenderListItem
                   key={item.path}
                   currentPlaying={currentPlaying}
                   setCurrentPlaying={setCurrentPlaying}
