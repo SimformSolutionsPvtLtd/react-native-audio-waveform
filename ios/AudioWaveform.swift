@@ -142,6 +142,7 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[key!]?.preparePlayer(args?[Constants.path] as? String,
                                         volume: args?[Constants.volume] as? Double,
                                         updateFrequency: UpdateFrequency(rawValue: (args?[Constants.updateFrequency]) as? Double ?? 0) ?? UpdateFrequency.medium,
+                                        time: args?[Constants.progress] as? Double ?? 0,
                                         resolver: resolve,
                                         rejecter: reject)
     } else {

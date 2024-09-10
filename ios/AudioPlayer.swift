@@ -27,7 +27,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     super.init()
   }
   
-  func preparePlayer(_ path: String?, volume: Double?, updateFrequency: UpdateFrequency, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  func preparePlayer(_ path: String?, volume: Double?, updateFrequency: UpdateFrequency, time: Double, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if(!(path ?? "").isEmpty) {
       self.updateFrequency = updateFrequency
       let audioUrl = URL.init(string: path!)
@@ -40,6 +40,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
         player = try AVAudioPlayer(contentsOf: audioUrl!)
         player?.prepareToPlay()
         player?.volume = Float(volume ?? 100.0)
+        player?.currentTime = Double(time / 1000)
         resolve(true)
       } catch let error as NSError {
         reject(Constants.audioWaveforms, error.localizedDescription, error)

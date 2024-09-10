@@ -25,7 +25,13 @@ class AudioPlayer(
     private var updateFrequency = UpdateFrequency.Low
     private lateinit var audioPlaybackListener: CountDownTimer
 
-    fun preparePlayer(path: String?, volume: Int?, frequency: UpdateFrequency, promise: Promise) {
+    fun preparePlayer(
+        path: String?,
+        volume: Int?,
+        frequency: UpdateFrequency,
+        progress: Long,
+        promise: Promise
+    ) {
         if (path != null) {
             isPlayerPrepared = false
             updateFrequency = frequency
@@ -42,6 +48,7 @@ class AudioPlayer(
                     if (!isPlayerPrepared) {
                         if (state == Player.STATE_READY) {
                             player.volume = (volume ?: 1).toFloat()
+                            player.seekTo(progress)
                             isPlayerPrepared = true
                             val duration = player.duration
                             promise.resolve(duration.toString())

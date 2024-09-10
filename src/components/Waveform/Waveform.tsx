@@ -90,7 +90,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
 
-  const preparePlayerForPath = async () => {
+  const preparePlayerForPath = async (progress?: number) => {
     if (!isNil(path) && !isEmpty(path)) {
       try {
         const prepare = await preparePlayer({
@@ -98,6 +98,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           playerKey: `PlayerFor${path}`,
           updateFrequency: UpdateFrequency.medium,
           volume: volume,
+          progress,
         });
         return Promise.resolve(prepare);
       } catch (err) {
@@ -205,7 +206,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     if (mode === 'static') {
       try {
         if (playerState === PlayerState.stopped) {
-          await preparePlayerForPath();
+          await preparePlayerForPath(currentProgress);
         }
 
         const play = await playPlayer({

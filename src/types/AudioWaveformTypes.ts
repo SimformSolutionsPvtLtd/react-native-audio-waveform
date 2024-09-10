@@ -29,6 +29,7 @@ export interface IExtractWaveform extends IPlayerKey, IPlayerPath {
 export interface IPreparePlayer extends IPlayerKey, IPlayerPath {
   updateFrequency?: UpdateFrequency;
   volume?: number;
+  progress?: number;
 }
 
 export interface IStartPlayer extends IPlayerKey {

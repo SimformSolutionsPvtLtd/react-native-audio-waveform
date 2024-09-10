@@ -109,12 +109,19 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val key = obj.getString(Constants.playerKey)
         val frequency = obj.getInt(Constants.updateFrequency)
         val volume = obj.getInt(Constants.volume)
+        val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
+            0 // Set default progress to zero if null, undefined, or missing
+        } else {
+            obj.getInt(Constants.progress).toLong()
+        }
+
         if (key != null) {
             initPlayer(key)
             audioPlayers[key]?.preparePlayer(
                 path,
                 volume,
                 getUpdateFrequency(frequency),
+                progress,
                 promise
             )
         } else {
