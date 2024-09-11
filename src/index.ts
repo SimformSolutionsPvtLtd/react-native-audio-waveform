@@ -1,4 +1,8 @@
-export { Waveform, type IWaveformRef } from './components';
+export {
+  Waveform,
+  type IWaveformRef,
+  type PlaybackSpeedType,
+} from './components';
 export {
   FinishMode,
   PermissionStatus,

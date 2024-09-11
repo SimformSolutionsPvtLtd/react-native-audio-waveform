@@ -105,7 +105,18 @@ class AudioPlayer(
         }
     }
 
-    fun start(finishMode: Int?, promise: Promise) {
+    private fun validateAndSetPlaybackSpeed(player: Player, speed: Float?): Boolean {
+        // Validate the speed: if null or less than or equal to 0, set to 1f
+        val validSpeed = if (speed == null || speed <= 0f) 1f else speed
+
+        // Set the playback speed on the player
+        val playbackParameters = player.playbackParameters.withSpeed(validSpeed)
+        player.playbackParameters = playbackParameters
+
+        return true  // Indicate success
+    }
+
+    fun start(finishMode: Int?, speed: Float?, promise: Promise) {
         try {
             if (finishMode != null && finishMode == 0) {
                 this.finishMode = FinishMode.Loop
@@ -114,6 +125,9 @@ class AudioPlayer(
             } else {
                 this.finishMode = FinishMode.Stop
             }
+
+           validateAndSetPlaybackSpeed(player, speed)
+
             player.playWhenReady = true
             player.play()
             promise.resolve(true)
@@ -155,6 +169,18 @@ class AudioPlayer(
             }
         } catch (e: Exception) {
             promise.resolve(false)
+        }
+    }
+
+    fun setPlaybackSpeed(speed: Float?, promise: Promise) {
+        try {
+            // Call the custom function to validate and set the playback speed
+            val success = validateAndSetPlaybackSpeed(player, speed)
+            promise.resolve(success)  // Resolve the promise with success
+
+        } catch (e: Exception) {
+            // Handle any exceptions and reject the promise
+            promise.reject("setPlaybackSpeed Error", e.toString())
         }
     }
 

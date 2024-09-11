@@ -133,8 +133,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun startPlayer(obj: ReadableMap, promise: Promise) {
         val finishMode = obj.getInt(Constants.finishMode)
         val key = obj.getString(Constants.playerKey)
+        val speed = obj.getDouble(Constants.speed)
         if (key != null) {
-            audioPlayers[key]?.start(finishMode ?: 2, promise)
+            audioPlayers[key]?.start(finishMode ?: 2, speed.toFloat(),promise)
         } else {
             promise.reject("startPlayer Error", "Player key can't be null")
         }
@@ -219,6 +220,23 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         for ((key, _) in audioPlayers) {
             audioPlayers[key]?.stop(promise)
             audioPlayers[key] = null
+        }
+    }
+
+    @ReactMethod
+    fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
+        // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
+        val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
+            1.0f // Set default speed to 1.0 if null, undefined, or missing
+        } else {
+            obj.getDouble(Constants.speed).toFloat()
+        }
+
+        val key = obj.getString(Constants.playerKey)
+        if (key != null) {
+            audioPlayers[key]?.setPlaybackSpeed(speed, promise)
+        } else {
+            promise.reject("setPlaybackSpeed Error", "Player key can't be null")
         }
     }
 

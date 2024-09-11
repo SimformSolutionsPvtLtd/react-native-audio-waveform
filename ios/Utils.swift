@@ -60,6 +60,7 @@ struct Constants {
   static let stopAllPlayers = "stopAllPlayers"
   static let onDidFinishPlayingAudio = "onDidFinishPlayingAudio"
   static let finishMode = "finishMode"
+  static let speed = "speed"
   static let finishType = "finishType"
   static let extractWaveformData = "extractWaveformData"
   static let noOfSamples = "noOfSamples"

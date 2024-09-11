@@ -41,3 +41,5 @@ export enum UpdateFrequency {
   medium = 500.0,
   low = 1000.0,
 }
+
+export const playbackSpeedThreshold = 2.0;

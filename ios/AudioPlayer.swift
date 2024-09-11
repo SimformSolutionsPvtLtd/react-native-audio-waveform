@@ -41,6 +41,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
         player?.prepareToPlay()
         player?.volume = Float(volume ?? 100.0)
         player?.currentTime = Double(time / 1000)
+        player?.enableRate = true
         resolve(true)
       } catch let error as NSError {
         reject(Constants.audioWaveforms, error.localizedDescription, error)
@@ -77,7 +78,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     EventEmitter.sharedInstance.dispatch(name: withName, body: body)
   }
   
-  func startPlyer(_ finishMode: Int?, result: RCTPromiseResolveBlock) {
+    func startPlyer(_ finishMode: Int?, speed: Float, result: RCTPromiseResolveBlock) {
       if(finishMode != nil && finishMode == 0) {
         self.finishMode = FinishMode.loop
       } else if(finishMode != nil && finishMode == 1) {
@@ -87,6 +88,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
       }
       player?.play()
       player?.delegate = self
+      player?.rate = Float(speed)
       startListening()
       result(player?.isPlaying)
   }
@@ -139,6 +141,16 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
         DispatchQueue.main.async { [weak self] in
           guard let strongSelf = self else {return }
             strongSelf.timer = Timer.scheduledTimer(timeInterval: TimeInterval((Float(strongSelf.updateFrequency.rawValue) / 1000)), target: strongSelf, selector: #selector(strongSelf.timerUpdate(_:)), userInfo: nil, repeats: true)
+        }
+    }
+    
+    func setPlaybackSpeed(_ speed: Float, _ result: @escaping RCTPromiseResolveBlock) {
+        if let player = player {
+            player.enableRate = true
+            player.rate = Float(speed)
+            result(true)
+        } else {
+            result(false)
         }
     }
   

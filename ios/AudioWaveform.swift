@@ -153,8 +153,10 @@ class AudioWaveform: RCTEventEmitter {
   @objc func startPlayer(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
     let finishMode = args?[Constants.finishMode] as? Int
+    let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
+      
     if(key != nil){
-      audioPlayers[key!]?.startPlyer(finishMode, result:resolve)
+        audioPlayers[key!]?.startPlyer(finishMode, speed: speed, result:resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not start player", NSError())
     }
@@ -239,5 +241,17 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[playerKey] = newPlayer
     }
   }
-  
+    
+    @objc func setPlaybackSpeed(_ args: NSDictionary?,
+                                resolver resolve: @escaping RCTPromiseResolveBlock,
+                                rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        let key = args?[Constants.playerKey] as? String
+        let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
+        
+        if(key != nil){
+          audioPlayers[key!]?.setPlaybackSpeed(speed, resolve)
+        } else {
+          reject(Constants.audioWaveforms, "Can not pause player, Player key is null", NSError())
+        }
+    }
 }
