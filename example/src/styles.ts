@@ -34,6 +34,8 @@ const styles = (params: StyleSheetParams = {}) =>
       borderRadius: scale(10),
       alignItems: 'center',
       overflow: 'hidden',
+      columnGap: scale(8),
+      paddingHorizontal: scale(8),
     },
     listItemContainer: {
       marginTop: scale(16),
@@ -43,18 +45,18 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '90%',
     },
     buttonImage: {
-      height: '100%',
-      width: '100%',
+      height: scale(22),
+      width: scale(22),
+      alignSelf: 'flex-end',
     },
     staticWaveformView: {
       flex: 1,
       height: scale(75),
-      paddingEnd: scale(10),
     },
     playBackControlPressable: {
       height: scale(30),
       width: scale(30),
-      padding: scale(5),
+      justifyContent: 'center',
     },
     recordAudioPressable: {
       height: scale(40),
@@ -89,6 +91,21 @@ const styles = (params: StyleSheetParams = {}) =>
     },
     loadingText: {
       color: Colors.black,
+    },
+    speedBox: {
+      height: scale(28),
+      width: scale(28),
+      borderRadius: scale(14),
+      justifyContent: 'center',
+    },
+    whiteBackground: {
+      backgroundColor: Colors.white,
+    },
+    speed: {
+      color: Colors.black,
+      fontSize: scale(10),
+      textAlign: 'center',
+      fontWeight: '600',
     },
   });
 

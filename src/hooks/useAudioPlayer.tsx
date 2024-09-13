@@ -11,6 +11,7 @@ import {
   type IPausePlayer,
   type IPreparePlayer,
   type ISeekPlayer,
+  type ISetPlaybackSpeed,
   type ISetVolume,
   type IStartPlayer,
   type IStopPlayer,
@@ -72,6 +73,9 @@ export const useAudioPlayer = () => {
       result => callback(result)
     );
 
+  const setPlaybackSpeed = (args: ISetPlaybackSpeed) =>
+    AudioWaveform.setPlaybackSpeed(args);
+
   return {
     extractWaveformData,
     pausePlayer,
@@ -86,5 +90,6 @@ export const useAudioPlayer = () => {
     onCurrentExtractedWaveformData,
     getDuration,
     onCurrentRecordingWaveformData,
+    setPlaybackSpeed,
   };
 };

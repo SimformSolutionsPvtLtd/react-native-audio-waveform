@@ -60,4 +60,7 @@ RCT_EXTERN_METHOD(getDuration:(NSDictionary *)args
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(stopAllPlayers:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(setPlaybackSpeed:(NSDictionary *)args
+                  resolver: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
 @end

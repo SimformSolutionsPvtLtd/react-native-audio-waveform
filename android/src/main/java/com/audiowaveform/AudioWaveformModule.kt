@@ -34,6 +34,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     companion object {
         const val NAME = "AudioWaveform"
+        const val MAX_NUMBER_OF_AUDIO_PLAYER = 30
     }
 
     override fun getName(): String {
@@ -100,16 +101,27 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         obj: ReadableMap,
         promise: Promise
     ) {
+        if(audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
+            promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
+        }
+
         val path = obj.getString(Constants.path)
         val key = obj.getString(Constants.playerKey)
         val frequency = obj.getInt(Constants.updateFrequency)
         val volume = obj.getInt(Constants.volume)
+        val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
+            0 // Set default progress to zero if null, undefined, or missing
+        } else {
+            obj.getInt(Constants.progress).toLong()
+        }
+
         if (key != null) {
             initPlayer(key)
             audioPlayers[key]?.preparePlayer(
                 path,
                 volume,
                 getUpdateFrequency(frequency),
+                progress,
                 promise
             )
         } else {
@@ -121,8 +133,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun startPlayer(obj: ReadableMap, promise: Promise) {
         val finishMode = obj.getInt(Constants.finishMode)
         val key = obj.getString(Constants.playerKey)
+        val speed = obj.getDouble(Constants.speed)
         if (key != null) {
-            audioPlayers[key]?.start(finishMode ?: 2, promise)
+            audioPlayers[key]?.start(finishMode ?: 2, speed.toFloat(),promise)
         } else {
             promise.reject("startPlayer Error", "Player key can't be null")
         }
@@ -133,6 +146,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val key = obj.getString(Constants.playerKey)
         if (key != null) {
             audioPlayers[key]?.stop(promise)
+            audioPlayers[key] = null // Release the player after stopping it
         } else {
             promise.reject("stopPlayer Error", "Player key can't be null")
         }
@@ -206,6 +220,23 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         for ((key, _) in audioPlayers) {
             audioPlayers[key]?.stop(promise)
             audioPlayers[key] = null
+        }
+    }
+
+    @ReactMethod
+    fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
+        // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
+        val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
+            1.0f // Set default speed to 1.0 if null, undefined, or missing
+        } else {
+            obj.getDouble(Constants.speed).toFloat()
+        }
+
+        val key = obj.getString(Constants.playerKey)
+        if (key != null) {
+            audioPlayers[key]?.setPlaybackSpeed(speed, promise)
+        } else {
+            promise.reject("setPlaybackSpeed Error", "Player key can't be null")
         }
     }
 

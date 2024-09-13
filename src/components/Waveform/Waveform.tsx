@@ -17,6 +17,7 @@ import {
   DurationType,
   FinishMode,
   PermissionStatus,
+  playbackSpeedThreshold,
   PlayerState,
   RecorderState,
   UpdateFrequency,
@@ -39,8 +40,13 @@ import {
 
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
+    // The maximum number of candles set in the waveform. Once this limit is reached, the oldest candle will be removed as a new one is added to the waveform.
+    maxCandlesToRender = 300,
     mode,
     path,
+    volume = 3,
+    // The playback speed of the audio player. A value of 1.0 represents normal playback speed.
+    playbackSpeed = 1.0,
     candleSpace = 2,
     candleWidth = 5,
     containerStyle = {},
@@ -48,14 +54,15 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     scrubColor,
     onPlayerStateChange,
     onRecorderStateChange,
-    onPanStateChange,
+    onPanStateChange = () => {},
     onError,
-    onCurrentProgressChange,
+    onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const isLayoutCalculated = useRef<boolean>(false);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [viewLayout, setViewLayout] = useState<LayoutRectangle | null>(null);
   const [seekPosition, setSeekPosition] = useState<NativeTouchEvent | null>(
@@ -67,6 +74,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const [panMoving, setPanMoving] = useState(false);
   const [playerState, setPlayerState] = useState(PlayerState.stopped);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
+  const audioSpeed: number =
+    playbackSpeed > playbackSpeedThreshold ? 1.0 : playbackSpeed;
 
   const {
     extractWaveformData,
@@ -79,6 +88,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentDuration,
     onDidFinishPlayingAudio,
     onCurrentRecordingWaveformData,
+    setPlaybackSpeed,
   } = useAudioPlayer();
 
   const { startRecording, stopRecording, pauseRecording, resumeRecording } =
@@ -86,14 +96,35 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
 
-  const preparePlayerForPath = async () => {
+  /**
+   * Updates the playback speed of the audio player.
+   *
+   * @param speed - The new playback speed to set.
+   * @returns A Promise that resolves when the playback speed has been updated.
+   * @throws An error if there was a problem updating the playback speed.
+   */
+  const updatePlaybackSpeed = async (speed: number) => {
+    try {
+      await setPlaybackSpeed({ speed, playerKey: `PlayerFor${path}` });
+    } catch (error) {
+      console.error('Error updating playback speed', error);
+    }
+  };
+
+  useEffect(() => {
+    updatePlaybackSpeed(audioSpeed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioSpeed]);
+
+  const preparePlayerForPath = async (progress?: number) => {
     if (!isNil(path) && !isEmpty(path)) {
       try {
         const prepare = await preparePlayer({
           path,
           playerKey: `PlayerFor${path}`,
           updateFrequency: UpdateFrequency.medium,
-          volume: 10,
+          volume: volume,
+          progress,
         });
         return Promise.resolve(prepare);
       } catch (err) {
@@ -113,7 +144,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         durationType: DurationType.max,
       });
       if (!isNil(duration)) {
-        setSongDuration(duration);
+        const audioDuration = Number(duration);
+        setSongDuration(audioDuration > 0 ? audioDuration : 0);
+        return Promise.resolve(audioDuration);
       } else {
         return Promise.reject(
           new Error(`Could not get duration for path: ${path}`)
@@ -128,7 +161,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     try {
       const prepare = await preparePlayerForPath();
       if (prepare) {
-        await getAudioDuration();
+        const duration = await getAudioDuration();
+        if (duration < 0) {
+          await getAudioDuration();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -173,7 +209,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const result = await stopPlayer({
           playerKey: `PlayerFor${path}`,
         });
-        await preparePlayerForPath();
         if (!isNil(result) && result) {
           setCurrentProgress(0);
           setPlayerState(PlayerState.stopped);
@@ -196,10 +231,15 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     if (mode === 'static') {
       try {
+        if (playerState === PlayerState.stopped) {
+          await preparePlayerForPath(currentProgress);
+        }
+
         const play = await playPlayer({
           finishMode: FinishMode.stop,
           playerKey: `PlayerFor${path}`,
           path: path,
+          speed: audioSpeed,
           ...args,
         });
 
@@ -363,13 +403,19 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       const getNumberOfSamples = floor(
         (viewLayout?.width ?? 0) / (candleWidth + candleSpace)
       );
+
+      // when orientation changes, the layout needs to be recalculated
+      if (viewLayout?.x === 0 && viewLayout?.y === 0) {
+        isLayoutCalculated.current = false;
+      }
+
       setNoOfSamples(getNumberOfSamples);
       if (mode === 'static') {
         getAudioWaveFormForPath(getNumberOfSamples);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewLayout, mode, candleWidth, candleSpace]);
+  }, [viewLayout?.width, mode, candleWidth, candleSpace]);
 
   useEffect(() => {
     if (!isNil(seekPosition)) {
@@ -408,7 +454,13 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
     const tracePlaybackValue = onCurrentDuration(data => {
       if (data.playerKey === `PlayerFor${path}`) {
-        setCurrentProgress(data.currentDuration);
+        const currentAudioDuration = Number(data.currentDuration);
+
+        if (!isNaN(currentAudioDuration)) {
+          setCurrentProgress(currentAudioDuration);
+        } else {
+          setCurrentProgress(0);
+        }
       }
     });
 
@@ -416,7 +468,18 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       result => {
         if (mode === 'live') {
           if (!isNil(result.currentDecibel)) {
-            setWaveform(prev => [...prev, result.currentDecibel]);
+            setWaveform((previousWaveform: number[]) => {
+              // Add the new decibel to the waveform
+              const updatedWaveform: number[] = [
+                ...previousWaveform,
+                result.currentDecibel,
+              ];
+
+              // Limit the size of the waveform array to 'maxCandlesToRender'
+              return updatedWaveform.length > maxCandlesToRender
+                ? updatedWaveform.slice(1)
+                : updatedWaveform;
+            });
             if (scrollRef.current) {
               scrollRef.current.scrollToEnd({ animated: true });
             }
@@ -459,8 +522,25 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panMoving]);
 
+  const calculateLayout = (): void => {
+    viewRef.current?.measureInWindow((x, y, width, height) => {
+      setViewLayout({ x, y, width, height });
+      if (x !== 0 || y !== 0) {
+        // found the position of view in window
+        isLayoutCalculated.current = true;
+      }
+    });
+  };
+
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => {
+        if (!isLayoutCalculated.current) {
+          calculateLayout();
+        }
+
+        return true;
+      },
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         setPanMoving(true);
@@ -499,18 +579,14 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       <View
         ref={viewRef}
         style={styles.waveformInnerContainer}
-        onLayout={() => {
-          viewRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
-            setViewLayout({ height, width, x: pageX, y: pageY });
-          });
-        }}
+        onLayout={calculateLayout}
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
         <ScrollView
           horizontal
           ref={scrollRef}
           style={styles.scrollContainer}
           scrollEnabled={mode === 'live'}>
-          {waveform.map((amplitude, indexCandle) => (
+          {waveform?.map?.((amplitude, indexCandle) => (
             <WaveformCandle
               key={indexCandle}
               index={indexCandle}

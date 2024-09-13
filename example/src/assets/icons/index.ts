@@ -3,4 +3,5 @@ export const Icons = {
   stop: require('./stop.png'),
   simform: require('./simform.png'),
   mic: require('./mic.png'),
+  logo: require('./logo.png'),
 };

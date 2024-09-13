@@ -1,4 +1,8 @@
-export { Waveform, type IWaveformRef } from './components';
+export {
+  Waveform,
+  type IWaveformRef,
+  type PlaybackSpeedType,
+} from './components';
 export {
   FinishMode,
   PermissionStatus,
@@ -6,4 +10,4 @@ export {
   RecorderState,
   UpdateFrequency,
 } from './constants';
-export { useAudioPermission } from './hooks';
+export { useAudioPermission, useAudioPlayer } from './hooks';

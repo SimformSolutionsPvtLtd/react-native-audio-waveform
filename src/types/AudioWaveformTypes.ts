@@ -29,10 +29,12 @@ export interface IExtractWaveform extends IPlayerKey, IPlayerPath {
 export interface IPreparePlayer extends IPlayerKey, IPlayerPath {
   updateFrequency?: UpdateFrequency;
   volume?: number;
+  progress?: number;
 }
 
 export interface IStartPlayer extends IPlayerKey {
   finishMode?: FinishMode;
+  speed?: number;
   path?: string;
 }
 
@@ -67,6 +69,10 @@ export interface IOnCurrentExtractedWaveForm extends IPlayerKey {
 
 export interface IOnCurrentRecordingWaveForm {
   currentDecibel: number;
+}
+
+export interface ISetPlaybackSpeed extends IPlayerKey {
+  speed: number;
 }
 
 /**
@@ -195,4 +201,11 @@ export interface IAudioWaveforms extends NativeModule {
    * @returns A promise that resolves to a boolean indicating if all players were stopped successfully.
    */
   stopAllPlayers(): Promise<boolean>;
+
+  /**
+   * Sets the playback speed of the audio.
+   * @param args - The playback speed to set, where 1.0 is normal speed.
+   * @returns A promise that resolves to a boolean indicating if the playback speed was set successfully.
+   */
+  setPlaybackSpeed(args: ISetPlaybackSpeed): Promise<boolean>;
 }

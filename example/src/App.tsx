@@ -1,3 +1,14 @@
+import {
+  FinishMode,
+  IWaveformRef,
+  PermissionStatus,
+  PlaybackSpeedType,
+  PlayerState,
+  RecorderState,
+  UpdateFrequency,
+  Waveform,
+  useAudioPermission,
+} from '@simform_solutions/react-native-audio-waveform';
 import React, {
   Dispatch,
   SetStateAction,
@@ -13,39 +24,38 @@ import {
   Pressable,
   ScrollView,
   StatusBar,
+  Text,
   View,
 } from 'react-native';
-import {
-  FinishMode,
-  IWaveformRef,
-  PermissionStatus,
-  PlayerState,
-  RecorderState,
-  UpdateFrequency,
-  Waveform,
-  useAudioPermission,
-} from '@simform_solutions/react-native-audio-waveform';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { Gifs, Icons } from './assets';
-import { audioListArray, type ListItem } from './constants';
+import {
+  generateAudioList,
+  playbackSpeedSequence,
+  type ListItem,
+} from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
 
-const ListItem = React.memo(
+const RenderListItem = React.memo(
   ({
     item,
     currentPlaying,
     setCurrentPlaying,
     onPanStateChange,
+    currentPlaybackSpeed,
+    changeSpeed,
   }: {
     item: ListItem;
     currentPlaying: string;
     setCurrentPlaying: Dispatch<SetStateAction<string>>;
     onPanStateChange: (value: boolean) => void;
+    currentPlaybackSpeed: PlaybackSpeedType;
+    changeSpeed: () => void;
   }) => {
     const ref = useRef<IWaveformRef>(null);
     const [playerState, setPlayerState] = useState(PlayerState.stopped);
@@ -100,6 +110,7 @@ const ListItem = React.memo(
               containerStyle={styles.staticWaveformView}
               mode="static"
               key={item.path}
+              playbackSpeed={currentPlaybackSpeed}
               ref={ref}
               path={item.path}
               candleSpace={2}
@@ -132,6 +143,15 @@ const ListItem = React.memo(
                 setIsLoading(state);
               }}
             />
+            {playerState === PlayerState.playing ? (
+              <Pressable
+                onPress={changeSpeed}
+                style={[styles.speedBox, styles.whiteBackground]}>
+                <Text style={styles.speed}>{`${currentPlaybackSpeed}x`}</Text>
+              </Pressable>
+            ) : (
+              <Image style={styles.speedBox} source={Icons.logo} />
+            )}
           </ImageBackground>
         </View>
       </View>
@@ -187,7 +207,7 @@ const LivePlayerComponent = ({
         containerStyle={styles.liveWaveformView}
         ref={ref}
         candleSpace={2}
-        candleWidth={2}
+        candleWidth={4}
         waveColor={Colors.pink}
         onRecorderStateChange={setRecorderState}
       />
@@ -209,10 +229,30 @@ const LivePlayerComponent = ({
 const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
   const [currentPlaying, setCurrentPlaying] = useState<string>('');
-  const [list, setList] = useState<ListItem[]>(audioListArray);
+  const [list, setList] = useState<ListItem[]>([]);
+  const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
+    useState<PlaybackSpeedType>(1.0);
 
   const { top, bottom } = useSafeAreaInsets();
   const styles = stylesheet({ top, bottom });
+
+  useEffect(() => {
+    generateAudioList().then(audioListArray => {
+      if (audioListArray?.length > 0) {
+        setList(audioListArray);
+      }
+    });
+  }, []);
+
+  const changeSpeed = () => {
+    setCurrentPlaybackSpeed(
+      prev =>
+        playbackSpeedSequence[
+          (playbackSpeedSequence.indexOf(prev) + 1) %
+            playbackSpeedSequence.length
+        ] ?? 1.0
+    );
+  };
 
   return (
     <View style={styles.appContainer}>
@@ -236,12 +276,13 @@ const AppContainer = () => {
             </View>
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
-                <ListItem
+                <RenderListItem
                   key={item.path}
                   currentPlaying={currentPlaying}
                   setCurrentPlaying={setCurrentPlaying}
                   item={item}
                   onPanStateChange={value => setShouldScroll(!value)}
+                  {...{ currentPlaybackSpeed, changeSpeed }}
                 />
               ))}
             </ScrollView>

@@ -142,6 +142,7 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[key!]?.preparePlayer(args?[Constants.path] as? String,
                                         volume: args?[Constants.volume] as? Double,
                                         updateFrequency: UpdateFrequency(rawValue: (args?[Constants.updateFrequency]) as? Double ?? 0) ?? UpdateFrequency.medium,
+                                        time: args?[Constants.progress] as? Double ?? 0,
                                         resolver: resolve,
                                         rejecter: reject)
     } else {
@@ -152,8 +153,10 @@ class AudioWaveform: RCTEventEmitter {
   @objc func startPlayer(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
     let finishMode = args?[Constants.finishMode] as? Int
+    let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
+      
     if(key != nil){
-      audioPlayers[key!]?.startPlyer(finishMode, result:resolve)
+        audioPlayers[key!]?.startPlyer(finishMode, speed: speed, result:resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not start player", NSError())
     }
@@ -172,6 +175,7 @@ class AudioWaveform: RCTEventEmitter {
     let key = args?[Constants.playerKey] as? String
     if(key != nil){
       audioPlayers[key!]?.stopPlayer(result: resolve)
+      audioPlayers[key!] = nil // Release the player after stopping it
     } else {
       reject(Constants.audioWaveforms, "Can not stop player, Player key is null", NSError())
     }
@@ -237,5 +241,17 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[playerKey] = newPlayer
     }
   }
-  
+    
+    @objc func setPlaybackSpeed(_ args: NSDictionary?,
+                                resolver resolve: @escaping RCTPromiseResolveBlock,
+                                rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        let key = args?[Constants.playerKey] as? String
+        let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
+        
+        if(key != nil){
+          audioPlayers[key!]?.setPlaybackSpeed(speed, resolve)
+        } else {
+          reject(Constants.audioWaveforms, "Can not pause player, Player key is null", NSError())
+        }
+    }
 }
