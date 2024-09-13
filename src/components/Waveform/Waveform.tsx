@@ -10,7 +10,6 @@ import {
   PanResponder,
   ScrollView,
   View,
-  type LayoutChangeEvent,
   type LayoutRectangle,
   type NativeTouchEvent,
 } from 'react-native';
@@ -63,6 +62,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const isLayoutCalculated = useRef<boolean>(false);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [viewLayout, setViewLayout] = useState<LayoutRectangle | null>(null);
   const [seekPosition, setSeekPosition] = useState<NativeTouchEvent | null>(
@@ -403,13 +403,19 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       const getNumberOfSamples = floor(
         (viewLayout?.width ?? 0) / (candleWidth + candleSpace)
       );
+
+      // when orientation changes, the layout needs to be recalculated
+      if (viewLayout?.x === 0 && viewLayout?.y === 0) {
+        isLayoutCalculated.current = false;
+      }
+
       setNoOfSamples(getNumberOfSamples);
       if (mode === 'static') {
         getAudioWaveFormForPath(getNumberOfSamples);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewLayout, mode, candleWidth, candleSpace]);
+  }, [viewLayout?.width, mode, candleWidth, candleSpace]);
 
   useEffect(() => {
     if (!isNil(seekPosition)) {
@@ -516,8 +522,25 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panMoving]);
 
+  const calculateLayout = (): void => {
+    viewRef.current?.measureInWindow((x, y, width, height) => {
+      setViewLayout({ x, y, width, height });
+      if (x !== 0 || y !== 0) {
+        // found the position of view in window
+        isLayoutCalculated.current = true;
+      }
+    });
+  };
+
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => {
+        if (!isLayoutCalculated.current) {
+          calculateLayout();
+        }
+
+        return true;
+      },
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         setPanMoving(true);
@@ -556,10 +579,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       <View
         ref={viewRef}
         style={styles.waveformInnerContainer}
-        onLayout={(event: LayoutChangeEvent) => {
-          const { height, width, x, y } = event.nativeEvent.layout;
-          setViewLayout({ height, width, x, y });
-        }}
+        onLayout={calculateLayout}
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
         <ScrollView
           horizontal
