@@ -62,3 +62,6 @@ buck-out/
 
 # generated
 lib
+
+.history/
+*.tgz

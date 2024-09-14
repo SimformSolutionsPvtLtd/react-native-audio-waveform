@@ -81,13 +81,7 @@ const RenderListItem = React.memo(
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
         <View style={styles.listItemWidth}>
-          <ImageBackground
-            source={
-              item.fromCurrentUser
-                ? Gifs.audioBackground1
-                : Gifs.audioBackground2
-            }
-            style={[styles.buttonContainer]}>
+          <View style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
               style={styles.playBackControlPressable}
@@ -152,7 +146,7 @@ const RenderListItem = React.memo(
             ) : (
               <Image style={styles.speedBox} source={Icons.logo} />
             )}
-          </ImageBackground>
+          </View>
         </View>
       </View>
     );
@@ -263,9 +257,6 @@ const AppContainer = () => {
         backgroundColor={'transparent'}
       />
       <GestureHandlerRootView style={styles.appContainer}>
-        <ImageBackground
-          source={Gifs.appBackground}
-          style={styles.screenBackground}>
           <View style={styles.container}>
             <View style={styles.simformImageContainer}>
               <Image
@@ -288,7 +279,7 @@ const AppContainer = () => {
             </ScrollView>
           </View>
           <LivePlayerComponent setList={setList} />
-        </ImageBackground>
+
       </GestureHandlerRootView>
     </View>
   );
