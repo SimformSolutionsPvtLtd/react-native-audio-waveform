@@ -76,7 +76,7 @@ const RenderListItem = React.memo(
       } else {
         ref.current?.startPlayer({ finishMode: FinishMode.stop });
       }
-    }, [currentPlaying]);
+    }, [currentPlaying, item.path]);
 
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
@@ -90,8 +90,8 @@ const RenderListItem = React.memo(
             style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
-              onPress={handleButtonAction}
-              style={styles.playBackControlPressable}>
+              style={styles.playBackControlPressable}
+              onPress={handleButtonAction}>
               {isLoading ? (
                 <ActivityIndicator color={'#FF0000'} />
               ) : (
@@ -145,8 +145,8 @@ const RenderListItem = React.memo(
             />
             {playerState === PlayerState.playing ? (
               <Pressable
-                onPress={changeSpeed}
-                style={[styles.speedBox, styles.whiteBackground]}>
+                style={[styles.speedBox, styles.whiteBackground]}
+                onPress={changeSpeed}>
                 <Text style={styles.speed}>{`${currentPlaybackSpeed}x`}</Text>
               </Pressable>
             ) : (
@@ -181,7 +181,7 @@ const LivePlayerComponent = ({
 
   const handleRecorderAction = async () => {
     if (recorderState === RecorderState.stopped) {
-      let hasPermission = await checkHasAudioRecorderPermission();
+      const hasPermission = await checkHasAudioRecorderPermission();
 
       if (hasPermission === PermissionStatus.granted) {
         startRecording();
@@ -212,8 +212,8 @@ const LivePlayerComponent = ({
         onRecorderStateChange={setRecorderState}
       />
       <Pressable
-        onPress={handleRecorderAction}
-        style={styles.recordAudioPressable}>
+        style={styles.recordAudioPressable}
+        onPress={handleRecorderAction}>
         <Image
           source={
             recorderState === RecorderState.stopped ? Icons.mic : Icons.stop
@@ -257,10 +257,10 @@ const AppContainer = () => {
   return (
     <View style={styles.appContainer}>
       <StatusBar
-        barStyle={'dark-content'}
-        backgroundColor={'transparent'}
         animated
         translucent
+        barStyle={'dark-content'}
+        backgroundColor={'transparent'}
       />
       <GestureHandlerRootView style={styles.appContainer}>
         <ImageBackground
