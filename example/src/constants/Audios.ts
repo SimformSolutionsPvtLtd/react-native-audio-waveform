@@ -22,24 +22,41 @@ const filePath: string = globalMetrics.isAndroid
  * @returns {Promise<boolean>} A Promise that resolves to true if the file is copied successfully, otherwise false.
  */
 const copyFile = async (
+  path: string,
   value: string,
   destinationPath: string
 ): Promise<boolean> => {
-  const fileExists = await fs.exists(`${destinationPath}/${value}`);
+  const fileDestinationPath = `${destinationPath}/${value}`;
+  const valueFilePath = `${path}/${value}`;
 
-  if (!fileExists) {
+  const fileAlreadyCopied = await fs.exists(fileDestinationPath);
+
+  if (!fileAlreadyCopied) {
     try {
-      const file = await fs.readFileRes(`raw/${value}`, 'base64');
-      await fs.writeFile(`${destinationPath}/${value}`, file, 'base64');
+      const valueFileExists = await fs.exists(valueFilePath);
+      if (!valueFileExists)
+        throw new Error(`File ${valueFilePath} does not exist`);
+
+      await fs.copyFile(valueFilePath, fileDestinationPath);
       return true;
     } catch (error) {
-      console.error(`Error copying file ${value}: `, error);
+      console.error(
+        `Error copying file from ${valueFilePath} to ${destinationPath}`,
+        error
+      );
       return false;
     }
   }
 
   return true; // File already exists
 };
+
+const audioAssetArray = [
+  'file_example_mp3_700kb.mp3',
+  'file_example_mp3_1mg.mp3',
+  'file_example_mp3_12s.mp3',
+  'file_example_mp3_15s.mp3',
+];
 
 /**
  * Copy all files in the 'audioAssetArray' to the destination path (Android only), or return all files (iOS).
@@ -49,7 +66,11 @@ const copyFilesToNativeResources = async (): Promise<string[]> => {
   if (globalMetrics.isAndroid) {
     const successfulCopies = await Promise.all(
       audioAssetArray.map(async value => {
-        const isSuccess = await copyFile(value, filePath);
+        const isSuccess = await copyFile(
+          fs.ExternalCachesDirectoryPath,
+          value,
+          filePath
+        );
         return isSuccess ? value : null;
       })
     );
@@ -61,13 +82,6 @@ const copyFilesToNativeResources = async (): Promise<string[]> => {
   // On iOS, return all files without copying
   return audioAssetArray;
 };
-
-const audioAssetArray = [
-  'file_example_mp3_700kb.mp3',
-  'file_example_mp3_1mg.mp3',
-  'file_example_mp3_12s.mp3',
-  'file_example_mp3_15s.mp3',
-];
 
 /**
  * Generate a list of file objects with information about successfully copied files (Android)
