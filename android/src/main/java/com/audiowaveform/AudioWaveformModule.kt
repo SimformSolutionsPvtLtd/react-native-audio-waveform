@@ -42,6 +42,20 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
+    fun markPlayerAsUnmounted() {
+        if (audioPlayers.isEmpty()) {
+            return
+        }
+
+        audioPlayers.values.forEach { player ->
+            if (player != null) {
+                player.markPlayerAsUnmounted()
+            }
+        }
+    }
+
+
+    @ReactMethod
     fun checkHasAudioRecorderPermission(promise: Promise) {
         audioRecorder.checkPermission(currentActivity, promise)
     }

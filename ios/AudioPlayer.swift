@@ -19,6 +19,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   var plugin: AudioWaveform
   var playerKey: String
   var rnChannel: AnyObject
+  private var isComponentMounted: Bool = true // Add flag to track mounted state
   
   init(plugin: AudioWaveform, playerKey: String, channel: AnyObject) {
     self.plugin = plugin
@@ -30,6 +31,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   func preparePlayer(_ path: String?, volume: Double?, updateFrequency: UpdateFrequency, time: Double, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if(!(path ?? "").isEmpty) {
       self.updateFrequency = updateFrequency
+      isComponentMounted = true
       let audioUrl = URL.init(string: path!)
       if(audioUrl == nil){
         reject(Constants.audioWaveforms, "Failed to initialise Url from provided audio file & If path contains `file://` try removing it", NSError(domain: Constants.audioWaveforms, code: 1))
@@ -50,6 +52,10 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     } else {
       reject(Constants.audioWaveforms, "Audio file path can't be empty or null", NSError(domain: Constants.audioWaveforms, code: 1))
     }
+  }
+
+  func markPlayerAsUnmounted() {
+    isComponentMounted = false
   }
   
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer,
@@ -75,6 +81,9 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   
   
   public func sendEvent(withName: String, body: Any?) {
+    guard isComponentMounted else {
+      return
+    }
     EventEmitter.sharedInstance.dispatch(name: withName, body: body)
   }
   

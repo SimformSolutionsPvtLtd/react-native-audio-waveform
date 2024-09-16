@@ -59,6 +59,16 @@ class AudioWaveform: RCTEventEmitter {
   @objc func getAudioRecorderPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     audioRecorder.getAudioRecorderPermission(resolve)
   }
+
+  @objc func markPlayerAsUnmounted() {    
+    if audioPlayers.isEmpty {
+      return
+    }
+    
+    for (_, player) in audioPlayers {
+      player.markPlayerAsUnmounted()
+    }
+  }
   
   @objc func startRecording(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     audioRecorder.startRecording(args?[Constants.path] as? String,
