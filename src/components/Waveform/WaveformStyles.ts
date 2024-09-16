@@ -6,9 +6,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: { flexDirection: 'row' },
-  scrollContainer: {
-    height: '100%',
-  },
   waveformContainer: {
     backgroundColor: Colors.transparent,
     height: 60,

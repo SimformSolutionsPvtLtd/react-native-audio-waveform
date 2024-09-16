@@ -37,6 +37,7 @@ import {
   type LiveWaveform,
   type StaticWaveform,
 } from './WaveformTypes';
+import { WaveformWrapper } from '../WaveformWrapper';
 
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
@@ -581,11 +582,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         style={styles.waveformInnerContainer}
         onLayout={calculateLayout}
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
-        <ScrollView
-          horizontal
-          ref={scrollRef}
-          style={styles.scrollContainer}
-          scrollEnabled={mode === 'live'}>
+        <WaveformWrapper {...{ scrollRef, waveformMode: mode }}>
           {waveform?.map?.((amplitude, indexCandle) => (
             <WaveformCandle
               key={indexCandle}
@@ -604,7 +601,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
               }}
             />
           ))}
-        </ScrollView>
+        </WaveformWrapper>
       </View>
     </View>
   );

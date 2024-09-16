@@ -2,7 +2,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { FinishMode, PlayerState, RecorderState } from '../../constants';
 import type { IStartRecording } from '../../types';
 
-type StaticOrLive = 'static' | 'live';
+export type StaticOrLive = 'static' | 'live';
 
 export type PlaybackSpeedType = 1.0 | 1.5 | 2.0;
 
