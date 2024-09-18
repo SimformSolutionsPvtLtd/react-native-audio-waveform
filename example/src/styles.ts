@@ -36,10 +36,12 @@ const styles = (params: StyleSheetParams = {}) =>
       overflow: 'hidden',
       columnGap: scale(8),
       paddingHorizontal: scale(8),
+      backgroundColor: 'pink',
     },
     listItemContainer: {
       marginTop: scale(16),
       alignItems: params.currentUser ? 'flex-end' : 'flex-start',
+      // marginVertical: '56%',
     },
     listItemWidth: {
       width: '90%',

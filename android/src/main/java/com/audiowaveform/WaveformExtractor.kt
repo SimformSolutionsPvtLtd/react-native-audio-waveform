@@ -7,9 +7,9 @@ import android.media.MediaFormat
 import android.net.Uri
 import android.os.Build
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.nio.ByteBuffer
@@ -24,7 +24,6 @@ class WaveformExtractor(
     private val expectedPoints: Int,
     private val key: String,
     private val extractorCallBack: ExtractorCallBack,
-    promise: Promise,
 ): ReactContextBaseJavaModule(context) {
     private var decoder: MediaCodec? = null
     private var extractor: MediaExtractor? = null
@@ -33,7 +32,7 @@ class WaveformExtractor(
     private var currentProgress = 0F
 
     @Volatile
-    private var started = false
+    private var inProgress = false
     private val finishCount = CountDownLatch(1)
     private var inputEof = false
     private var sampleRate = 0
@@ -41,7 +40,6 @@ class WaveformExtractor(
     private var pcmEncodingBit = 16
     private var totalSamples = 0L
     private var perSamplePoints = 0L
-    private var promise: Promise = promise
 
     override fun getName(): String {
         return "WaveformExtractor"
@@ -68,7 +66,7 @@ class WaveformExtractor(
     fun startDecode() {
         try {
             if (!File(path).exists()) {
-                promise.reject("File Error", "File does not exist at the given path.")
+                extractorCallBack.onReject("File Error", "File does not exist at the given path.")
                 return
             }
 
@@ -78,7 +76,7 @@ class WaveformExtractor(
                 it.configure(format, null, null, 0)
                 it.setCallback(object : MediaCodec.Callback() {
                     override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-                        if (inputEof) return
+                        if (inputEof || !inProgress) return
                         val extractor = extractor ?: return
                         codec.getInputBuffer(index)?.let { buf ->
                             val size = extractor.readSampleData(buf, 0)
@@ -99,6 +97,7 @@ class WaveformExtractor(
                     }
 
                     override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
+                        if(!inProgress) return
                         sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
                         channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
                         pcmEncodingBit = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -120,7 +119,7 @@ class WaveformExtractor(
                     }
 
                     override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-                        promise.reject(
+                        extractorCallBack.onReject(
                             Constants.LOG_TAG + " " + e.message,
                             "An error is thrown while decoding the audio file"
                         )
@@ -132,7 +131,7 @@ class WaveformExtractor(
                         index: Int,
                         info: MediaCodec.BufferInfo
                     ) {
-                        if (info.size > 0) {
+                        if (inProgress && info.size > 0) {
                             codec.getOutputBuffer(index)?.let { buf ->
                                 val size = info.size
                                 buf.position(info.offset)
@@ -147,7 +146,8 @@ class WaveformExtractor(
                                         handle32bit(size, buf)
                                     }
                                 }
-                                codec.releaseOutputBuffer(index, false)
+                                // Releasing only if not stopped else we are getting IllegalStateException inaccessible buffer
+                                if(inProgress) codec.releaseOutputBuffer(index, false)
                             }
                         }
 
@@ -155,17 +155,20 @@ class WaveformExtractor(
                             stop()
                             val tempArrayForCommunication : MutableList<MutableList<Float>> = mutableListOf()
                             tempArrayForCommunication.add(sampleData)
-                            promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                            extractorCallBack.onResolve(Arguments.fromList(tempArrayForCommunication))
                         }
                     }
                 })
+                inProgress = true
                 it.start()
             }
 
         } catch (e: Exception) {
-            promise.reject(
+            stop()
+            extractorCallBack.onReject(
                 e.message , "An error is thrown before decoding the audio file"
             )
+
         }
     }
 
@@ -173,17 +176,11 @@ class WaveformExtractor(
     private var sampleCount = 0L
     private var sampleSum = 0.0
 
-    private fun rms(value: Float) {
+    private fun rms(value: Float): Boolean {
         try {
             if (sampleCount == perSamplePoints) {
                 currentProgress++
                 progress = (currentProgress / expectedPoints)
-
-                // Discard redundant values and release resources
-                if (progress > 1.0F) {
-                    stop()
-                    return
-                }
 
                 val rms = sqrt(sampleSum / perSamplePoints)
                 sampleData.add(rms.toFloat())
@@ -196,58 +193,73 @@ class WaveformExtractor(
                 argsParams.putString(Constants.progress, progress.toString())
                 argsParams.putString(Constants.playerKey, key)
                 reactApplicationContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(Constants.onCurrentExtractedWaveformData, argsParams)
+
+                // Discard redundant values and release resources
+                if (progress >= 1.0F) {
+                    stop()
+                    return true
                 }
             }
-            catch (e: Exception) {
-            promise.reject("RMS ERROR" ,e.message)
+        }
+        catch (e: Exception) {
+            stop()
+            extractorCallBack.onReject("RMS ERROR" ,e.message)
+            return true;
         }
         sampleCount++
         sampleSum += value.toDouble().pow(2.0)
+        return false;
     }
 
     private fun handle8bit(size: Int, buf: ByteBuffer) {
-        repeat(size / if (channels == 2) 2 else 1) {
-            val result = buf.get().toInt() / 128f
-            if (channels == 2) {
-                buf.get()
+        run blockRepeat@ {
+            repeat(size / if (channels == 2) 2 else 1) {
+                val result = buf.get().toInt() / 128f
+                if (channels == 2) {
+                    buf.get()
+                }
+                if (rms(result)) return@blockRepeat
             }
-            rms(result)
         }
     }
 
     private fun handle16bit(size: Int, buf: ByteBuffer) {
-        repeat(size / if (channels == 2) 4 else 2) {
-            val first = buf.get().toInt()
-            val second = buf.get().toInt() shl 8
-            val value = (first or second) / 32767f
-            if (channels == 2) {
-                buf.get()
-                buf.get()
+        run blockRepeat@{
+            repeat(size / if (channels == 2) 4 else 2) {
+                val first = buf.get().toInt()
+                val second = buf.get().toInt() shl 8
+                val value = (first or second) / 32767f
+                if (channels == 2) {
+                    buf.get()
+                    buf.get()
+                }
+                if (rms(value)) return@blockRepeat
             }
-            rms(value)
         }
     }
 
     private fun handle32bit(size: Int, buf: ByteBuffer) {
-        repeat(size / if (channels == 2) 8 else 4) {
-            val first = buf.get().toLong()
-            val second = buf.get().toLong() shl 8
-            val third = buf.get().toLong() shl 16
-            val forth = buf.get().toLong() shl 24
-            val value = (first or second or third or forth) / "2147483648f".toFloat()
-            if (channels == 2) {
-                buf.get()
-                buf.get()
-                buf.get()
-                buf.get()
+        run blockRepeat@{
+            repeat(size / if (channels == 2) 8 else 4) {
+                val first = buf.get().toLong()
+                val second = buf.get().toLong() shl 8
+                val third = buf.get().toLong() shl 16
+                val forth = buf.get().toLong() shl 24
+                val value = (first or second or third or forth) / "2147483648f".toFloat()
+                if (channels == 2) {
+                    buf.get()
+                    buf.get()
+                    buf.get()
+                    buf.get()
+                }
+                if (rms(value)) return@blockRepeat
             }
-            rms(value)
         }
     }
 
-    fun stop() {
-        if (!started) return
-        started = false
+    private fun stop() {
+        if (!inProgress) return
+        inProgress = false
         decoder?.stop()
         decoder?.release()
         extractor?.release()
@@ -259,4 +271,6 @@ fun MediaCodec.BufferInfo.isEof() = flags and MediaCodec.BUFFER_FLAG_END_OF_STRE
 
 interface ExtractorCallBack {
     fun onProgress(value: Float)
+    fun onReject(error: String?, message: String?)
+    fun onResolve(value: WritableArray)
 }

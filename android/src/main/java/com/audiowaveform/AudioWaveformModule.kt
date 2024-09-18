@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.File
@@ -268,19 +269,24 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             key = playerKey,
             extractorCallBack = object : ExtractorCallBack {
                 override fun onProgress(value: Float) {
-                     if (value == 1.0F) {
+                    if (value == 1.0F) {
                         extractors[playerKey]?.sampleData?.let { data ->
                             val normalizedData = normalizeWaveformData(data, 0.12f)
-                            val tempArrayForCommunication: MutableList<MutableList<Float>> = mutableListOf(normalizedData)
+                            val tempArrayForCommunication: MutableList<MutableList<Float>> =
+                                mutableListOf(normalizedData)
                             promise.resolve(Arguments.fromList(tempArrayForCommunication))
                         }
                     }
                 }
-            },
-            promise
+                override fun onReject(error: String?, message: String?) {
+                    promise.reject(error, message)
+                }
+                override fun onResolve(value: WritableArray) {
+                    promise.resolve(value)
+                }
+            }
         )
-        extractors[playerKey]?.startDecode()
-        extractors[playerKey]?.stop()
+        extractors[playerKey]?.startDecode();
     }
 
     private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {
