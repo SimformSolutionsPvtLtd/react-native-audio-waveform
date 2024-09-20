@@ -19,7 +19,6 @@ import React, {
 import {
   ActivityIndicator,
   Image,
-  ImageBackground,
   Linking,
   Pressable,
   ScrollView,
@@ -32,7 +31,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { Gifs, Icons } from './assets';
+import { Icons } from './assets';
 import {
   generateAudioList,
   playbackSpeedSequence,
@@ -81,13 +80,7 @@ const RenderListItem = React.memo(
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
         <View style={styles.listItemWidth}>
-          <ImageBackground
-            source={
-              item.fromCurrentUser
-                ? Gifs.audioBackground1
-                : Gifs.audioBackground2
-            }
-            style={[styles.buttonContainer]}>
+          <View style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
               onPress={handleButtonAction}
@@ -116,7 +109,7 @@ const RenderListItem = React.memo(
               candleSpace={2}
               candleWidth={4}
               scrubColor={Colors.white}
-              waveColor={Colors.gray}
+              waveColor={Colors.lightWhite}
               candleHeightScale={4}
               onPlayerStateChange={state => {
                 setPlayerState(state);
@@ -152,7 +145,7 @@ const RenderListItem = React.memo(
             ) : (
               <Image style={styles.speedBox} source={Icons.logo} />
             )}
-          </ImageBackground>
+          </View>
         </View>
       </View>
     );
@@ -263,9 +256,7 @@ const AppContainer = () => {
         translucent
       />
       <GestureHandlerRootView style={styles.appContainer}>
-        <ImageBackground
-          source={Gifs.appBackground}
-          style={styles.screenBackground}>
+        <View style={styles.screenBackground}>
           <View style={styles.container}>
             <View style={styles.simformImageContainer}>
               <Image
@@ -288,7 +279,7 @@ const AppContainer = () => {
             </ScrollView>
           </View>
           <LivePlayerComponent setList={setList} />
-        </ImageBackground>
+        </View>
       </GestureHandlerRootView>
     </View>
   );

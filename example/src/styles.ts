@@ -36,6 +36,7 @@ const styles = (params: StyleSheetParams = {}) =>
       overflow: 'hidden',
       columnGap: scale(8),
       paddingHorizontal: scale(8),
+      backgroundColor: params.currentUser ? Colors.darkGray : Colors.pink,
     },
     listItemContainer: {
       marginTop: scale(16),
@@ -47,6 +48,7 @@ const styles = (params: StyleSheetParams = {}) =>
     buttonImage: {
       height: scale(22),
       width: scale(22),
+      tintColor: Colors.white,
       alignSelf: 'flex-end',
     },
     staticWaveformView: {
@@ -97,6 +99,8 @@ const styles = (params: StyleSheetParams = {}) =>
       width: scale(28),
       borderRadius: scale(14),
       justifyContent: 'center',
+      tintColor: Colors.white,
+      marginRight: scale(5),
     },
     whiteBackground: {
       backgroundColor: Colors.white,
