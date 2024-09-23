@@ -41,7 +41,7 @@ import {
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
     // The maximum number of candles set in the waveform. Once this limit is reached, the oldest candle will be removed as a new one is added to the waveform.
-    maxCandlesToRender = 5,
+    maxCandlesToRender = 300,
     mode,
     path,
     volume = 3,
