@@ -276,11 +276,15 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                         }
                     }
                 }
-            },
-            promise
+                override fun onReject(error: String?, message: String?) {
+                    promise.reject(error, message)
+                }
+                override fun onResolve(value: MutableList<MutableList<Float>>) {
+                    promise.resolve(Arguments.fromList(value))
+                }
+            }
         )
-        extractors[playerKey]?.startDecode()
-        extractors[playerKey]?.stop()
+        extractors[playerKey]?.startDecode();
     }
 
     private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {
