@@ -31,6 +31,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var sampleRate: Int = 44100
     private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
+    private var startTime: Long = 0
 
     companion object {
         const val NAME = "AudioWaveform"
@@ -80,6 +81,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         initRecorder(obj, promise)
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
+        startTime = System.currentTimeMillis() // Initialize startTime
         startEmittingRecorderValue()
     }
 
@@ -104,10 +106,21 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             return
         }
 
-        audioRecorder.stopRecording(recorder, path!!, promise)
-        stopEmittingRecorderValue()
-        recorder = null
-        path = null
+        try {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - startTime < 500) {
+                promise.reject("SHORT_RECORDING", "Recording is too short")
+                return
+            }
+
+            stopEmittingRecorderValue()
+            audioRecorder.stopRecording(recorder, path!!, promise)
+            recorder = null
+            path = null
+        }   catch (e: Exception) {
+            Log.e(Constants.LOG_TAG, "Failed to stop recording", e)
+            promise.reject("Error", "Failed to stop recording: ${e.message}")
+        }
     }
 
     @ReactMethod

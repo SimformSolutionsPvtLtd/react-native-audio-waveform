@@ -20,6 +20,7 @@ private const val RECORD_AUDIO_REQUEST_CODE = 1001
 class AudioRecorder {
     private var permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
     private var useLegacyNormalization = false
+    private var isRecording = false
 
     private fun isPermissionGranted(activity: Activity?): Int? {
         return activity?.let { ActivityCompat.checkSelfPermission(it, permissions[0]) }
@@ -122,18 +123,26 @@ class AudioRecorder {
 
     fun stopRecording(recorder: MediaRecorder?, path: String, promise: Promise) {
         try {
-            recorder?.apply {
-                stop()
-                reset()
-                release()
+            if (isRecording) {
+                recorder?.apply {
+                    stop()
+                    reset()
+                    release()
+                }
+                isRecording = false
+                val tempArrayForCommunication : MutableList<String> = mutableListOf()
+                val duration = getDuration(path)
+                tempArrayForCommunication.add(path)
+                tempArrayForCommunication.add(duration.toString())
+                promise.resolve(Arguments.fromList(tempArrayForCommunication))
+            } else {
+                promise.reject("Error", "Recorder is not recording or has already been stopped")
             }
-            val tempArrayForCommunication : MutableList<String> = mutableListOf()
-            val duration = getDuration(path)
-            tempArrayForCommunication.add(path)
-            tempArrayForCommunication.add(duration.toString())
-            promise.resolve(Arguments.fromList(tempArrayForCommunication))
         } catch (e: IllegalStateException) {
             Log.e(Constants.LOG_TAG, "Failed to stop recording",e)
+        } catch (e: RuntimeException) {
+            Log.e(Constants.LOG_TAG, "Runtime exception when stopping recording", e)
+            promise.reject("Error", "Runtime exception: ${e.message}")
         }
     }
 
@@ -156,10 +165,12 @@ class AudioRecorder {
             useLegacyNormalization = useLegacy
             recorder?.apply {
                 start()
+                isRecording = true
             }
             promise.resolve(true)
         } catch (e: IllegalStateException) {
             Log.e(Constants.LOG_TAG, "Failed to start recording")
+            isRecording = false
         }
     }
 
