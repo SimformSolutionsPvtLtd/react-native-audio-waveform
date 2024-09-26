@@ -76,6 +76,10 @@ export const useAudioPlayer = () => {
   const setPlaybackSpeed = (args: ISetPlaybackSpeed) =>
     AudioWaveform.setPlaybackSpeed(args);
 
+  const markPlayerAsUnmounted = () => {
+    AudioWaveform.markPlayerAsUnmounted();
+  };
+
   return {
     extractWaveformData,
     pausePlayer,
@@ -91,5 +95,6 @@ export const useAudioPlayer = () => {
     getDuration,
     onCurrentRecordingWaveformData,
     setPlaybackSpeed,
+    markPlayerAsUnmounted,
   };
 };
