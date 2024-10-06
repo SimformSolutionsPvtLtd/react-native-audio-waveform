@@ -33,9 +33,9 @@ export interface IPreparePlayer extends IPlayerKey, IPlayerPath {
 }
 
 export interface IStartPlayer extends IPlayerKey {
-  finishMode?: FinishMode;
-  speed?: number;
-  path?: string;
+  finishMode: FinishMode;
+  speed: number;
+  path: string;
 }
 
 export interface IStopPlayer extends IPlayerKey {}

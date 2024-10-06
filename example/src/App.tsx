@@ -124,13 +124,10 @@ const RenderListItem = React.memo(
               onError={error => {
                 console.log(error, 'we are in example');
               }}
-              onCurrentProgressChange={(currentProgress, songDuration) => {
-                console.log(
-                  'currentProgress ',
-                  currentProgress,
-                  'songDuration ',
-                  songDuration
-                );
+              onCurrentProgressChange={(_currentProgress, _songDuration) => {
+                // console.log(
+                //   `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                // );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
