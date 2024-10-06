@@ -1,3 +1,4 @@
+import fs from 'react-native-fs';
 import { NativeEventEmitter, NativeModules } from 'react-native';
 import { AudioWaveform } from '../AudioWaveform';
 import { NativeEvents } from '../constants';
@@ -24,6 +25,42 @@ export const useAudioPlayer = () => {
 
   const extractWaveformData = (args: IExtractWaveform) =>
     AudioWaveform.extractWaveformData(args);
+
+  const readWaveformDataFromFile = async (
+    waveFormPath: string
+  ): Promise<number[] | undefined> => {
+    if (waveFormPath) {
+      try {
+        const isFileExists = await fs.exists(waveFormPath);
+
+        if (isFileExists) {
+          const data = await fs.readFile(waveFormPath);
+          return JSON.parse(data) as number[];
+        }
+      } catch (error) {
+        console.error('Error reading wave form data: ', error);
+      }
+    }
+    return undefined;
+  };
+
+  const writeWaveformDataToFile = async (
+    waveFormPath: string,
+    waveformData: number[]
+  ) => {
+    if (waveFormPath) {
+      try {
+        const isFileExists = await fs.exists(waveFormPath);
+        if (isFileExists) await fs.unlink(waveFormPath);
+
+        await fs.writeFile(waveFormPath, JSON.stringify(waveformData));
+        return true;
+      } catch (error) {
+        console.error('Error writing waveform data to file: ', error);
+      }
+    }
+    return false;
+  };
 
   const preparePlayer = (args: IPreparePlayer) =>
     AudioWaveform.preparePlayer(args);
@@ -96,5 +133,7 @@ export const useAudioPlayer = () => {
     onCurrentRecordingWaveformData,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
+    readWaveformDataFromFile,
+    writeWaveformDataToFile,
   };
 };
