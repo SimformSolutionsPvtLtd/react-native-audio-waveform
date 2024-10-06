@@ -22,35 +22,15 @@ class AudioRecorder {
     private var useLegacyNormalization = false
     private var isRecording = false
 
-    private fun isPermissionGranted(activity: Activity?): Int? {
-        return activity?.let { ActivityCompat.checkSelfPermission(it, permissions[0]) }
-    }
+    private fun isPermissionGranted(activity: Activity?): Int? = activity?.let { ActivityCompat.checkSelfPermission(it, permissions[0]) }
 
-    fun checkPermission(activity: Activity?, promise: Promise): String {
-        val permissionResponse = isPermissionGranted(activity)
-        if (permissionResponse === PackageManager.PERMISSION_GRANTED) {
-            promise.resolve("granted")
-            return "granted"
-        } else {
-            promise.resolve("denied")
-            return "denied"
-        }
-    }
+    fun checkPermission(activity: Activity?): String = if (isPermissionGranted(activity) == PackageManager.PERMISSION_GRANTED) "granted" else "denied"
 
-    fun getPermission(activity: Activity?, promise: Promise): String {
-        val permissionResponse = isPermissionGranted(activity)
-        if (permissionResponse === PackageManager.PERMISSION_GRANTED) {
-            promise.resolve("granted");
-            return "granted"
-        } else {
-            activity?.let {
-                ActivityCompat.requestPermissions(
-                    it, permissions,
-                    RECORD_AUDIO_REQUEST_CODE
-                )
-            }
-            return "denied"
-        }
+    fun getPermission(activity: Activity?): String {
+        if (isPermissionGranted(activity) == PackageManager.PERMISSION_GRANTED) return "granted"
+
+        activity?.let { ActivityCompat.requestPermissions(it, permissions, RECORD_AUDIO_REQUEST_CODE) }
+        return "denied"
     }
 
     fun getDecibel(recorder: MediaRecorder?): Double? {
@@ -133,7 +113,7 @@ class AudioRecorder {
                 val tempArrayForCommunication : MutableList<String> = mutableListOf()
                 val duration = getDuration(path)
                 tempArrayForCommunication.add(path)
-                tempArrayForCommunication.add(duration.toString())
+                tempArrayForCommunication.add(duration)
                 promise.resolve(Arguments.fromList(tempArrayForCommunication))
             } else {
                 promise.reject("Error", "Recorder is not recording or has already been stopped")

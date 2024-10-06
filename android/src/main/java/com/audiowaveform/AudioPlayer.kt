@@ -2,15 +2,16 @@ package com.audiowaveform
 
 import android.net.Uri
 import android.os.CountDownTimer
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.JavascriptException
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 
 class AudioPlayer(
     context: ReactApplicationContext,
@@ -18,7 +19,7 @@ class AudioPlayer(
 ) {
     private val appContext = context
     private lateinit var player: ExoPlayer
-    private var playerListener: Player.Listener? = null
+    private lateinit var playerListener: Player.Listener
     private var isPlayerPrepared: Boolean = false
     private var finishMode = FinishMode.Stop
     private val key = playerKey
@@ -49,8 +50,7 @@ class AudioPlayer(
             player.prepare()
             playerListener = object : Player.Listener {
 
-                @Deprecated("Deprecated in Java")
-                override fun onPlayerStateChanged(isReady: Boolean, state: Int) {
+                override fun onPlaybackStateChanged(state: Int) {
                     if (!isPlayerPrepared) {
                         if (state == Player.STATE_READY) {
                             player.volume = (volume ?: 1).toFloat()
@@ -58,6 +58,10 @@ class AudioPlayer(
                             isPlayerPrepared = true
                             val duration = player.duration
                             promise.resolve(duration.toString())
+                        }
+                        else if (state == Player.STATE_IDLE) {
+                            // Fix leaking promise when path is incorrect
+                            promise.reject("preparePlayer-onPlayerStateChanged-error-idle", "Player stayed in idle state, unable to load $path")
                         }
                     }
                     if (state == Player.STATE_ENDED) {
@@ -87,30 +91,27 @@ class AudioPlayer(
                         }
                     }
                 }
+                override fun onPlayerError(error: PlaybackException) {
+                    promise.reject("preparePlayer-onPlayerError", error.message)
+                }
             }
-            player.addListener(playerListener!!)
+
+            player.addListener(playerListener)
         } else {
-            promise.reject("preparePlayer Error", "path to audio file or unique key can't be null")
+            promise.reject("preparePlayer-error", "path to audio file or unique key can't be null")
         }
     }
 
-    fun seekToPosition(progress: Long?, promise: Promise) {
+    fun seekToPosition(progress: Long?): Boolean {
         if (progress != null) {
             player.seekTo(progress)
-            promise.resolve(true)
-        } else {
-            promise.resolve(false)
+            return true;
         }
+        return false;
     }
 
-    fun getDuration(durationType: DurationType, promise: Promise) {
-        if (durationType == DurationType.Current) {
-            val duration = player.currentPosition
-            promise.resolve(duration.toString())
-        } else {
-            val duration = player.duration
-            promise.resolve(duration.toString())
-        }
+    fun getDuration(durationType: DurationType): Long {
+        return if (durationType == DurationType.Current) player.currentPosition else player.duration
     }
 
     private fun validateAndSetPlaybackSpeed(player: Player, speed: Float?): Boolean {
@@ -124,66 +125,48 @@ class AudioPlayer(
         return true  // Indicate success
     }
 
-    fun start(finishMode: Int?, speed: Float?, promise: Promise) {
-        try {
-            if (finishMode != null && finishMode == 0) {
-                this.finishMode = FinishMode.Loop
-            } else if (finishMode != null && finishMode == 1) {
-                this.finishMode = FinishMode.Pause
-            } else {
-                this.finishMode = FinishMode.Stop
-            }
-
-           validateAndSetPlaybackSpeed(player, speed)
-
-            player.playWhenReady = true
-            player.play()
-            promise.resolve(true)
-            startListening(promise)
-        } catch (e: Exception) {
-            promise.reject("Can not start the player", e.toString())
+    fun start(finishMode: Int, speed: Float): Boolean {
+        this.finishMode = when (finishMode) {
+            0 -> FinishMode.Loop
+            1 -> FinishMode.Pause
+            else -> FinishMode.Stop
         }
+
+       validateAndSetPlaybackSpeed(player, speed)
+
+        player.playWhenReady = true
+        player.play()
+        startListening()
+        return true
     }
 
     fun stop() {
         stopListening()
-        if (playerListener != null) {
-            player.removeListener(playerListener!!)
-        }
+        player.removeListener(playerListener)
         isPlayerPrepared = false
-        player.stop()
+        if(player.isPlaying) player.stop()
         player.release()
     }
 
-    fun pause(promise: Promise) {
+    fun pause(): Boolean {
+        stopListening()
+        player.pause()
+        return true
+    }
+
+    fun setVolume(volume: Float): Boolean {
         try {
-            stopListening()
-            player.pause()
-            promise.resolve(true)
-        } catch (e: Exception) {
-            promise.reject("Failed to pause the player", e.toString())
+            player.volume = volume
+            return true;
+        } catch (_: Exception) {
+            // Noop
         }
-
+        return false
     }
 
-    fun setVolume(volume: Float?, promise: Promise) {
-        try {
-            if (volume != null) {
-                player.volume = volume
-                promise.resolve(true)
-            } else {
-                promise.resolve(false)
-            }
-        } catch (e: Exception) {
-            promise.resolve(false)
-        }
-    }
+    fun setPlaybackSpeed(speed: Float?) = validateAndSetPlaybackSpeed(player, speed)
 
-    fun setPlaybackSpeed(speed: Float?): Boolean {
-        return validateAndSetPlaybackSpeed(player, speed)
-    }
-
-    private fun startListening(promise: Promise) {
+    private fun startListening() {
         try {
             audioPlaybackListener = object : CountDownTimer(player.duration, UpdateFrequency.Low.value) {
                 override fun onTick(millisUntilFinished: Long) {
@@ -198,7 +181,7 @@ class AudioPlayer(
                 override fun onFinish() {}
             }.start()
         } catch(err: JavascriptException) {
-            promise.reject("startListening Error", err)
+            throw Exception("startListening-error", err)
         }
     }
 

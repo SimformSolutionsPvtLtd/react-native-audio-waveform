@@ -38,32 +38,29 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         const val MAX_NUMBER_OF_AUDIO_PLAYER = 30
     }
 
-    override fun getName(): String {
-        return NAME
-    }
+    override fun getName(): String = NAME
 
     @ReactMethod
-    fun markPlayerAsUnmounted() {
-        if (audioPlayers.isEmpty()) {
-            return
-        }
-
-        audioPlayers.values.forEach { player ->
-            if (player != null) {
-                player.markPlayerAsUnmounted()
-            }
-        }
-    }
-
+    fun markPlayerAsUnmounted() = audioPlayers.values.forEach { player -> player?.markPlayerAsUnmounted() }
 
     @ReactMethod
     fun checkHasAudioRecorderPermission(promise: Promise) {
-        audioRecorder.checkPermission(currentActivity, promise)
+        try {
+            promise.resolve(audioRecorder.checkPermission(currentActivity))
+        }
+        catch (err: Exception) {
+            promise.reject("checkHasAudioRecorderPermission-error", err.toString())
+        }
     }
 
     @ReactMethod
     fun getAudioRecorderPermission(promise: Promise) {
-        audioRecorder.getPermission(currentActivity, promise)
+        try {
+            promise.resolve(audioRecorder.getPermission(currentActivity))
+        }
+        catch (err: Exception) {
+            promise.reject("getAudioRecorderPermission-error", err.toString())
+        }
     }
 
     @ReactMethod
@@ -71,9 +68,16 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         checkPathAndInitialiseRecorder(encoder, outputFormat, sampleRate, bitRate, promise, obj)
     }
 
+    private fun getDecibel(): Double? = audioRecorder.getDecibel(recorder)
+
     @ReactMethod
-    fun getDecibel(): Double? {
-        return audioRecorder.getDecibel(recorder)
+    fun getDecibel(promise: Promise) {
+        try {
+            promise.resolve(audioRecorder.getDecibel(recorder))
+        }
+        catch (err: Exception) {
+            promise.reject("getDecibel-error", err.toString())
+        }
     }
 
     @ReactMethod
@@ -101,7 +105,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun stopRecording(promise: Promise) {
-        if (audioRecorder == null || recorder == null || path == null) {
+        if (recorder == null || path == null) {
             promise.reject("STOP_RECORDING_ERROR", "Recording resources not properly initialized")
             return
         }
@@ -128,65 +132,68 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         obj: ReadableMap,
         promise: Promise
     ) {
-        if(audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
-            promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
-        }
+        try {
+            if (audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
+                promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
+            }
 
-        val path = obj.getString(Constants.path)
-        val key = obj.getString(Constants.playerKey)
-        val frequency = obj.getInt(Constants.updateFrequency)
-        val volume = obj.getInt(Constants.volume)
-        val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
-            0 // Set default progress to zero if null, undefined, or missing
-        } else {
-            obj.getInt(Constants.progress).toLong()
-        }
+            val path = obj.getString(Constants.path)
+            val key = getPlayerKeyOrReject(obj, promise, "preparePlayer-error") ?: return
+            val frequency = obj.getInt(Constants.updateFrequency)
+            val volume = obj.getInt(Constants.volume)
+            val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
+                0 // Set default progress to zero if null, undefined, or missing
+            } else {
+                obj.getInt(Constants.progress).toLong()
+            }
 
-        if (key != null) {
-            initPlayer(key)
-            audioPlayers[key]?.preparePlayer(
-                path,
-                volume,
-                getUpdateFrequency(frequency),
-                progress,
-                promise
-            )
-        } else {
-            promise.reject(Constants.LOG_TAG, "Player key can't be null")
+            initPlayer(key).preparePlayer(path, volume, getUpdateFrequency(frequency), progress, promise)
+        } catch (err: Exception) {
+            promise.reject("preparePlayer-error", err.toString())
         }
     }
 
     @ReactMethod
     fun startPlayer(obj: ReadableMap, promise: Promise) {
-        val finishMode = obj.getInt(Constants.finishMode)
-        val key = obj.getString(Constants.playerKey)
-        val speed = obj.getDouble(Constants.speed)
-        if (key != null) {
-            audioPlayers[key]?.start(finishMode ?: 2, speed.toFloat(),promise)
-        } else {
-            promise.reject("startPlayer Error", "Player key can't be null")
+        try {
+            val finishMode = obj.getInt(Constants.finishMode)
+            val key = getPlayerKeyOrReject(obj, promise, "startPlayer-error") ?: return
+            val speed = obj.getDouble(Constants.speed)
+
+            getPlayerOrReject(key, promise, "startPlayer-error")?.let { player ->
+                promise.resolve(player.start(finishMode, speed.toFloat()))
+            }
+        }
+        catch (err: Exception) {
+            promise.reject("startPlayer-error", err.toString())
         }
     }
 
     @ReactMethod
     fun stopPlayer(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.stop()
-            audioPlayers[key] = null // Release the player after stopping it
+        try {
+            val key = getPlayerKeyOrReject(obj, promise, "stopPlayer-error") ?: return
+
+            audioPlayers[key]?.let { player ->
+                player.stop()
+                audioPlayers[key] = null // Release the player after stopping it and ensue with the let to not add a key for nothing!
+            }
             promise.resolve(true)
-        } else {
-            promise.reject("stopPlayer Error", "Player key can't be null")
+        } catch (err: Exception) {
+          promise.reject("stopPlayer-error", err.toString())
         }
     }
 
     @ReactMethod
     fun pausePlayer(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.pause(promise)
-        } else {
-            promise.reject("pausePlayer Error", "Player key can't be null")
+        try {
+            val key = getPlayerKeyOrReject(obj, promise, "pausePlayer-error") ?: return
+
+            getPlayerOrReject(key, promise, "pausePlayer-error")?.let { player ->
+                promise.resolve(player.pause())
+            }
+        } catch (err: Exception) {
+            promise.reject("pausePlayer-error", err.toString())
         }
     }
 
@@ -194,72 +201,85 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun seekToPlayer(obj: ReadableMap, promise: Promise) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val key = getPlayerKeyOrReject(obj, promise, "seekToPlayer-error") ?: return
                 val progress = obj.getInt(Constants.progress)
-                val key = obj.getString(Constants.playerKey)
-                if (key != null) {
-                    audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
-                } else {
-                    promise.reject("seekTo Error", "Player key can't be null")
-                }
+
+                val sought = audioPlayers[key]?.seekToPosition(progress.toLong())
+                promise.resolve(sought ?: false)
             } else {
                 Log.e(
                     Constants.LOG_TAG,
-                    "Minimum android O is required for seekTo function to works"
+                    "Minimum android O (26) is required for seekTo function to works"
                 )
                 promise.resolve(false)
             }
-        } catch(e: Exception) {
-            promise.reject("seekTo Error", e.toString())
+        }
+        catch (err: Exception) {
+            promise.reject("seekToPlayer-error", "Unable to seek player")
         }
     }
 
     @ReactMethod
     fun setVolume(obj: ReadableMap, promise: Promise) {
-        val volume = obj.getInt(Constants.volume)
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.setVolume(volume.toFloat(), promise)
-        } else {
-            promise.reject("setVolume error", "Player key can't be null")
+        try {
+            val key = getPlayerKeyOrReject(obj, promise, "setVolume-error") ?: return
+            val volume = obj.getInt(Constants.volume)
+
+            getPlayerOrReject(key, promise, "setVolume-error")?.let { player ->
+                promise.resolve(player.setVolume(volume.toFloat()))
+            }
+        } catch (err: Exception) {
+            promise.reject("setVolume-error", err.toString())
         }
     }
 
     @ReactMethod
     fun getDuration(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
-        val duration = obj.getInt(Constants.durationType)
-        val type = if (duration == 0) DurationType.Current else DurationType.Max
-        if (key != null) {
-            audioPlayers[key]?.getDuration(type, promise)
-        } else {
-            promise.reject("getDuration Error", "Player key can't be null")
+        try {
+            val key = getPlayerKeyOrReject(obj, promise, "getDuration-error") ?: return
+            val duration = obj.getInt(Constants.durationType)
+            val type = if (duration == 0) DurationType.Current else DurationType.Max
+
+            getPlayerOrReject(key, promise, "getDuration-error")?.let { player ->
+                promise.resolve(player.getDuration(type).toString())
+            }
+        } catch (err: Exception) {
+            promise.reject("getDuration-error", err.toString())
         }
     }
 
     @ReactMethod
     fun extractWaveformData(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
-        val path = obj.getString(Constants.path)
-        val noOfSamples = obj.getInt(Constants.noOfSamples)
-        if(key != null) {
+        try {
+            val key = getPlayerKeyOrReject(obj, promise, "extractWaveformData-error") ?: return
+            val path = obj.getString(Constants.path)
+            val noOfSamples = obj.getInt(Constants.noOfSamples)
+
             createOrUpdateExtractor(key, noOfSamples, path, promise)
-        } else {
-            Log.e(Constants.LOG_TAG, "Can not get waveform data Player key is null")
+        }
+        catch (err: Error) {
+            promise.reject("extractWaveformData-error", err.toString())
         }
     }
 
     @ReactMethod
     fun stopAllPlayers(promise: Promise) {
-        for ((key, _) in audioPlayers) {
-            audioPlayers[key]?.stop()
-            audioPlayers[key] = null
+        try {
+            for ((key, _) in audioPlayers) {
+                audioPlayers[key]?.stop()
+                audioPlayers[key] = null
+            }
+            promise.resolve(true)
         }
-        promise.resolve(true)
+        catch (err:Exception) {
+            promise.reject("stopAllPlayers-error", "Error while stopping all players")
+        }
     }
 
     @ReactMethod
     fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
         try {
+            val key = getPlayerKeyOrReject(obj, promise, "setPlaybackSpeed-error") ?: return
             // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
             val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
                 1.0f // Set default speed to 1.0 if null, undefined, or missing
@@ -267,27 +287,20 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 obj.getDouble(Constants.speed).toFloat()
             }
 
-            val key = obj.getString(Constants.playerKey)
-            if (key != null) {
-                val status = audioPlayers[key]?.setPlaybackSpeed(speed)
-                promise.resolve(status ?: false)
-            } else {
-                promise.reject("setPlaybackSpeed Error", "Player key can't be null")
-            }
-        } catch(e: Exception) {
-            promise.reject("setPlaybackSpeed Error", e.toString())
+            val succeed = audioPlayers[key]?.setPlaybackSpeed(speed)
+
+            promise.resolve(succeed ?: false)
+        } catch (err: Exception) {
+            promise.reject("setPlaybackSpeed-error", err.toString())
         }
     }
 
-    private fun initPlayer(playerKey: String) {
-        if (audioPlayers[playerKey] == null) {
-            val newPlayer = AudioPlayer(
-                reactApplicationContext,
-                playerKey = playerKey,
-            )
-            audioPlayers[playerKey] = newPlayer
+    private fun initPlayer(playerKey: String): AudioPlayer {
+        val player = audioPlayers.getOrPut(playerKey) {
+            AudioPlayer(reactApplicationContext, playerKey = playerKey)
         }
-        return
+        // Since the map is AudioPlayer? type, then it return an optional player but the getOrPut above ensure we have a non null one
+        return player!!
     }
 
     private fun createOrUpdateExtractor(
@@ -354,12 +367,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         obj: ReadableMap?
     ) {
 
-        var sampleRateVal = sampleRate.toInt();
-        var bitRateVal = bitRate.toInt();
+        var sampleRateVal = sampleRate;
+        var bitRateVal = bitRate;
 
         if(obj != null) {
             if(obj.hasKey(Constants.bitRate)){
-                bitRateVal = obj.getInt(Constants.bitRate);                
+                bitRateVal = obj.getInt(Constants.bitRate);
             }
 
             if(obj.hasKey(Constants.sampleRate)){
@@ -429,4 +442,17 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         handler.removeCallbacks(emitLiveRecordValue)
     }
 
+    private fun getPlayerOrReject(key: String, promise: Promise, errorCode: String): AudioPlayer? {
+        return audioPlayers[key] ?: run {
+            promise.reject(errorCode, "$errorCode: Player not in the list")
+            null
+        }
+    }
+
+    private fun getPlayerKeyOrReject(arguments: ReadableMap, promise: Promise, errorCode: String): String? {
+        return arguments.getString(Constants.playerKey) ?: run {
+            promise.reject(errorCode, "$errorCode: Player key can't be null")
+            null
+        }
+    }
 }

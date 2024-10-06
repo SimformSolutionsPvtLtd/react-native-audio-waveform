@@ -17,30 +17,51 @@ import {
   type IStopPlayer,
 } from '../types';
 
+let nbOfPromises = 0;
+
+const logPromise = async (promise: any, promiseName: string) => {
+  try {
+    nbOfPromises++;
+    console.log(`Promise ${promiseName} has been called`);
+    return await promise();
+  } finally {
+    nbOfPromises--;
+    console.log(`Promise ${promiseName} has finished`);
+    console.log(`Number of promises remaining: ${nbOfPromises}`);
+  }
+};
+
 export const useAudioPlayer = () => {
   const audioPlayerEmitter = new NativeEventEmitter(
     NativeModules.AudioWaveformsEventEmitter
   );
 
-  const extractWaveformData = (args: IExtractWaveform) =>
-    AudioWaveform.extractWaveformData(args);
+  const extractWaveformData = (args: IExtractWaveform): Promise<number[][]> =>
+    logPromise(() => AudioWaveform.extractWaveformData(args), 'extractor');
 
   const preparePlayer = (args: IPreparePlayer) =>
-    AudioWaveform.preparePlayer(args);
+    logPromise(() => AudioWaveform.preparePlayer(args), 'preparePlayer');
 
-  const playPlayer = (args: IStartPlayer) => AudioWaveform.startPlayer(args);
+  const playPlayer = (args: IStartPlayer) =>
+    logPromise(() => AudioWaveform.startPlayer(args), 'playPlayer');
 
-  const pausePlayer = (args: IPausePlayer) => AudioWaveform.pausePlayer(args);
+  const pausePlayer = (args: IPausePlayer) =>
+    logPromise(() => AudioWaveform.pausePlayer(args), 'pausePlayer');
 
-  const stopPlayer = (args: IStopPlayer) => AudioWaveform.stopPlayer(args);
+  const stopPlayer = (args: IStopPlayer) =>
+    logPromise(() => AudioWaveform.stopPlayer(args), 'stopPlayer');
 
-  const seekToPlayer = (args: ISeekPlayer) => AudioWaveform.seekToPlayer(args);
+  const seekToPlayer = (args: ISeekPlayer) =>
+    logPromise(() => AudioWaveform.seekToPlayer(args), 'seekToPlayer');
 
-  const setVolume = (args: ISetVolume) => AudioWaveform.setVolume(args);
+  const setVolume = (args: ISetVolume) =>
+    logPromise(() => AudioWaveform.setVolume(args), 'setVolume');
 
-  const stopAllPlayers = () => AudioWaveform.stopAllPlayers();
+  const stopAllPlayers = () =>
+    logPromise(AudioWaveform.stopAllPlayers, 'stopAllPlayers');
 
-  const getDuration = (args: IGetDuration) => AudioWaveform.getDuration(args);
+  const getDuration = (args: IGetDuration) =>
+    logPromise(() => AudioWaveform.getDuration(args), 'getDuration');
 
   const onDidFinishPlayingAudio = (
     callback: (result: IDidFinishPlayings) => void
@@ -74,11 +95,10 @@ export const useAudioPlayer = () => {
     );
 
   const setPlaybackSpeed = (args: ISetPlaybackSpeed) =>
-    AudioWaveform.setPlaybackSpeed(args);
+    logPromise(() => AudioWaveform.setPlaybackSpeed(args), 'setPlaybackSpeed');
 
-  const markPlayerAsUnmounted = () => {
-    AudioWaveform.markPlayerAsUnmounted();
-  };
+  const markPlayerAsUnmounted = () =>
+    logPromise(AudioWaveform.markPlayerAsUnmounted, 'markPlayerAsUnmounted');
 
   return {
     extractWaveformData,
