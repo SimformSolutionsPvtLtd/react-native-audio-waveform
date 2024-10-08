@@ -108,12 +108,11 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     result(true)
   }
   
-  func stopPlayer(result: @escaping RCTPromiseResolveBlock) {
+  func stopPlayer() {
     stopListening()
     player?.stop()
     player = nil
     timer = nil
-    result(true)
   }
   
   func getDuration(_ type: DurationType, _ result: @escaping RCTPromiseResolveBlock) {
@@ -153,13 +152,13 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
         }
     }
     
-    func setPlaybackSpeed(_ speed: Float, _ result: @escaping RCTPromiseResolveBlock) {
+    func setPlaybackSpeed(_ speed: Float) -> Bool {
         if let player = player {
             player.enableRate = true
             player.rate = Float(speed)
-            result(true)
+            return true
         } else {
-            result(false)
+            return false
         }
     }
   
