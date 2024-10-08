@@ -55,7 +55,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onPlayerStateChange,
     onRecorderStateChange,
     onPanStateChange = () => {},
-    onError,
+    onError = () => {},
     onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState,
@@ -448,7 +448,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         if (data.finishType === FinishMode.stop) {
           setPlayerState(PlayerState.stopped);
           setCurrentProgress(0);
-          await preparePlayerForPath();
         }
       }
     });

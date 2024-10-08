@@ -145,7 +145,7 @@ class AudioPlayer(
         }
     }
 
-    fun stop(promise: Promise) {
+    fun stop() {
         stopListening()
         if (playerListener != null) {
             player.removeListener(playerListener!!)
@@ -153,7 +153,6 @@ class AudioPlayer(
         isPlayerPrepared = false
         player.stop()
         player.release()
-        promise.resolve(true)
     }
 
     fun pause(promise: Promise) {
@@ -180,16 +179,8 @@ class AudioPlayer(
         }
     }
 
-    fun setPlaybackSpeed(speed: Float?, promise: Promise) {
-        try {
-            // Call the custom function to validate and set the playback speed
-            val success = validateAndSetPlaybackSpeed(player, speed)
-            promise.resolve(success)  // Resolve the promise with success
-
-        } catch (e: Exception) {
-            // Handle any exceptions and reject the promise
-            promise.reject("setPlaybackSpeed Error", e.toString())
-        }
+    fun setPlaybackSpeed(speed: Float?): Boolean {
+        return validateAndSetPlaybackSpeed(player, speed)
     }
 
     private fun startListening(promise: Promise) {

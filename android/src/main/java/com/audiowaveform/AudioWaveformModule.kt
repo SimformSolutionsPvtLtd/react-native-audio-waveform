@@ -172,8 +172,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun stopPlayer(obj: ReadableMap, promise: Promise) {
         val key = obj.getString(Constants.playerKey)
         if (key != null) {
-            audioPlayers[key]?.stop(promise)
+            audioPlayers[key]?.stop()
             audioPlayers[key] = null // Release the player after stopping it
+            promise.resolve(true)
         } else {
             promise.reject("stopPlayer Error", "Player key can't be null")
         }
@@ -191,19 +192,24 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun seekToPlayer(obj: ReadableMap, promise: Promise) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val progress = obj.getInt(Constants.progress)
-            val key = obj.getString(Constants.playerKey)
-            if (key != null) {
-                audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val progress = obj.getInt(Constants.progress)
+                val key = obj.getString(Constants.playerKey)
+                if (key != null) {
+                    audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
+                } else {
+                    promise.reject("seekTo Error", "Player key can't be null")
+                }
             } else {
-                promise.reject("seekTo Error", "Player key can't be null")
+                Log.e(
+                    Constants.LOG_TAG,
+                    "Minimum android O is required for seekTo function to works"
+                )
+                promise.resolve(false)
             }
-        } else {
-            Log.e(
-                Constants.LOG_TAG,
-                "Minimum android O is required for seekTo function to works"
-            )
+        } catch(e: Exception) {
+            promise.reject("seekTo Error", e.toString())
         }
     }
 
@@ -245,25 +251,31 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun stopAllPlayers(promise: Promise) {
         for ((key, _) in audioPlayers) {
-            audioPlayers[key]?.stop(promise)
+            audioPlayers[key]?.stop()
             audioPlayers[key] = null
         }
+        promise.resolve(true)
     }
 
     @ReactMethod
     fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
-        // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
-        val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
-            1.0f // Set default speed to 1.0 if null, undefined, or missing
-        } else {
-            obj.getDouble(Constants.speed).toFloat()
-        }
+        try {
+            // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
+            val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
+                1.0f // Set default speed to 1.0 if null, undefined, or missing
+            } else {
+                obj.getDouble(Constants.speed).toFloat()
+            }
 
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.setPlaybackSpeed(speed, promise)
-        } else {
-            promise.reject("setPlaybackSpeed Error", "Player key can't be null")
+            val key = obj.getString(Constants.playerKey)
+            if (key != null) {
+                val status = audioPlayers[key]?.setPlaybackSpeed(speed)
+                promise.resolve(status ?: false)
+            } else {
+                promise.reject("setPlaybackSpeed Error", "Player key can't be null")
+            }
+        } catch(e: Exception) {
+            promise.reject("setPlaybackSpeed Error", e.toString())
         }
     }
 
