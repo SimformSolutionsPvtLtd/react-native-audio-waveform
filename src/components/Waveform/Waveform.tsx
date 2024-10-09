@@ -55,7 +55,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onPlayerStateChange,
     onRecorderStateChange,
     onPanStateChange = () => {},
-    onError,
+    onError = () => {},
     onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState,
@@ -89,6 +89,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onDidFinishPlayingAudio,
     onCurrentRecordingWaveformData,
     setPlaybackSpeed,
+    markPlayerAsUnmounted,
   } = useAudioPlayer();
 
   const { startRecording, stopRecording, pauseRecording, resumeRecording } =
@@ -447,7 +448,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         if (data.finishType === FinishMode.stop) {
           setPlayerState(PlayerState.stopped);
           setCurrentProgress(0);
-          await preparePlayerForPath();
         }
       }
     });
@@ -491,6 +491,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       tracePlayerState.remove();
       tracePlaybackValue.remove();
       traceRecorderWaveformValue.remove();
+      markPlayerAsUnmounted();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -208,4 +208,10 @@ export interface IAudioWaveforms extends NativeModule {
    * @returns A promise that resolves to a boolean indicating if the playback speed was set successfully.
    */
   setPlaybackSpeed(args: ISetPlaybackSpeed): Promise<boolean>;
+
+  /**
+   * Marks the player as unmounted.
+   * @returns void.
+   */
+  markPlayerAsUnmounted(): void;
 }

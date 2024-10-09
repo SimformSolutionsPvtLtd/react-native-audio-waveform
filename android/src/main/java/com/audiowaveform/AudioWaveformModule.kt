@@ -31,6 +31,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var sampleRate: Int = 44100
     private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
+    private var startTime: Long = 0
 
     companion object {
         const val NAME = "AudioWaveform"
@@ -40,6 +41,20 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     override fun getName(): String {
         return NAME
     }
+
+    @ReactMethod
+    fun markPlayerAsUnmounted() {
+        if (audioPlayers.isEmpty()) {
+            return
+        }
+
+        audioPlayers.values.forEach { player ->
+            if (player != null) {
+                player.markPlayerAsUnmounted()
+            }
+        }
+    }
+
 
     @ReactMethod
     fun checkHasAudioRecorderPermission(promise: Promise) {
@@ -66,6 +81,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         initRecorder(obj, promise)
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
+        startTime = System.currentTimeMillis() // Initialize startTime
         startEmittingRecorderValue()
     }
 
@@ -90,10 +106,21 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             return
         }
 
-        audioRecorder.stopRecording(recorder, path!!, promise)
-        stopEmittingRecorderValue()
-        recorder = null
-        path = null
+        try {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - startTime < 500) {
+                promise.reject("SHORT_RECORDING", "Recording is too short")
+                return
+            }
+
+            stopEmittingRecorderValue()
+            audioRecorder.stopRecording(recorder, path!!, promise)
+            recorder = null
+            path = null
+        }   catch (e: Exception) {
+            Log.e(Constants.LOG_TAG, "Failed to stop recording", e)
+            promise.reject("Error", "Failed to stop recording: ${e.message}")
+        }
     }
 
     @ReactMethod
@@ -145,8 +172,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun stopPlayer(obj: ReadableMap, promise: Promise) {
         val key = obj.getString(Constants.playerKey)
         if (key != null) {
-            audioPlayers[key]?.stop(promise)
+            audioPlayers[key]?.stop()
             audioPlayers[key] = null // Release the player after stopping it
+            promise.resolve(true)
         } else {
             promise.reject("stopPlayer Error", "Player key can't be null")
         }
@@ -164,19 +192,24 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun seekToPlayer(obj: ReadableMap, promise: Promise) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val progress = obj.getInt(Constants.progress)
-            val key = obj.getString(Constants.playerKey)
-            if (key != null) {
-                audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val progress = obj.getInt(Constants.progress)
+                val key = obj.getString(Constants.playerKey)
+                if (key != null) {
+                    audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
+                } else {
+                    promise.reject("seekTo Error", "Player key can't be null")
+                }
             } else {
-                promise.reject("seekTo Error", "Player key can't be null")
+                Log.e(
+                    Constants.LOG_TAG,
+                    "Minimum android O is required for seekTo function to works"
+                )
+                promise.resolve(false)
             }
-        } else {
-            Log.e(
-                Constants.LOG_TAG,
-                "Minimum android O is required for seekTo function to works"
-            )
+        } catch(e: Exception) {
+            promise.reject("seekTo Error", e.toString())
         }
     }
 
@@ -218,25 +251,31 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun stopAllPlayers(promise: Promise) {
         for ((key, _) in audioPlayers) {
-            audioPlayers[key]?.stop(promise)
+            audioPlayers[key]?.stop()
             audioPlayers[key] = null
         }
+        promise.resolve(true)
     }
 
     @ReactMethod
     fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
-        // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
-        val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
-            1.0f // Set default speed to 1.0 if null, undefined, or missing
-        } else {
-            obj.getDouble(Constants.speed).toFloat()
-        }
+        try {
+            // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
+            val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
+                1.0f // Set default speed to 1.0 if null, undefined, or missing
+            } else {
+                obj.getDouble(Constants.speed).toFloat()
+            }
 
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.setPlaybackSpeed(speed, promise)
-        } else {
-            promise.reject("setPlaybackSpeed Error", "Player key can't be null")
+            val key = obj.getString(Constants.playerKey)
+            if (key != null) {
+                val status = audioPlayers[key]?.setPlaybackSpeed(speed)
+                promise.resolve(status ?: false)
+            } else {
+                promise.reject("setPlaybackSpeed Error", "Player key can't be null")
+            }
+        } catch(e: Exception) {
+            promise.reject("setPlaybackSpeed Error", e.toString())
         }
     }
 
@@ -276,11 +315,15 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                         }
                     }
                 }
-            },
-            promise
+                override fun onReject(error: String?, message: String?) {
+                    promise.reject(error, message)
+                }
+                override fun onResolve(value: MutableList<MutableList<Float>>) {
+                    promise.resolve(Arguments.fromList(value))
+                }
+            }
         )
-        extractors[playerKey]?.startDecode()
-        extractors[playerKey]?.stop()
+        extractors[playerKey]?.startDecode();
     }
 
     private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {

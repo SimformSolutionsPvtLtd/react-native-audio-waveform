@@ -59,6 +59,16 @@ class AudioWaveform: RCTEventEmitter {
   @objc func getAudioRecorderPermission(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     audioRecorder.getAudioRecorderPermission(resolve)
   }
+
+  @objc func markPlayerAsUnmounted() {    
+    if audioPlayers.isEmpty {
+      return
+    }
+    
+    for (_, player) in audioPlayers {
+      player.markPlayerAsUnmounted()
+    }
+  }
   
   @objc func startRecording(_ args: NSDictionary?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     audioRecorder.startRecording(args?[Constants.path] as? String,
@@ -174,8 +184,9 @@ class AudioWaveform: RCTEventEmitter {
   @objc func stopPlayer(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
     if(key != nil){
-      audioPlayers[key!]?.stopPlayer(result: resolve)
+      audioPlayers[key!]?.stopPlayer()
       audioPlayers[key!] = nil // Release the player after stopping it
+      resolve(true)
     } else {
       reject(Constants.audioWaveforms, "Can not stop player, Player key is null", NSError())
     }
@@ -219,7 +230,7 @@ class AudioWaveform: RCTEventEmitter {
   
   @objc func stopAllPlayers(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     for (playerKey,_) in audioPlayers{
-      audioPlayers[playerKey]?.stopPlayer(result: resolve)
+      audioPlayers[playerKey]?.stopPlayer()
       audioPlayers[playerKey] = nil
     }
     resolve(true)
@@ -249,7 +260,8 @@ class AudioWaveform: RCTEventEmitter {
         let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
         
         if(key != nil){
-          audioPlayers[key!]?.setPlaybackSpeed(speed, resolve)
+          let status =  audioPlayers[key!]?.setPlaybackSpeed(speed)
+          resolve(status)
         } else {
           reject(Constants.audioWaveforms, "Can not pause player, Player key is null", NSError())
         }

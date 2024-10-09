@@ -24,6 +24,11 @@ class AudioPlayer(
     private val key = playerKey
     private var updateFrequency = UpdateFrequency.Low
     private lateinit var audioPlaybackListener: CountDownTimer
+    private var isComponentMounted = true // Flag to track mounting status
+
+    fun markPlayerAsUnmounted() {
+        isComponentMounted = false
+    }
 
     fun preparePlayer(
         path: String?,
@@ -34,6 +39,7 @@ class AudioPlayer(
     ) {
         if (path != null) {
             isPlayerPrepared = false
+            isComponentMounted = true
             updateFrequency = frequency
             val uri = Uri.parse(path)
             val mediaItem = MediaItem.fromUri(uri)
@@ -76,7 +82,9 @@ class AudioPlayer(
                             }
                         }
                         args.putString(Constants.playerKey, key)
-                        appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
+                        if (isComponentMounted) {
+                            appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
+                        }
                     }
                 }
             }
@@ -137,7 +145,7 @@ class AudioPlayer(
         }
     }
 
-    fun stop(promise: Promise) {
+    fun stop() {
         stopListening()
         if (playerListener != null) {
             player.removeListener(playerListener!!)
@@ -145,7 +153,6 @@ class AudioPlayer(
         isPlayerPrepared = false
         player.stop()
         player.release()
-        promise.resolve(true)
     }
 
     fun pause(promise: Promise) {
@@ -172,16 +179,8 @@ class AudioPlayer(
         }
     }
 
-    fun setPlaybackSpeed(speed: Float?, promise: Promise) {
-        try {
-            // Call the custom function to validate and set the playback speed
-            val success = validateAndSetPlaybackSpeed(player, speed)
-            promise.resolve(success)  // Resolve the promise with success
-
-        } catch (e: Exception) {
-            // Handle any exceptions and reject the promise
-            promise.reject("setPlaybackSpeed Error", e.toString())
-        }
+    fun setPlaybackSpeed(speed: Float?): Boolean {
+        return validateAndSetPlaybackSpeed(player, speed)
     }
 
     private fun startListening(promise: Promise) {
@@ -192,7 +191,9 @@ class AudioPlayer(
                     val args: WritableMap = Arguments.createMap()
                     args.putString(Constants.currentDuration, currentPosition)
                     args.putString(Constants.playerKey, key)
-                    appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onCurrentDuration", args)
+                    if (isComponentMounted) {
+                        appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onCurrentDuration", args)
+                    }
                 }
                 override fun onFinish() {}
             }.start()
