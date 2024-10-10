@@ -40,10 +40,16 @@ const styles = (params: StyleSheetParams = {}) =>
     },
     listItemContainer: {
       marginTop: scale(16),
-      alignItems: params.currentUser ? 'flex-end' : 'flex-start',
+      flexDirection: 'row',
+      justifyContent: params.currentUser ? 'flex-end' : 'flex-start',
+      alignItems: 'center',
+    },
+    listItemReverseContainer: {
+      flexDirection: 'row-reverse',
+      alignSelf: 'flex-end',
     },
     listItemWidth: {
-      width: '90%',
+      width: '88%',
     },
     buttonImage: {
       height: scale(22),
@@ -110,6 +116,13 @@ const styles = (params: StyleSheetParams = {}) =>
       fontSize: scale(10),
       textAlign: 'center',
       fontWeight: '600',
+    },
+    downloadIcon: {
+      width: 20,
+      height: 20,
+      tintColor: Colors.pink,
+      marginLeft: 10,
+      marginRight: 10,
     },
   });
 

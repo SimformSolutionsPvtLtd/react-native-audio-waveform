@@ -8,11 +8,13 @@ import React, {
 } from 'react';
 import {
   PanResponder,
+  Platform,
   ScrollView,
   View,
   type LayoutRectangle,
   type NativeTouchEvent,
 } from 'react-native';
+import RNFetchBlob, { type FetchBlobResponse } from 'rn-fetch-blob';
 import {
   DurationType,
   FinishMode,
@@ -38,6 +40,12 @@ import {
   type StaticWaveform,
 } from './WaveformTypes';
 
+// Cache directory based on the platform
+const cacheDir: string =
+  Platform.OS === 'ios'
+    ? RNFetchBlob.fs.dirs.DocumentDir
+    : RNFetchBlob.fs.dirs.CacheDir;
+
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
     // The maximum number of candles set in the waveform. Once this limit is reached, the oldest candle will be removed as a new one is added to the waveform.
@@ -47,6 +55,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     volume = 3,
     // The playback speed of the audio player. A value of 1.0 represents normal playback speed.
     playbackSpeed = 1.0,
+    isExternalUrl = false,
+    downloadExternalAudio = true,
     candleSpace = 2,
     candleWidth = 5,
     containerStyle = {},
@@ -59,10 +69,16 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState,
+    onDownloadStateChange,
+    onDownloadProgressChange,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
+  const [audioPath, setAudioPath] = useState<string | undefined>(
+    !isExternalUrl ? path : undefined
+  );
   const scrollRef = useRef<ScrollView>(null);
   const isLayoutCalculated = useRef<boolean>(false);
+  const audioPathRef = useRef<string | undefined>(undefined);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [viewLayout, setViewLayout] = useState<LayoutRectangle | null>(null);
   const [seekPosition, setSeekPosition] = useState<NativeTouchEvent | null>(
@@ -106,23 +122,107 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
    */
   const updatePlaybackSpeed = async (speed: number) => {
     try {
-      await setPlaybackSpeed({ speed, playerKey: `PlayerFor${path}` });
+      await setPlaybackSpeed({ speed, playerKey: `PlayerFor${audioPath}` });
     } catch (error) {
       console.error('Error updating playback speed', error);
     }
   };
 
   useEffect(() => {
-    updatePlaybackSpeed(audioSpeed);
+    if (audioPath !== undefined) {
+      updatePlaybackSpeed(audioSpeed);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioSpeed]);
+  }, [audioSpeed, audioPath]);
+
+  const setExternalAudioPath = (filePath: string): void => {
+    setAudioPath(filePath);
+    audioPathRef.current = filePath;
+    (onDownloadStateChange as Function)?.(false);
+    (onDownloadProgressChange as Function)?.(100);
+  };
+
+  /**
+   * Downloads the audio file and caches it in the cache directory.
+   * @param fileUrl - The URL of the audio file to download.
+   * @param fileName - The name of the audio file to use in the cache directory.
+   * @returns A Promise that resolves when the audio file has been downloaded and cached.
+   */
+  const downloadAndCacheFile = async (
+    fileUrl: string,
+    fileName: string
+  ): Promise<void> => {
+    const filePath: string = `${cacheDir}/${fileName}`;
+
+    try {
+      const fileExists: boolean = await RNFetchBlob.fs.exists(filePath);
+
+      if (fileExists) {
+        setExternalAudioPath(filePath);
+        return;
+      }
+
+      // File doesn't exist, download it
+      (onDownloadStateChange as Function)?.(true);
+      await RNFetchBlob.config({
+        path: filePath,
+        fileCache: true,
+      })
+        .fetch('GET', fileUrl)
+        .progress((received: number, total: number) => {
+          let progressPercentage: number = Number(
+            ((received / total) * 100)?.toFixed?.(2)
+          );
+          (onDownloadProgressChange as Function)?.(progressPercentage);
+        })
+        .then((response: FetchBlobResponse) => {
+          const tempFilePath: string = response.path();
+          setExternalAudioPath(tempFilePath);
+        })
+        .catch(error => {
+          console.error(error);
+          (onDownloadStateChange as Function)?.(false);
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const checkIsFileDownloaded = async (fileName: string): Promise<void> => {
+    const filePath: string = `${cacheDir}/${fileName}`;
+    const fileExists: boolean = await RNFetchBlob.fs.exists(filePath);
+    if (fileExists) {
+      setExternalAudioPath(filePath);
+    }
+  };
+
+  // Replace special characters with _ and remove extension from the URL and make file name lowercase
+  const formatUrlToFileName = (url: string): string => {
+    return url
+      ?.replace?.(/[:\/\.\%20\-~\?=&@#\!\$\^\*\(\)\{\}\[\],\'"]/g, '_')
+      ?.replace?.(/\.[^/.]+$/, '')
+      ?.toLowerCase?.();
+  };
+
+  useEffect(() => {
+    const fileName: string = formatUrlToFileName(path);
+
+    if (isExternalUrl && path && downloadExternalAudio) {
+      downloadAndCacheFile(path, fileName);
+    } else if (isExternalUrl && path) {
+      checkIsFileDownloaded(fileName);
+    } else {
+      (onDownloadStateChange as Function)?.(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExternalUrl, path, downloadExternalAudio]);
 
   const preparePlayerForPath = async (progress?: number) => {
-    if (!isNil(path) && !isEmpty(path)) {
+    if (!isNil(audioPath) && !isEmpty(audioPath)) {
       try {
         const prepare = await preparePlayer({
-          path,
-          playerKey: `PlayerFor${path}`,
+          path: audioPath,
+          playerKey: `PlayerFor${audioPath}`,
           updateFrequency: UpdateFrequency.medium,
           volume: volume,
           progress,
@@ -133,7 +233,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     } else {
       return Promise.reject(
-        new Error(`Can not start player for path: ${path}`)
+        new Error(`Can not start player for path: ${audioPath}`)
       );
     }
   };
@@ -141,7 +241,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const getAudioDuration = async () => {
     try {
       const duration = await getDuration({
-        playerKey: `PlayerFor${path}`,
+        playerKey: `PlayerFor${audioPath}`,
         durationType: DurationType.max,
       });
       if (!isNil(duration)) {
@@ -150,7 +250,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         return Promise.resolve(audioDuration);
       } else {
         return Promise.reject(
-          new Error(`Could not get duration for path: ${path}`)
+          new Error(`Could not get duration for path: ${audioPath}`)
         );
       }
     } catch (err) {
@@ -174,12 +274,12 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   };
 
   const getAudioWaveFormForPath = async (noOfSample: number) => {
-    if (!isNil(path) && !isEmpty(path)) {
+    if (!isNil(audioPath) && !isEmpty(audioPath)) {
       try {
         (onChangeWaveformLoadState as Function)?.(true);
         const result = await extractWaveformData({
-          path: path,
-          playerKey: `PlayerFor${path}`,
+          path: audioPath,
+          playerKey: `PlayerFor${audioPath}`,
           noOfSamples: noOfSample,
         });
         (onChangeWaveformLoadState as Function)?.(false);
@@ -198,9 +298,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     } else {
       (onError as Function)(
-        `Can not find waveform for mode ${mode} path: ${path}`
+        `Can not find waveform for mode ${mode} path: ${audioPath}`
       );
-      console.error(`Can not find waveform for mode ${mode} path: ${path}`);
+      console.error(
+        `Can not find waveform for mode ${mode} path: ${audioPath}`
+      );
     }
   };
 
@@ -208,7 +310,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     if (mode === 'static') {
       try {
         const result = await stopPlayer({
-          playerKey: `PlayerFor${path}`,
+          playerKey: `PlayerFor${audioPath}`,
         });
         if (!isNil(result) && result) {
           setCurrentProgress(0);
@@ -216,7 +318,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           return Promise.resolve(result);
         } else {
           return Promise.reject(
-            new Error(`error in stopping player for path: ${path}`)
+            new Error(`error in stopping player for path: ${audioPath}`)
           );
         }
       } catch (err) {
@@ -238,8 +340,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
         const play = await playPlayer({
           finishMode: FinishMode.stop,
-          playerKey: `PlayerFor${path}`,
-          path: path,
+          playerKey: `PlayerFor${audioPath}`,
+          path: audioPath,
           speed: audioSpeed,
           ...args,
         });
@@ -249,7 +351,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           return Promise.resolve(true);
         } else {
           return Promise.reject(
-            new Error(`error in starting player for path: ${path}`)
+            new Error(`error in starting player for path: ${audioPath}`)
           );
         }
       } catch (error) {
@@ -266,14 +368,14 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     if (mode === 'static') {
       try {
         const pause = await pausePlayer({
-          playerKey: `PlayerFor${path}`,
+          playerKey: `PlayerFor${audioPath}`,
         });
         if (pause) {
           setPlayerState(PlayerState.paused);
           return Promise.resolve(true);
         } else {
           return Promise.reject(
-            new Error(`error in pause player for path: ${path}`)
+            new Error(`error in pause player for path: ${audioPath}`)
           );
         }
       } catch (error) {
@@ -400,7 +502,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   };
 
   useEffect(() => {
-    if (!isNil(viewLayout?.width)) {
+    if (!isNil(viewLayout?.width) && audioPath !== undefined) {
       const getNumberOfSamples = floor(
         (viewLayout?.width ?? 0) / (candleWidth + candleSpace)
       );
@@ -416,10 +518,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewLayout?.width, mode, candleWidth, candleSpace]);
+  }, [viewLayout?.width, mode, candleWidth, candleSpace, audioPath]);
 
   useEffect(() => {
-    if (!isNil(seekPosition)) {
+    if (!isNil(seekPosition) && audioPath !== undefined) {
       if (mode === 'static') {
         const seekAmount =
           (seekPosition?.pageX - (viewLayout?.x ?? 0)) /
@@ -428,7 +530,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
         if (!panMoving) {
           seekToPlayer({
-            playerKey: `PlayerFor${path}`,
+            playerKey: `PlayerFor${audioPath}`,
             progress: clampedSeekAmount * songDuration,
           });
           if (playerState === PlayerState.playing) {
@@ -440,30 +542,40 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seekPosition, panMoving, mode, songDuration]);
+  }, [seekPosition, panMoving, mode, songDuration, audioPath]);
 
   useEffect(() => {
-    const tracePlayerState = onDidFinishPlayingAudio(async data => {
-      if (data.playerKey === `PlayerFor${path}`) {
-        if (data.finishType === FinishMode.stop) {
-          setPlayerState(PlayerState.stopped);
-          setCurrentProgress(0);
+    if (audioPath !== undefined) {
+      const tracePlayerState = onDidFinishPlayingAudio(async data => {
+        if (data.playerKey === `PlayerFor${audioPath}`) {
+          if (data.finishType === FinishMode.stop) {
+            setPlayerState(PlayerState.stopped);
+            setCurrentProgress(0);
+          }
         }
-      }
-    });
+      });
 
-    const tracePlaybackValue = onCurrentDuration(data => {
-      if (data.playerKey === `PlayerFor${path}`) {
-        const currentAudioDuration = Number(data.currentDuration);
+      const tracePlaybackValue = onCurrentDuration(data => {
+        if (data.playerKey === `PlayerFor${audioPath}`) {
+          const currentAudioDuration = Number(data.currentDuration);
 
-        if (!isNaN(currentAudioDuration)) {
-          setCurrentProgress(currentAudioDuration);
-        } else {
-          setCurrentProgress(0);
+          if (!isNaN(currentAudioDuration)) {
+            setCurrentProgress(currentAudioDuration);
+          } else {
+            setCurrentProgress(0);
+          }
         }
-      }
-    });
+      });
 
+      return () => {
+        tracePlayerState.remove();
+        tracePlaybackValue.remove();
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioPath]);
+
+  useEffect(() => {
     const traceRecorderWaveformValue = onCurrentRecordingWaveformData(
       result => {
         if (mode === 'live') {
@@ -487,9 +599,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         }
       }
     );
+
     return () => {
-      tracePlayerState.remove();
-      tracePlaybackValue.remove();
       traceRecorderWaveformValue.remove();
       markPlayerAsUnmounted();
     };
@@ -511,17 +622,19 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   }, [recorderState]);
 
   useEffect(() => {
-    if (panMoving) {
-      if (playerState === PlayerState.playing) {
-        pausePlayerAction();
-      }
-    } else {
-      if (playerState === PlayerState.paused) {
-        startPlayerAction();
+    if (audioPath !== undefined) {
+      if (panMoving) {
+        if (playerState === PlayerState.playing) {
+          pausePlayerAction();
+        }
+      } else {
+        if (playerState === PlayerState.paused) {
+          startPlayerAction();
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panMoving]);
+  }, [panMoving, audioPath]);
 
   const calculateLayout = (): void => {
     viewRef.current?.measureInWindow((x, y, width, height) => {

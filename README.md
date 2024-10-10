@@ -33,13 +33,13 @@ Here's how to get started with react-native-audio-waveform in your React Native 
 ##### 1. Install the package
 
 ```sh
-npm install @simform_solutions/react-native-audio-waveform react-native-gesture-handler
+npm install @simform_solutions/react-native-audio-waveform react-native-gesture-handler rn-fetch-blob
 ```
 
 ###### --- or ---
 
 ```sh
-yarn add @simform_solutions/react-native-audio-waveform react-native-gesture-handler
+yarn add @simform_solutions/react-native-audio-waveform react-native-gesture-handler rn-fetch-blob
 ```
 
 ##### 2. Install CocoaPods in the iOS project
@@ -90,7 +90,34 @@ const ref = useRef<IWaveformRef>(null);
 <Waveform
   mode="static"
   ref={ref}
-  path={item}
+  path={path}
+  candleSpace={2}
+  candleWidth={4}
+  scrubColor="white"
+  onPlayerStateChange={playerState => console.log(playerState)}
+  onPanStateChange={isMoving => console.log(isMoving)}
+/>;
+```
+
+When you want to show a waveform for a external audio URL, you need to use `static` mode for the waveform and set isExternalUrl to true.
+
+Check the example below for more information.
+
+```tsx
+import {
+  Waveform,
+  type IWaveformRef,
+} from '@simform_solutions/react-native-audio-waveform';
+
+const url = 'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav'; // URL to the audio file for which you want to show waveform
+const ref = useRef<IWaveformRef>(null);
+<Waveform
+  mode="static"
+  ref={ref}
+  path={url}
+  isExternalUrl={true}
+  onDownloadStateChange={state => console.log(state)}
+  onDownloadProgressChange={progress => console.log(progress)}
   candleSpace={2}
   candleWidth={4}
   scrubColor="white"
@@ -133,6 +160,9 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | ref\*                     | -           | ✅              | ✅            | IWaveformRef                                               | Type of ref provided to waveform component. If waveform mode is `static`, some methods from ref will throw error and same for `live`.<br> Check [IWaveformRef](#iwaveformref-methods) for more details about which methods these refs provides. |
 | path\*                    | -           | ✅              | ❌            | string                                                     | Used for `static` type. It is the resource path of an audio source file.                                                                                                                                                                        |
 | playbackSpeed             | 1.0         | ✅              | ❌            | 1.0 / 1.5 / 2.0                                            | The playback speed of the audio player. Note: Currently playback speed only supports, Normal (1x) Faster(1.5x) and Fastest(2.0x), any value passed to playback speed greater than 2.0 will be automatically adjusted to normal playback speed   |
+| volume                    | 3           | ✅              | ❌            | number                                                     | Used for `static` type. It is a volume level for the media player, ranging from 1 to 10.                                                                                                                                                        |
+| isExternalUrl             | false       | ✅              | ❌            | boolean                                                    | Used for `static` type. If the resource path of an audio file is a URL, then pass true; otherwise, pass false.                                                                                                                                  |
+| downloadExternalAudio     | true        | ✅              | ❌            | boolean                                                    | Used for `static` type. Indicates whether the external media should be downloaded.                                                                                                                                                              |
 | candleSpace               | 2           | ✅              | ✅            | number                                                     | Space between two candlesticks of waveform                                                                                                                                                                                                      |
 | candleWidth               | 5           | ✅              | ✅            | number                                                     | Width of single candlestick of waveform                                                                                                                                                                                                         |
 | candleHeightScale         | 3           | ✅              | ✅            | number                                                     | Scaling height of candlestick of waveform                                                                                                                                                                                                       |
@@ -145,6 +175,8 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | onRecorderStateChange     | -           | ❌              | ✅            | ( recorderState : RecorderState ) => void                  | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details                                                                                                                    |
 | onCurrentProgressChange   | -           | ✅              | ❌            | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration.                                                                                                                                                             |
 | onChangeWaveformLoadState | -           | ✅              | ❌            | ( state : boolean ) => void                                | callback function which returns the loading state of waveform candlestick.                                                                                                                                                                      |
+| onDownloadStateChange     | -           | ✅              | ❌            | ( state : boolean ) => void                                | A callback function that returns the loading state of a file download from an external URL.                                                                                                                                                     |
+| onDownloadProgressChange  | -           | ✅              | ❌            | ( currentProgress : number ) => void                       | Used when isExternalUrl is true; a callback function that returns the current progress of a file download from an external URL                                                                                                                  |
 | onError                   | -           | ✅              | ❌            | ( error : Error ) => void                                  | callback function which returns the error for static audio waveform                                                                                                                                                                             |
 
 ##### Know more about [ViewStyle](https://reactnative.dev/docs/view-style-props), [PlayerState](#playerstate), and [RecorderState](#recorderstate)
