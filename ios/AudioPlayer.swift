@@ -41,7 +41,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
       do {
         player = try AVAudioPlayer(contentsOf: audioUrl!)
         player?.prepareToPlay()
-        player?.volume = Float(volume ?? 100.0)
+        player?.volume = Float(volume ?? 1.0)
         player?.currentTime = Double(time / 1000)
         player?.enableRate = true
         resolve(true)
