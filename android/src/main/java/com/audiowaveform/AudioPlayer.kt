@@ -92,13 +92,13 @@ class AudioPlayer(
                     }
                 }
                 override fun onPlayerError(error: PlaybackException) {
-                    promise.reject("preparePlayer-onPlayerError", error.message)
+                    promise.reject("preparePlayer onPlayerError", error.message)
                 }
             }
 
             player.addListener(playerListener)
         } else {
-            promise.reject("preparePlayer-error", "path to audio file or unique key can't be null")
+            promise.reject("preparePlayer Error", "path to audio file or unique key can't be null")
         }
     }
 
@@ -181,7 +181,7 @@ class AudioPlayer(
                 override fun onFinish() {}
             }.start()
         } catch(err: JavascriptException) {
-            throw Exception("startListening-error", err)
+            throw Exception("startListening Error", err)
         }
     }
 

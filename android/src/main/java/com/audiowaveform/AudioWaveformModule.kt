@@ -49,7 +49,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             promise.resolve(audioRecorder.checkPermission(currentActivity))
         }
         catch (err: Exception) {
-            promise.reject("checkHasAudioRecorderPermission-error", err.toString())
+            promise.reject("checkHasAudioRecorderPermission Error", err.toString())
         }
     }
 
@@ -59,7 +59,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             promise.resolve(audioRecorder.getPermission(currentActivity))
         }
         catch (err: Exception) {
-            promise.reject("getAudioRecorderPermission-error", err.toString())
+            promise.reject("getAudioRecorderPermission Error", err.toString())
         }
     }
 
@@ -76,7 +76,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             promise.resolve(audioRecorder.getDecibel(recorder))
         }
         catch (err: Exception) {
-            promise.reject("getDecibel-error", err.toString())
+            promise.reject("getDecibel Error", err.toString())
         }
     }
 
@@ -138,7 +138,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             }
 
             val path = obj.getString(Constants.path)
-            val key = getPlayerKeyOrReject(obj, promise, "preparePlayer-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "preparePlayer Error") ?: return
             val frequency = obj.getInt(Constants.updateFrequency)
             val volume = obj.getInt(Constants.volume)
             val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
@@ -149,7 +149,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
             initPlayer(key).preparePlayer(path, volume, getUpdateFrequency(frequency), progress, promise)
         } catch (err: Exception) {
-            promise.reject("preparePlayer-error", err.toString())
+            promise.reject("preparePlayer Error", err.toString())
         }
     }
 
@@ -157,22 +157,22 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun startPlayer(obj: ReadableMap, promise: Promise) {
         try {
             val finishMode = obj.getInt(Constants.finishMode)
-            val key = getPlayerKeyOrReject(obj, promise, "startPlayer-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "startPlayer Error") ?: return
             val speed = obj.getDouble(Constants.speed)
 
-            getPlayerOrReject(key, promise, "startPlayer-error")?.let { player ->
+            getPlayerOrReject(key, promise, "startPlayer Error")?.let { player ->
                 promise.resolve(player.start(finishMode, speed.toFloat()))
             }
         }
         catch (err: Exception) {
-            promise.reject("startPlayer-error", err.toString())
+            promise.reject("startPlayer Error", err.toString())
         }
     }
 
     @ReactMethod
     fun stopPlayer(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "stopPlayer-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "stopPlayer Error") ?: return
 
             audioPlayers[key]?.let { player ->
                 player.stop()
@@ -180,20 +180,20 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             }
             promise.resolve(true)
         } catch (err: Exception) {
-          promise.reject("stopPlayer-error", err.toString())
+          promise.reject("stopPlayer Error", err.toString())
         }
     }
 
     @ReactMethod
     fun pausePlayer(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "pausePlayer-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "pausePlayer Error") ?: return
 
-            getPlayerOrReject(key, promise, "pausePlayer-error")?.let { player ->
+            getPlayerOrReject(key, promise, "pausePlayer Error")?.let { player ->
                 promise.resolve(player.pause())
             }
         } catch (err: Exception) {
-            promise.reject("pausePlayer-error", err.toString())
+            promise.reject("pausePlayer Error", err.toString())
         }
     }
 
@@ -201,7 +201,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     fun seekToPlayer(obj: ReadableMap, promise: Promise) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val key = getPlayerKeyOrReject(obj, promise, "seekToPlayer-error") ?: return
+                val key = getPlayerKeyOrReject(obj, promise, "seekToPlayer Error") ?: return
                 val progress = obj.getInt(Constants.progress)
 
                 val sought = audioPlayers[key]?.seekToPosition(progress.toLong())
@@ -215,50 +215,50 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             }
         }
         catch (err: Exception) {
-            promise.reject("seekToPlayer-error", "Unable to seek player")
+            promise.reject("seekToPlayer Error", "Unable to seek player")
         }
     }
 
     @ReactMethod
     fun setVolume(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "setVolume-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "setVolume Error") ?: return
             val volume = obj.getInt(Constants.volume)
 
-            getPlayerOrReject(key, promise, "setVolume-error")?.let { player ->
+            getPlayerOrReject(key, promise, "setVolume Error")?.let { player ->
                 promise.resolve(player.setVolume(volume.toFloat()))
             }
         } catch (err: Exception) {
-            promise.reject("setVolume-error", err.toString())
+            promise.reject("setVolume Error", err.toString())
         }
     }
 
     @ReactMethod
     fun getDuration(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "getDuration-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "getDuration Error") ?: return
             val duration = obj.getInt(Constants.durationType)
             val type = if (duration == 0) DurationType.Current else DurationType.Max
 
-            getPlayerOrReject(key, promise, "getDuration-error")?.let { player ->
+            getPlayerOrReject(key, promise, "getDuration Error")?.let { player ->
                 promise.resolve(player.getDuration(type).toString())
             }
         } catch (err: Exception) {
-            promise.reject("getDuration-error", err.toString())
+            promise.reject("getDuration Error", err.toString())
         }
     }
 
     @ReactMethod
     fun extractWaveformData(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "extractWaveformData-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "extractWaveformData Error") ?: return
             val path = obj.getString(Constants.path)
             val noOfSamples = obj.getInt(Constants.noOfSamples)
 
             createOrUpdateExtractor(key, noOfSamples, path, promise)
         }
         catch (err: Error) {
-            promise.reject("extractWaveformData-error", err.toString())
+            promise.reject("extractWaveformData Error", err.toString())
         }
     }
 
@@ -272,14 +272,14 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             promise.resolve(true)
         }
         catch (err:Exception) {
-            promise.reject("stopAllPlayers-error", "Error while stopping all players")
+            promise.reject("stopAllPlayers Error", "Error while stopping all players")
         }
     }
 
     @ReactMethod
     fun setPlaybackSpeed(obj: ReadableMap, promise: Promise) {
         try {
-            val key = getPlayerKeyOrReject(obj, promise, "setPlaybackSpeed-error") ?: return
+            val key = getPlayerKeyOrReject(obj, promise, "setPlaybackSpeed Error") ?: return
             // If the key doesn't exist or if the value is null or undefined, set default speed to 1.0
             val speed = if (!obj.hasKey(Constants.speed) || obj.isNull(Constants.speed)) {
                 1.0f // Set default speed to 1.0 if null, undefined, or missing
@@ -291,7 +291,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
             promise.resolve(succeed ?: false)
         } catch (err: Exception) {
-            promise.reject("setPlaybackSpeed-error", err.toString())
+            promise.reject("setPlaybackSpeed Error", err.toString())
         }
     }
 
