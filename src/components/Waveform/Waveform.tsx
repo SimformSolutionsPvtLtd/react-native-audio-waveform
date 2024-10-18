@@ -119,43 +119,30 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
   const preparePlayerForPath = async (progress?: number) => {
     if (!isNil(path) && !isEmpty(path)) {
-      try {
-        const prepare = await preparePlayer({
-          path,
-          playerKey: `PlayerFor${path}`,
-          updateFrequency: UpdateFrequency.medium,
-          volume: volume,
-          progress,
-        });
-        return Promise.resolve(prepare);
-      } catch (err) {
-        return Promise.reject(err);
-      }
-    } else {
-      return Promise.reject(
-        new Error(`Can not start player for path: ${path}`)
-      );
+      return await preparePlayer({
+        path,
+        playerKey: `PlayerFor${path}`,
+        updateFrequency: UpdateFrequency.medium,
+        volume: volume,
+        progress,
+      });
     }
+
+    throw new Error(`Can not start player for path: ${path}`);
   };
 
   const getAudioDuration = async () => {
-    try {
-      const duration = await getDuration({
-        playerKey: `PlayerFor${path}`,
-        durationType: DurationType.max,
-      });
-      if (!isNil(duration)) {
-        const audioDuration = Number(duration);
-        setSongDuration(audioDuration > 0 ? audioDuration : 0);
-        return Promise.resolve(audioDuration);
-      } else {
-        return Promise.reject(
-          new Error(`Could not get duration for path: ${path}`)
-        );
-      }
-    } catch (err) {
-      return Promise.reject(err);
+    const duration = await getDuration({
+      playerKey: `PlayerFor${path}`,
+      durationType: DurationType.max,
+    });
+    if (!isNil(duration)) {
+      const audioDuration = Number(duration);
+      setSongDuration(audioDuration > 0 ? audioDuration : 0);
+      return audioDuration;
     }
+
+    throw new Error(`Could not get duration for path: ${path}`);
   };
 
   const preparePlayerAndGetDuration = async () => {
@@ -169,7 +156,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       }
     } catch (err) {
       console.error(err);
-      (onError as Function)(err);
+      onError(err);
     }
   };
 
@@ -192,14 +179,12 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           }
         }
       } catch (err) {
-        (onError as Function)(err);
+        onError(err);
         (onChangeWaveformLoadState as Function)?.(false);
         console.error(err);
       }
     } else {
-      (onError as Function)(
-        `Can not find waveform for mode ${mode} path: ${path}`
-      );
+      onError(`Can not find waveform for mode ${mode} path: ${path}`);
       console.error(`Can not find waveform for mode ${mode} path: ${path}`);
     }
   };
