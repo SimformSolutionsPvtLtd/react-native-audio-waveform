@@ -1,4 +1,6 @@
-import { clamp, floor, head, isEmpty, isNil } from 'lodash';
+import clamp from 'lodash-es/clamp';
+import isEmpty from 'lodash-es/isEmpty';
+import isNil from 'lodash-es/isNil';
 import React, {
   forwardRef,
   useEffect,
@@ -37,6 +39,8 @@ import {
   type LiveWaveform,
   type StaticWaveform,
 } from './WaveformTypes';
+import head from 'lodash-es/head';
+import floor from 'lodash-es/floor';
 
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
