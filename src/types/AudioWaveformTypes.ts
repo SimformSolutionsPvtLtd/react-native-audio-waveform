@@ -24,6 +24,7 @@ export interface IStartRecording extends IPlayerPath {
 
 export interface IExtractWaveform extends IPlayerKey, IPlayerPath {
   noOfSamples?: number;
+  waveFormPath?: string;
 }
 
 export interface IPreparePlayer extends IPlayerKey, IPlayerPath {
@@ -116,7 +117,7 @@ export interface IAudioWaveforms extends NativeModule {
 
   /**
    * Stops the current recording.
-   * @returns A promise that resolves to an array of strings representing the recorded audio files.
+   * @returns A promise that resolves to an array of strings representing the path of the file for index 0 and the duration of the recording for index 1.
    */
   stopRecording(): Promise<Array<string>>;
 
@@ -135,7 +136,7 @@ export interface IAudioWaveforms extends NativeModule {
   /**
    * Extracts waveform data from the recorded audio.
    * @param args - Arguments for extracting waveform data.
-   * @returns A promise that resolves to an array of arrays representing the waveform data.
+   * @returns A promise that resolves to an array of arrays where the first index of the first array is representing the waveform data.
    */
   extractWaveformData(args: IExtractWaveform): Promise<Array<Array<number>>>;
 
