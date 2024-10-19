@@ -105,7 +105,7 @@ class AudioWaveform: RCTEventEmitter {
     if(key != nil) {
       createOrUpdateExtractor(playerKey: key!, path: path, noOfSamples: noOfSamples, resolve: resolve, rejecter: reject)
     } else {
-      reject(Constants.audioWaveforms,"Can not get waveform data",NSError())
+      reject(Constants.audioWaveforms,"Can not get waveform data",nil)
     }
   }
   
@@ -114,7 +114,7 @@ class AudioWaveform: RCTEventEmitter {
       do {
         let audioUrl = URL.init(string: path!)
         if(audioUrl == nil){
-          reject(Constants.audioWaveforms, "Failed to initialise Url from provided audio file If path contains `file://` try removing it", NSError())
+          reject(Constants.audioWaveforms, "Failed to initialise Url from provided audio file If path contains `file://` try removing it", nil)
         }
         let newExtractor = try WaveformExtractor(url: audioUrl!, channel: self, resolve: resolve, rejecter: reject)
         extractors[playerKey] = newExtractor
@@ -130,7 +130,7 @@ class AudioWaveform: RCTEventEmitter {
         reject(Constants.audioWaveforms, "Failed to decode audio file", e)
       }
     } else {
-      reject(Constants.audioWaveforms, "Audio file path can't be empty or null", NSError())
+      reject(Constants.audioWaveforms, "Audio file path can't be empty or null", nil)
       
     }
   }
@@ -156,7 +156,7 @@ class AudioWaveform: RCTEventEmitter {
                                         resolver: resolve,
                                         rejecter: reject)
     } else {
-      reject(Constants.audioWaveforms, "Can not prepare player", NSError())
+      reject(Constants.audioWaveforms, "Can not prepare player", nil)
     }
   }
   
@@ -168,7 +168,7 @@ class AudioWaveform: RCTEventEmitter {
     if(key != nil){
         audioPlayers[key!]?.startPlyer(finishMode, speed: speed, result:resolve)
     } else {
-      reject(Constants.audioWaveforms, "Can not start player", NSError())
+      reject(Constants.audioWaveforms, "Can not start player", nil)
     }
   }
   
@@ -177,7 +177,7 @@ class AudioWaveform: RCTEventEmitter {
     if(key != nil){
       audioPlayers[key!]?.pausePlayer(result: resolve)
     } else {
-      reject(Constants.audioWaveforms, "Can not pause player, Player key is null", NSError())
+      reject(Constants.audioWaveforms, "Can not pause player, Player key is null", nil)
     }
   }
   
@@ -188,7 +188,7 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[key!] = nil // Release the player after stopping it
       resolve(true)
     } else {
-      reject(Constants.audioWaveforms, "Can not stop player, Player key is null", NSError())
+      reject(Constants.audioWaveforms, "Can not stop player, Player key is null", nil)
     }
   }
   
@@ -197,7 +197,7 @@ class AudioWaveform: RCTEventEmitter {
     if(key != nil){
       audioPlayers[key!]?.seekTo(args?[Constants.progress] as? Double,resolve)
     } else {
-      reject(Constants.audioWaveforms, "Can not seek to postion, Player key is null", NSError())
+      reject(Constants.audioWaveforms, "Can not seek to postion, Player key is null", nil)
     }
   }
   
@@ -206,14 +206,14 @@ class AudioWaveform: RCTEventEmitter {
     if(key != nil){
       audioPlayers[key!]?.setVolume(args?[Constants.volume] as? Double,resolve)
     } else {
-      reject(Constants.audioWaveforms, "Can not set volume, Player key is null", NSError())
+      reject(Constants.audioWaveforms, "Can not set volume, Player key is null", nil)
     }
   }
   
   @objc func getDuration(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let type = args?[Constants.durationType] as? Int
     let key = args?[Constants.playerKey] as? String
-    if(key != nil){
+    if(key != nil && audioPlayers[key!] != nil){
       do{
         if(type == 0) {
           try audioPlayers[key!]?.getDuration(DurationType.Current,resolve)
@@ -224,7 +224,7 @@ class AudioWaveform: RCTEventEmitter {
         reject(Constants.audioWaveforms, "Failed to get duration", e)
       }
     } else {
-      reject(Constants.audioWaveforms, "Can not get duration", NSError())
+      reject(Constants.audioWaveforms, "Can not get duration", nil)
     }
   }
   
@@ -263,7 +263,7 @@ class AudioWaveform: RCTEventEmitter {
           let status =  audioPlayers[key!]?.setPlaybackSpeed(speed)
           resolve(status)
         } else {
-          reject(Constants.audioWaveforms, "Can not pause player, Player key is null", NSError())
+          reject(Constants.audioWaveforms, "Can not pause player, Player key is null", nil)
         }
     }
 }
