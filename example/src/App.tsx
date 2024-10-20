@@ -39,6 +39,7 @@ import {
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
+import FastImage from 'react-native-fast-image';
 
 const RenderListItem = React.memo(
   ({
@@ -88,7 +89,7 @@ const RenderListItem = React.memo(
               {isLoading ? (
                 <ActivityIndicator color={'#FF0000'} />
               ) : (
-                <Image
+                <FastImage
                   source={
                     playerState === PlayerState.stopped
                       ? Icons.play
