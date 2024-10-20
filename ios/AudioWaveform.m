@@ -64,4 +64,6 @@ RCT_EXTERN_METHOD(setPlaybackSpeed:(NSDictionary *)args
                   resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(markPlayerAsUnmounted)
+RCT_EXTERN_METHOD(stopAllWaveFormExtractors:(RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
 @end
