@@ -44,18 +44,15 @@ import { Colors } from './theme';
 import FastImage from 'react-native-fast-image';
 import fs from 'react-native-fs';
 
+let currentPlayingRef: React.RefObject<IWaveformRef> | null = null;
 const RenderListItem = React.memo(
   ({
     item,
-    currentPlaying,
-    setCurrentPlaying,
     onPanStateChange,
     currentPlaybackSpeed,
     changeSpeed,
   }: {
     item: ListItem;
-    currentPlaying: string;
-    setCurrentPlaying: Dispatch<SetStateAction<string>>;
     onPanStateChange: (value: boolean) => void;
     currentPlaybackSpeed: PlaybackSpeedType;
     changeSpeed: () => void;
@@ -65,27 +62,28 @@ const RenderListItem = React.memo(
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
     const [isLoading, setIsLoading] = useState(true);
 
-    const handleButtonAction = () => {
-      if (playerState === PlayerState.stopped) {
-        setCurrentPlaying(item.path);
-      } else if (playerState === PlayerState.playing) {
-        ref.current?.pausePlayer();
-      } else {
-        ref.current?.resumePlayer();
+    const handlePlayStopAction = async () => {
+      if (currentPlayingRef == null) {
+        currentPlayingRef = ref;
+        await currentPlayingRef.current?.startPlayer({
+          finishMode: FinishMode.stop,
+        });
+      } else if (
+        currentPlayingRef.current?.currentState === PlayerState.playing
+      ) {
+        await currentPlayingRef?.current?.stopPlayer();
+        if (
+          currentPlayingRef.current.playerKey() !== ref?.current?.playerKey()
+        ) {
+          currentPlayingRef = ref;
+          await currentPlayingRef.current?.startPlayer({
+            finishMode: FinishMode.stop,
+          });
+        } else {
+          currentPlayingRef = null;
+        }
       }
     };
-
-    const handleStopAction = () => {
-      setCurrentPlaying('');
-    };
-
-    useEffect(() => {
-      if (currentPlaying !== item.path) {
-        ref.current?.stopPlayer();
-      } else {
-        ref.current?.startPlayer({ finishMode: FinishMode.stop });
-      }
-    }, [currentPlaying]);
 
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
@@ -93,7 +91,7 @@ const RenderListItem = React.memo(
           <View style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
-              onPress={handleButtonAction}
+              onPress={handlePlayStopAction}
               style={styles.playBackControlPressable}>
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
@@ -142,12 +140,7 @@ const RenderListItem = React.memo(
               candleHeightScale={4}
               onPlayerStateChange={state => {
                 setPlayerState(state);
-                if (
-                  state === PlayerState.stopped &&
-                  currentPlaying === item.path
-                ) {
-                  setCurrentPlaying('');
-                }
+                // console.log(`state changed ${state}`);
               }}
               onPanStateChange={onPanStateChange}
               onError={error => {
@@ -203,13 +196,20 @@ const LivePlayerComponent = ({
 
   const handleRecorderAction = async () => {
     if (recorderState === RecorderState.stopped) {
-      let hasPermission = await checkHasAudioRecorderPermission();
+      // Stopping other player before starting recording
+      if (currentPlayingRef?.current?.currentState === PlayerState.playing) {
+        currentPlayingRef?.current?.stopPlayer();
+      }
+
+      const hasPermission = await checkHasAudioRecorderPermission();
 
       if (hasPermission === PermissionStatus.granted) {
+        currentPlayingRef = ref;
         startRecording();
       } else if (hasPermission === PermissionStatus.undetermined) {
         const permissionStatus = await getAudioRecorderPermission();
         if (permissionStatus === PermissionStatus.granted) {
+          currentPlayingRef = ref;
           startRecording();
         }
       } else {
@@ -219,6 +219,7 @@ const LivePlayerComponent = ({
       ref.current?.stopRecord().then(path => {
         setList(prev => [...prev, { fromCurrentUser: true, path }]);
       });
+      currentPlayingRef = null;
     }
   };
 
@@ -250,7 +251,6 @@ const LivePlayerComponent = ({
 
 const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
-  const [currentPlaying, setCurrentPlaying] = useState<string>('');
   const [list, setList] = useState<ListItem[]>([]);
   const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
@@ -350,8 +350,6 @@ const AppContainer = () => {
               {list.map(item => (
                 <RenderListItem
                   key={item.path}
-                  currentPlaying={currentPlaying}
-                  setCurrentPlaying={setCurrentPlaying}
                   item={item}
                   onPanStateChange={value => setShouldScroll(!value)}
                   {...{ currentPlaybackSpeed, changeSpeed }}
