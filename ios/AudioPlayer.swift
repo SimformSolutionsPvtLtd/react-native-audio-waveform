@@ -87,7 +87,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     EventEmitter.sharedInstance.dispatch(name: withName, body: body)
   }
   
-    func startPlyer(_ finishMode: Int?, speed: Float, result: RCTPromiseResolveBlock) {
+    func startPlayer(_ finishMode: Int?, speed: Float, result: RCTPromiseResolveBlock) {
       if(finishMode != nil && finishMode == 0) {
         self.finishMode = FinishMode.loop
       } else if(finishMode != nil && finishMode == 1) {

@@ -165,8 +165,8 @@ class AudioWaveform: RCTEventEmitter {
     let finishMode = args?[Constants.finishMode] as? Int
     let speed = (args?[Constants.speed] as? NSNumber)?.floatValue ?? 1.0
       
-    if(key != nil){
-        audioPlayers[key!]?.startPlyer(finishMode, speed: speed, result:resolve)
+    if(key != nil && audioPlayers[key!] != nil){
+        audioPlayers[key!]?.startPlayer(finishMode, speed: speed, result:resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not start player", nil)
     }
@@ -174,7 +174,7 @@ class AudioWaveform: RCTEventEmitter {
   
   @objc func pausePlayer(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
-    if(key != nil){
+    if(key != nil && audioPlayers[key!] != nil){
       audioPlayers[key!]?.pausePlayer(result: resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not pause player, Player key is null", nil)
@@ -194,7 +194,7 @@ class AudioWaveform: RCTEventEmitter {
   
   @objc func seekToPlayer(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
-    if(key != nil){
+    if(key != nil && audioPlayers[key!] != nil){
       audioPlayers[key!]?.seekTo(args?[Constants.progress] as? Double,resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not seek to postion, Player key is null", nil)
@@ -203,7 +203,7 @@ class AudioWaveform: RCTEventEmitter {
   
   @objc func setVolume(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     let key = args?[Constants.playerKey] as? String
-    if(key != nil){
+    if(key != nil && audioPlayers[key!] != nil){
       audioPlayers[key!]?.setVolume(args?[Constants.volume] as? Double,resolve)
     } else {
       reject(Constants.audioWaveforms, "Can not set volume, Player key is null", nil)
