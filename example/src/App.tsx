@@ -18,6 +18,7 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Linking,
   Pressable,
@@ -35,11 +36,13 @@ import { Icons } from './assets';
 import {
   generateAudioList,
   playbackSpeedSequence,
+  getRecordedAudios,
   type ListItem,
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
 import FastImage from 'react-native-fast-image';
+import fs from 'react-native-fs';
 
 const RenderListItem = React.memo(
   ({
@@ -248,6 +251,37 @@ const AppContainer = () => {
     );
   };
 
+  const handleDeleteRecordings = async () => {
+    const recordings = await getRecordedAudios();
+
+    const deleteRecordings = async () => {
+      await Promise.all(recordings.map(async recording => fs.unlink(recording)))
+        .then(() => {
+          Alert.alert(
+            'All recording deleted',
+            'All recordings have been deleted successfully! Reboot the app to see the changes.',
+            [{ text: 'Dismiss' }]
+          );
+        })
+        .catch(error => {
+          Alert.alert(
+            'Error deleting recordings',
+            'Below error happened while deleting recordings:\n' + error,
+            [{ text: 'Dismiss' }]
+          );
+        });
+    };
+
+    Alert.alert(
+      'Delete all recording',
+      `Continue to delete all ${recordings.length} recordings.\n App restart is required!`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: deleteRecordings },
+      ]
+    );
+  };
+
   return (
     <View style={styles.appContainer}>
       <StatusBar
@@ -265,6 +299,15 @@ const AppContainer = () => {
                 style={styles.simformImage}
                 resizeMode="contain"
               />
+              <Pressable
+                style={styles.playBackControlPressable}
+                onPress={handleDeleteRecordings}>
+                <Image
+                  source={Icons.delete}
+                  style={styles.buttonImage}
+                  resizeMode="contain"
+                />
+              </Pressable>
             </View>
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
