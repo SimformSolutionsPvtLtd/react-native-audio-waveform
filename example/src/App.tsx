@@ -279,7 +279,7 @@ const AppContainer = () => {
 
     Alert.alert(
       'Delete all recording',
-      `Continue to delete all ${recordings.length} recordings.\n App restart is required!`,
+      `Continue to delete all ${recordings.length} recordings.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'OK', onPress: deleteRecordings },
