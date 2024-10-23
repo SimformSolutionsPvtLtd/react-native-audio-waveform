@@ -257,11 +257,9 @@ const AppContainer = () => {
     const deleteRecordings = async () => {
       await Promise.all(recordings.map(async recording => fs.unlink(recording)))
         .then(() => {
-          Alert.alert(
-            'All recording deleted',
-            'All recordings have been deleted successfully! Reboot the app to see the changes.',
-            [{ text: 'Dismiss' }]
-          );
+          generateAudioList().then(audioListArray => {
+            setList(audioListArray);
+          });
         })
         .catch(error => {
           Alert.alert(
