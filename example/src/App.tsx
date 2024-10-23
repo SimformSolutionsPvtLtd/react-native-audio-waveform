@@ -313,7 +313,7 @@ const AppContainer = () => {
                 disabled={!nbOfRecording}>
                 <Image
                   source={Icons.delete}
-                  style={styles.buttonImage}
+                  style={styles.pinkButtonImage}
                   resizeMode="contain"
                 />
                 <Text style={styles.deleteRecordingTitle}>
