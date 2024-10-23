@@ -90,10 +90,18 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '100%',
       tintColor: Colors.pink,
     },
-    simformImageContainer: {
+    headerContainer: {
       alignItems: 'center',
-      justifyContent: 'space-around',
+    },
+    deleteRecordingContainer: {
+      alignItems: 'center',
       flexDirection: 'row',
+    },
+    deleteRecordingTitle: {
+      fontSize: scale(20),
+      fontWeight: 'bold',
+      color: Colors.pink,
+      paddingLeft: scale(8),
     },
     loadingText: {
       color: Colors.black,

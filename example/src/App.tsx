@@ -227,6 +227,7 @@ const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
   const [currentPlaying, setCurrentPlaying] = useState<string>('');
   const [list, setList] = useState<ListItem[]>([]);
+  const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
     useState<PlaybackSpeedType>(1.0);
 
@@ -240,6 +241,12 @@ const AppContainer = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    getRecordedAudios().then(recordedAudios =>
+      setNumberOfRecording(recordedAudios.length)
+    );
+  }, [list]);
 
   const changeSpeed = () => {
     setCurrentPlaybackSpeed(
@@ -291,20 +298,27 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <View style={styles.simformImageContainer}>
+            <View style={styles.headerContainer}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
               <Pressable
-                style={styles.playBackControlPressable}
-                onPress={handleDeleteRecordings}>
+                style={[
+                  styles.deleteRecordingContainer,
+                  { opacity: nbOfRecording ? 1 : 0.5 },
+                ]}
+                onPress={handleDeleteRecordings}
+                disabled={!nbOfRecording}>
                 <Image
                   source={Icons.delete}
                   style={styles.buttonImage}
                   resizeMode="contain"
                 />
+                <Text style={styles.deleteRecordingTitle}>
+                  {'Delete recorded audio files'}
+                </Text>
               </Pressable>
             </View>
             <ScrollView scrollEnabled={shouldScroll}>
