@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Colors, scale } from './theme';
+import { useColorScheme } from 'react-native';
+
 
 export type StyleSheetParams =
   | Partial<{
@@ -18,6 +20,7 @@ const styles = (params: StyleSheetParams = {}) =>
   StyleSheet.create({
     appContainer: {
       flex: 1,
+      backgroundColor: useColorScheme() === "dark" ? Colors.gray : Colors.white,
     },
     screenBackground: {
       flex: 1,
