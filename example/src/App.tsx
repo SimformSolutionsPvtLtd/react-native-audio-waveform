@@ -383,10 +383,11 @@ const AppContainer = () => {
               <Pressable
                 style={styles.playBackControlPressable}
                 onPress={handleStopPlayersAndExtractors}>
-                <Image
+                <FastImage
                   source={Icons.stop}
                   style={styles.stopAllButton}
                   resizeMode="contain"
+                  tintColor={Colors.pink}
                 />
               </Pressable>
             </View>
