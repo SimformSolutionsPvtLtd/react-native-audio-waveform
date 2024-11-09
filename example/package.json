@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "ios:pods": "bundle exec pod install --project-directory=ios",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
