@@ -63,24 +63,31 @@ const RenderListItem = React.memo(
     const [isLoading, setIsLoading] = useState(true);
 
     const handlePlayStopAction = async () => {
-      if (currentPlayingRef == null) {
+      console.log('currentPlayingRef', currentPlayingRef);
+
+      let currentPlayer = currentPlayingRef?.current;
+
+      // If no player or if current player is stopped just start it!
+      if (
+        currentPlayer == null ||
+        currentPlayer.currentState === PlayerState.stopped
+      ) {
         currentPlayingRef = ref;
         await currentPlayingRef.current?.startPlayer({
           finishMode: FinishMode.stop,
         });
-      } else if (
-        currentPlayingRef.current?.currentState === PlayerState.playing
-      ) {
-        await currentPlayingRef?.current?.stopPlayer();
-        if (
-          currentPlayingRef.current.playerKey() !== ref?.current?.playerKey()
-        ) {
+      } else {
+        // Always stop current player if it was playing
+        if (currentPlayer.currentState === PlayerState.playing) {
+          await currentPlayingRef?.current?.stopPlayer();
+        }
+
+        // Start player only when it is a different one!
+        if (currentPlayer.playerKey() !== ref?.current?.playerKey()) {
           currentPlayingRef = ref;
           await currentPlayingRef.current?.startPlayer({
             finishMode: FinishMode.stop,
           });
-        } else {
-          currentPlayingRef = null;
         }
       }
     };
@@ -140,19 +147,19 @@ const RenderListItem = React.memo(
               candleHeightScale={4}
               onPlayerStateChange={state => {
                 setPlayerState(state);
-                // console.log(`state changed ${state}`);
+                console.log(`state changed ${state}`);
               }}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
               }}
               onCurrentProgressChange={(currentProgress, songDuration) => {
-                console.log(
-                  'currentProgress ',
-                  currentProgress,
-                  'songDuration ',
-                  songDuration
-                );
+                // console.log(
+                //   'currentProgress ',
+                //   currentProgress,
+                //   'songDuration ',
+                //   songDuration
+                // );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
