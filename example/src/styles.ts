@@ -120,6 +120,17 @@ const styles = (params: StyleSheetParams = {}) =>
       color: Colors.pink,
       paddingLeft: scale(8),
     },
+    stopAllRecordingContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+    },
+    stopAllRecordingTitle: {
+      fontSize: scale(20),
+      fontWeight: 'bold',
+      color: Colors.pink,
+      paddingLeft: scale(8),
+    },
     loadingText: {
       color: Colors.black,
     },

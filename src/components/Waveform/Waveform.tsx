@@ -80,6 +80,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const [panMoving, setPanMoving] = useState(false);
   const [playerState, setPlayerState] = useState(PlayerState.stopped);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
+  const [isWaveformExtracted, setWaveformExtracted] = useState(false);
   const audioSpeed: number =
     playbackSpeed > playbackSpeedThreshold ? 1.0 : playbackSpeed;
 
@@ -194,6 +195,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           if (!isNil(waveforms) && !isEmpty(waveforms)) {
             setWaveform(waveforms);
             await preparePlayerAndGetDuration();
+            setWaveformExtracted(true);
           }
         }
       } catch (err) {
@@ -241,7 +243,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       try {
         isAudioPlaying.current = true;
         if (playerState === PlayerState.stopped) {
-          await preparePlayerForPath(currentProgress);
+          if (isWaveformExtracted) {
+            await preparePlayerForPath(currentProgress);
+          } else {
+            await getAudioWaveFormForPath(noOfSamples);
+          }
         }
 
         const play = await playPlayer({

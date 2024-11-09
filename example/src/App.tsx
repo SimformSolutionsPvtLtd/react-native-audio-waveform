@@ -165,10 +165,10 @@ const RenderListItem = React.memo(
               onError={error => {
                 console.log('Error in static player:', error);
               }}
-              onCurrentProgressChange={(currentProgress, songDuration) => {
-                console.log(
-                  `currentProgress ${currentProgress}, songDuration ${songDuration}`
-                );
+              onCurrentProgressChange={(_currentProgress, _songDuration) => {
+                // console.log(
+                //   `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                // );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
@@ -271,6 +271,8 @@ const AppContainer = () => {
   const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
     useState<PlaybackSpeedType>(1.0);
+  const [showAdvancedOptions, setShowAdvancedOptions] =
+    useState<boolean>(false);
 
   const { top, bottom } = useSafeAreaInsets();
   const styles = stylesheet({ top, bottom });
@@ -328,6 +330,10 @@ const AppContainer = () => {
     );
   };
 
+  const toggleAdvancedOptions = () => {
+    setShowAdvancedOptions(!showAdvancedOptions);
+  };
+
   const handleStopPlayersAndExtractors = async () => {
     const { stopPlayersAndExtractors } = useAudioPlayer();
     const hasStoppedAll: boolean[] = await stopPlayersAndExtractors();
@@ -358,12 +364,31 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <View style={styles.headerContainer}>
+            <Pressable
+              style={styles.simformImageContainer}
+              onPress={toggleAdvancedOptions}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
+            </Pressable>
+            {showAdvancedOptions && (
+              <>
+                <Pressable
+                  style={styles.stopAllRecordingContainer}
+                  onPress={handleStopPlayersAndExtractors}>
+                  <Image
+                    source={Icons.stop}
+                    style={styles.pinkButtonImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.stopAllRecordingTitle}>
+                    {'Stop all players and extractors'}
+                  </Text>
+                </Pressable>
+              </>
+            )}
               <Pressable
                 style={[
                   styles.deleteRecordingContainer,
