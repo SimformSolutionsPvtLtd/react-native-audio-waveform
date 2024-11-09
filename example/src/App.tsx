@@ -44,7 +44,7 @@ import { Colors } from './theme';
 import FastImage from 'react-native-fast-image';
 import fs from 'react-native-fs';
 
-let currentPlayingRef: React.RefObject<IWaveformRef> | null = null;
+let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
 const RenderListItem = React.memo(
   ({
     item,
@@ -63,8 +63,6 @@ const RenderListItem = React.memo(
     const [isLoading, setIsLoading] = useState(true);
 
     const handlePlayStopAction = async () => {
-      console.log('currentPlayingRef', currentPlayingRef);
-
       let currentPlayer = currentPlayingRef?.current;
 
       // If no player or if current player is stopped just start it!
@@ -82,7 +80,7 @@ const RenderListItem = React.memo(
           await currentPlayingRef?.current?.stopPlayer();
         }
 
-        // Start player only when it is a different one!
+        // Start player when it is a different one!
         if (currentPlayer.playerKey() !== ref?.current?.playerKey()) {
           currentPlayingRef = ref;
           await currentPlayingRef.current?.startPlayer({
@@ -145,21 +143,15 @@ const RenderListItem = React.memo(
               scrubColor={Colors.white}
               waveColor={Colors.lightWhite}
               candleHeightScale={4}
-              onPlayerStateChange={state => {
-                setPlayerState(state);
-                console.log(`state changed ${state}`);
-              }}
+              onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
               }}
               onCurrentProgressChange={(currentProgress, songDuration) => {
-                // console.log(
-                //   'currentProgress ',
-                //   currentProgress,
-                //   'songDuration ',
-                //   songDuration
-                // );
+                console.log(
+                  `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
@@ -226,7 +218,7 @@ const LivePlayerComponent = ({
       ref.current?.stopRecord().then(path => {
         setList(prev => [...prev, { fromCurrentUser: true, path }]);
       });
-      currentPlayingRef = null;
+      currentPlayingRef = undefined;
     }
   };
 
