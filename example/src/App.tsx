@@ -75,6 +75,11 @@ const RenderListItem = React.memo(
           finishMode: FinishMode.stop,
         });
       } else {
+        // If we are recording do nothing
+        if (currentPlayer.currentState === RecorderState.recording) {
+          return;
+        }
+
         // Always stop current player if it was playing
         if (currentPlayer.currentState === PlayerState.playing) {
           await currentPlayingRef?.current?.stopPlayer();
