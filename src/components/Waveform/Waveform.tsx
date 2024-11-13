@@ -1,4 +1,8 @@
-import { clamp, floor, head, isEmpty, isNil } from 'lodash';
+import clamp from 'lodash/clamp';
+import floor from 'lodash/floor';
+import head from 'lodash/head';
+import isEmpty from 'lodash/isEmpty';
+import isNil from 'lodash/isNil';
 import React, {
   forwardRef,
   useEffect,
