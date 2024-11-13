@@ -54,6 +54,12 @@ const styles = (params: StyleSheetParams = {}) =>
       tintColor: Colors.white,
       alignSelf: 'flex-end',
     },
+    pinkButtonImage: {
+      height: scale(22),
+      width: scale(22),
+      tintColor: Colors.pink,
+      alignSelf: 'flex-end',
+    },
     staticWaveformView: {
       flex: 1,
       height: scale(75),
@@ -90,9 +96,18 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '100%',
       tintColor: Colors.pink,
     },
-    simformImageContainer: {
+    headerContainer: {
       alignItems: 'center',
-      justifyContent: 'center',
+    },
+    deleteRecordingContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    deleteRecordingTitle: {
+      fontSize: scale(20),
+      fontWeight: 'bold',
+      color: Colors.pink,
+      paddingLeft: scale(8),
     },
     loadingText: {
       color: Colors.black,

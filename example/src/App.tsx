@@ -18,6 +18,7 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Linking,
   Pressable,
@@ -35,11 +36,13 @@ import { Icons } from './assets';
 import {
   generateAudioList,
   playbackSpeedSequence,
+  getRecordedAudios,
   type ListItem,
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
 import FastImage from 'react-native-fast-image';
+import fs from 'react-native-fs';
 
 const RenderListItem = React.memo(
   ({
@@ -224,6 +227,7 @@ const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
   const [currentPlaying, setCurrentPlaying] = useState<string>('');
   const [list, setList] = useState<ListItem[]>([]);
+  const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
     useState<PlaybackSpeedType>(1.0);
 
@@ -238,6 +242,12 @@ const AppContainer = () => {
     });
   }, []);
 
+  useEffect(() => {
+    getRecordedAudios().then(recordedAudios =>
+      setNumberOfRecording(recordedAudios.length)
+    );
+  }, [list]);
+
   const changeSpeed = () => {
     setCurrentPlaybackSpeed(
       prev =>
@@ -245,6 +255,35 @@ const AppContainer = () => {
           (playbackSpeedSequence.indexOf(prev) + 1) %
             playbackSpeedSequence.length
         ] ?? 1.0
+    );
+  };
+
+  const handleDeleteRecordings = async () => {
+    const recordings = await getRecordedAudios();
+
+    const deleteRecordings = async () => {
+      await Promise.all(recordings.map(async recording => fs.unlink(recording)))
+        .then(() => {
+          generateAudioList().then(audioListArray => {
+            setList(audioListArray);
+          });
+        })
+        .catch(error => {
+          Alert.alert(
+            'Error deleting recordings',
+            'Below error happened while deleting recordings:\n' + error,
+            [{ text: 'Dismiss' }]
+          );
+        });
+    };
+
+    Alert.alert(
+      'Delete all recording',
+      `Continue to delete all ${recordings.length} recordings.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: deleteRecordings },
+      ]
     );
   };
 
@@ -259,12 +298,28 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <View style={styles.simformImageContainer}>
+            <View style={styles.headerContainer}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
+              <Pressable
+                style={[
+                  styles.deleteRecordingContainer,
+                  { opacity: nbOfRecording ? 1 : 0.5 },
+                ]}
+                onPress={handleDeleteRecordings}
+                disabled={!nbOfRecording}>
+                <Image
+                  source={Icons.delete}
+                  style={styles.pinkButtonImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.deleteRecordingTitle}>
+                  {'Delete recorded audio files'}
+                </Text>
+              </Pressable>
             </View>
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
