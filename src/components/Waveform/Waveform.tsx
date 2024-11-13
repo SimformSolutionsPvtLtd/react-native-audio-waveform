@@ -180,7 +180,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const result = await extractWaveformData({
           path: path,
           playerKey: `PlayerFor${path}`,
-          noOfSamples: noOfSample,
+          noOfSamples: Math.max(noOfSample, 1),
         });
         (onChangeWaveformLoadState as Function)?.(false);
 
