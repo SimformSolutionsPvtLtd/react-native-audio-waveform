@@ -68,9 +68,15 @@ const RenderListItem = React.memo(
     const handleButtonAction = () => {
       if (playerState === PlayerState.stopped) {
         setCurrentPlaying(item.path);
+      } else if (playerState === PlayerState.playing) {
+        ref.current?.pausePlayer();
       } else {
-        setCurrentPlaying('');
+        ref.current?.resumePlayer();
       }
+    };
+
+    const handleStopAction = () => {
+      setCurrentPlaying('');
     };
 
     useEffect(() => {
@@ -90,15 +96,34 @@ const RenderListItem = React.memo(
               onPress={handleButtonAction}
               style={styles.playBackControlPressable}>
               {isLoading ? (
-                <ActivityIndicator color={'#FF0000'} />
+                <ActivityIndicator color={'#FFFFFF'} />
               ) : (
                 <FastImage
                   source={
-                    playerState === PlayerState.stopped
+                    playerState !== PlayerState.playing
                       ? Icons.play
-                      : Icons.stop
+                      : Icons.pause
                   }
                   style={styles.buttonImage}
+                  resizeMode="contain"
+                />
+              )}
+            </Pressable>
+            <Pressable
+              disabled={PlayerState.stopped == playerState}
+              onPress={handleStopAction}
+              style={styles.playBackControlPressable}>
+              {isLoading ? (
+                <ActivityIndicator color={'#FFFFFF'} />
+              ) : (
+                <FastImage
+                  source={Icons.stop}
+                  style={[
+                    styles.stopButton,
+                    {
+                      opacity: playerState === PlayerState.stopped ? 0.5 : 1,
+                    },
+                  ]}
                   resizeMode="contain"
                 />
               )}

@@ -54,6 +54,11 @@ const styles = (params: StyleSheetParams = {}) =>
       tintColor: Colors.white,
       alignSelf: 'flex-end',
     },
+    stopButton: {
+      height: scale(22),
+      width: scale(22),
+      alignSelf: 'center',
+    },
     pinkButtonImage: {
       height: scale(22),
       width: scale(22),
