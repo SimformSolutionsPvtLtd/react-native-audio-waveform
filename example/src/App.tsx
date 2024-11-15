@@ -62,7 +62,7 @@ const RenderListItem = React.memo(
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
     const [isLoading, setIsLoading] = useState(true);
 
-    const handlePlayStopAction = async () => {
+    const handlePlayPauseAction = async () => {
       let currentPlayer = currentPlayingRef?.current;
 
       // If no player or if current player is stopped just start it!
@@ -80,9 +80,9 @@ const RenderListItem = React.memo(
           return;
         }
 
-        // Always stop current player if it was playing
+        // Pause current player if it was playing
         if (currentPlayer.currentState === PlayerState.playing) {
-          await currentPlayingRef?.current?.stopPlayer();
+          await currentPlayingRef?.current?.pausePlayer();
         }
 
         // Start player when it is a different one!
@@ -95,13 +95,17 @@ const RenderListItem = React.memo(
       }
     };
 
+    const handleStopAction = async () => {
+      ref.current?.stopPlayer();
+    };
+
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
         <View style={styles.listItemWidth}>
           <View style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
-              onPress={handlePlayStopAction}
+              onPress={handlePlayPauseAction}
               style={styles.playBackControlPressable}>
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
