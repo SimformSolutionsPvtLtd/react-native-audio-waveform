@@ -63,34 +63,41 @@ const RenderListItem = React.memo(
     const [isLoading, setIsLoading] = useState(true);
 
     const handlePlayPauseAction = async () => {
-      let currentPlayer = currentPlayingRef?.current;
-
-      // If no player or if current player is stopped just start it!
+      // If we are recording do nothing
       if (
-        currentPlayer == null ||
-        currentPlayer.currentState === PlayerState.stopped
+        currentPlayingRef?.current?.currentState === RecorderState.recording
       ) {
-        currentPlayingRef = ref;
-        await currentPlayingRef.current?.startPlayer({
-          finishMode: FinishMode.stop,
-        });
-      } else {
-        // If we are recording do nothing
-        if (currentPlayer.currentState === RecorderState.recording) {
-          return;
-        }
+        return;
+      }
 
+      const startNewPlayer = async () => {
+        currentPlayingRef = ref;
+        if (ref.current?.currentState === PlayerState.paused) {
+          await ref.current?.resumePlayer();
+        } else {
+          await ref.current?.startPlayer({
+            finishMode: FinishMode.stop,
+          });
+        }
+      };
+
+      // If no player or if current player is stopped just start the new player!
+      if (
+        currentPlayingRef == null ||
+        [PlayerState.stopped, PlayerState.paused].includes(
+          currentPlayingRef?.current?.currentState as PlayerState
+        )
+      ) {
+        await startNewPlayer();
+      } else {
         // Pause current player if it was playing
-        if (currentPlayer.currentState === PlayerState.playing) {
+        if (currentPlayingRef?.current?.currentState === PlayerState.playing) {
           await currentPlayingRef?.current?.pausePlayer();
         }
 
         // Start player when it is a different one!
-        if (currentPlayer.playerKey() !== ref?.current?.playerKey()) {
-          currentPlayingRef = ref;
-          await currentPlayingRef.current?.startPlayer({
-            finishMode: FinishMode.stop,
-          });
+        if (currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey) {
+          await startNewPlayer();
         }
       }
     };

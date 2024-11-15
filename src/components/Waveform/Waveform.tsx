@@ -587,7 +587,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     stopRecord: stopRecordingAction,
     resumeRecord: resumeRecordingAction,
     currentState: mode === 'static' ? playerState : recorderState,
-    playerKey: () => path,
+    playerKey: path,
   }));
 
   return (
