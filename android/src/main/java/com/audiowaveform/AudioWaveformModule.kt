@@ -316,7 +316,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     }
                 }
                 override fun onReject(error: String?, message: String?) {
-                    promise.reject(error, message)
+                    promise.reject(error ?: "Error", message ?: "An error is thrown while decoding the audio file")
                 }
                 override fun onResolve(value: MutableList<MutableList<Float>>) {
                     promise.resolve(Arguments.fromList(value))
