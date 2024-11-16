@@ -132,20 +132,16 @@ const RenderListItem = React.memo(
               disabled={PlayerState.stopped == playerState}
               onPress={handleStopAction}
               style={styles.playBackControlPressable}>
-              {isLoading ? (
-                <ActivityIndicator color={'#FFFFFF'} />
-              ) : (
-                <Image
-                  source={Icons.stop}
-                  style={[
-                    styles.stopButton,
-                    {
-                      opacity: playerState === PlayerState.stopped ? 0.5 : 1,
-                    },
-                  ]}
-                  resizeMode="contain"
-                />
-              )}
+              <Image
+                source={Icons.stop}
+                style={[
+                  styles.stopButton,
+                  {
+                    opacity: playerState === PlayerState.stopped ? 0.5 : 1,
+                  },
+                ]}
+                resizeMode="contain"
+              />
             </Pressable>
             <Waveform
               containerStyle={styles.staticWaveformView}
