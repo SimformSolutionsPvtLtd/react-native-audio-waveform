@@ -42,7 +42,6 @@ import {
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
-import FastImage from 'react-native-fast-image';
 import fs from 'react-native-fs';
 
 let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
@@ -118,7 +117,7 @@ const RenderListItem = React.memo(
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
               ) : (
-                <FastImage
+                <Image
                   source={
                     playerState !== PlayerState.playing
                       ? Icons.play
@@ -136,7 +135,7 @@ const RenderListItem = React.memo(
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
               ) : (
-                <FastImage
+                <Image
                   source={Icons.stop}
                   style={[
                     styles.stopButton,
@@ -396,7 +395,7 @@ const AppContainer = () => {
                   onPress={handleStopPlayersAndExtractors}>
                   <Image
                     source={Icons.stop}
-                    style={styles.pinkButtonImage}
+                    style={[styles.pinkButtonImage]}
                     resizeMode="contain"
                   />
                   <Text style={styles.stopAllRecordingTitle}>
