@@ -110,12 +110,6 @@ const styles = (params: StyleSheetParams = {}) =>
     simformImageContainer: {
       alignItems: 'center',
     },
-    deleteRecordingTitle: {
-      fontSize: scale(20),
-      fontWeight: 'bold',
-      color: Colors.pink,
-      paddingLeft: scale(8),
-    },
     advancedOptionsContainer: {
       gap: scale(8),
     },
@@ -123,7 +117,7 @@ const styles = (params: StyleSheetParams = {}) =>
       alignItems: 'center',
       flexDirection: 'row',
     },
-    stopAllRecordingTitle: {
+    advancedOptionItemTitle: {
       fontSize: scale(20),
       fontWeight: 'bold',
       color: Colors.pink,

@@ -382,7 +382,7 @@ const AppContainer = () => {
                     style={styles.pinkButtonImage}
                     resizeMode="contain"
                   />
-                  <Text style={styles.deleteRecordingTitle}>
+                  <Text style={styles.advancedOptionItemTitle}>
                     {'Delete recorded audio files'}
                   </Text>
                 </Pressable>
@@ -394,7 +394,7 @@ const AppContainer = () => {
                     style={[styles.pinkButtonImage]}
                     resizeMode="contain"
                   />
-                  <Text style={styles.stopAllRecordingTitle}>
+                  <Text style={styles.advancedOptionItemTitle}>
                     {'Stop all players and extractors'}
                   </Text>
                 </Pressable>
