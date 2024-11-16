@@ -78,6 +78,13 @@ const RenderListItem = React.memo(
           await ref.current?.startPlayer({
             finishMode: FinishMode.stop,
           });
+
+          // If the player took too much time to initialize and another player started instead we pause the former one!
+          if (
+            currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey
+          ) {
+            await ref?.current?.pausePlayer();
+          }
         }
       };
 
@@ -330,6 +337,8 @@ const AppContainer = () => {
   };
 
   const handleStopPlayersAndExtractors = async () => {
+    await currentPlayingRef?.current?.stopPlayer();
+
     const { stopPlayersAndExtractors } = useAudioPlayer();
     const hasStoppedAll: boolean[] = await stopPlayersAndExtractors();
 
