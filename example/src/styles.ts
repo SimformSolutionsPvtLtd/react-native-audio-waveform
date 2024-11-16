@@ -107,12 +107,8 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '100%',
       tintColor: Colors.pink,
     },
-    headerContainer: {
+    simformImageContainer: {
       alignItems: 'center',
-    },
-    deleteRecordingContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
     },
     deleteRecordingTitle: {
       fontSize: scale(20),
@@ -120,9 +116,11 @@ const styles = (params: StyleSheetParams = {}) =>
       color: Colors.pink,
       paddingLeft: scale(8),
     },
-    stopAllRecordingContainer: {
+    advancedOptionsContainer: {
+      gap: scale(8),
+    },
+    advancedOptionItem: {
       alignItems: 'center',
-      justifyContent: 'center',
       flexDirection: 'row',
     },
     stopAllRecordingTitle: {

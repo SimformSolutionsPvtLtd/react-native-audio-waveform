@@ -56,7 +56,7 @@ const copyFilesToNativeResources = async (): Promise<string[]> => {
     );
 
     // Filter out unsuccessful file copies
-    return successfulCopies?.filter?.(value => value !== null);
+    return successfulCopies?.filter?.((value): value is string => value !== null);
   }
 
   // On iOS, return all files without copying

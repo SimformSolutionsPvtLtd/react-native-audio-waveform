@@ -374,9 +374,25 @@ const AppContainer = () => {
               />
             </Pressable>
             {showAdvancedOptions && (
-              <>
+              <View style={styles.advancedOptionsContainer}>
                 <Pressable
-                  style={styles.stopAllRecordingContainer}
+                  style={[
+                    styles.advancedOptionItem,
+                    { opacity: nbOfRecording ? 1 : 0.5 },
+                  ]}
+                  onPress={handleDeleteRecordings}
+                  disabled={!nbOfRecording}>
+                  <Image
+                    source={Icons.delete}
+                    style={styles.pinkButtonImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.deleteRecordingTitle}>
+                    {'Delete recorded audio files'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={styles.advancedOptionItem}
                   onPress={handleStopPlayersAndExtractors}>
                   <Image
                     source={Icons.stop}
@@ -387,35 +403,8 @@ const AppContainer = () => {
                     {'Stop all players and extractors'}
                   </Text>
                 </Pressable>
-              </>
+              </View>
             )}
-              <Pressable
-                style={[
-                  styles.deleteRecordingContainer,
-                  { opacity: nbOfRecording ? 1 : 0.5 },
-                ]}
-                onPress={handleDeleteRecordings}
-                disabled={!nbOfRecording}>
-                <Image
-                  source={Icons.delete}
-                  style={styles.pinkButtonImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.deleteRecordingTitle}>
-                  {'Delete recorded audio files'}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={styles.playBackControlPressable}
-                onPress={handleStopPlayersAndExtractors}>
-                <FastImage
-                  source={Icons.stop}
-                  style={styles.stopAllButton}
-                  resizeMode="contain"
-                  tintColor={Colors.pink}
-                />
-              </Pressable>
-            </View>
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
                 <RenderListItem
