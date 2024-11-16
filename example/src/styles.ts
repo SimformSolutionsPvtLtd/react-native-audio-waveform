@@ -65,12 +65,6 @@ const styles = (params: StyleSheetParams = {}) =>
       tintColor: Colors.pink,
       alignSelf: 'flex-end',
     },
-    stopAllButton: {
-      height: scale(22),
-      width: scale(22),
-      tintColor: Colors.pink,
-      alignSelf: 'flex-end',
-    },
     staticWaveformView: {
       flex: 1,
       height: scale(75),
@@ -122,9 +116,6 @@ const styles = (params: StyleSheetParams = {}) =>
       fontWeight: 'bold',
       color: Colors.pink,
       paddingLeft: scale(8),
-    },
-    loadingText: {
-      color: Colors.black,
     },
     speedBox: {
       height: scale(28),
