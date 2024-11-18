@@ -44,18 +44,15 @@ import { Colors } from './theme';
 import FastImage from 'react-native-fast-image';
 import fs from 'react-native-fs';
 
+let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
 const RenderListItem = React.memo(
   ({
     item,
-    currentPlaying,
-    setCurrentPlaying,
     onPanStateChange,
     currentPlaybackSpeed,
     changeSpeed,
   }: {
     item: ListItem;
-    currentPlaying: string;
-    setCurrentPlaying: Dispatch<SetStateAction<string>>;
     onPanStateChange: (value: boolean) => void;
     currentPlaybackSpeed: PlaybackSpeedType;
     changeSpeed: () => void;
@@ -65,27 +62,49 @@ const RenderListItem = React.memo(
     const styles = stylesheet({ currentUser: item.fromCurrentUser });
     const [isLoading, setIsLoading] = useState(true);
 
-    const handleButtonAction = () => {
-      if (playerState === PlayerState.stopped) {
-        setCurrentPlaying(item.path);
-      } else if (playerState === PlayerState.playing) {
-        ref.current?.pausePlayer();
+    const handlePlayPauseAction = async () => {
+      // If we are recording do nothing
+      if (
+        currentPlayingRef?.current?.currentState === RecorderState.recording
+      ) {
+        return;
+      }
+
+      const startNewPlayer = async () => {
+        currentPlayingRef = ref;
+        if (ref.current?.currentState === PlayerState.paused) {
+          await ref.current?.resumePlayer();
+        } else {
+          await ref.current?.startPlayer({
+            finishMode: FinishMode.stop,
+          });
+        }
+      };
+
+      // If no player or if current player is stopped just start the new player!
+      if (
+        currentPlayingRef == null ||
+        [PlayerState.stopped, PlayerState.paused].includes(
+          currentPlayingRef?.current?.currentState as PlayerState
+        )
+      ) {
+        await startNewPlayer();
       } else {
-        ref.current?.resumePlayer();
+        // Pause current player if it was playing
+        if (currentPlayingRef?.current?.currentState === PlayerState.playing) {
+          await currentPlayingRef?.current?.pausePlayer();
+        }
+
+        // Start player when it is a different one!
+        if (currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey) {
+          await startNewPlayer();
+        }
       }
     };
 
-    const handleStopAction = () => {
-      setCurrentPlaying('');
+    const handleStopAction = async () => {
+      ref.current?.stopPlayer();
     };
-
-    useEffect(() => {
-      if (currentPlaying !== item.path) {
-        ref.current?.stopPlayer();
-      } else {
-        ref.current?.startPlayer({ finishMode: FinishMode.stop });
-      }
-    }, [currentPlaying]);
 
     return (
       <View key={item.path} style={[styles.listItemContainer]}>
@@ -93,7 +112,7 @@ const RenderListItem = React.memo(
           <View style={[styles.buttonContainer]}>
             <Pressable
               disabled={isLoading}
-              onPress={handleButtonAction}
+              onPress={handlePlayPauseAction}
               style={styles.playBackControlPressable}>
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
@@ -140,25 +159,14 @@ const RenderListItem = React.memo(
               scrubColor={Colors.white}
               waveColor={Colors.lightWhite}
               candleHeightScale={4}
-              onPlayerStateChange={state => {
-                setPlayerState(state);
-                if (
-                  state === PlayerState.stopped &&
-                  currentPlaying === item.path
-                ) {
-                  setCurrentPlaying('');
-                }
-              }}
+              onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
               onError={error => {
                 console.log(error, 'we are in example');
               }}
               onCurrentProgressChange={(currentProgress, songDuration) => {
                 console.log(
-                  'currentProgress ',
-                  currentProgress,
-                  'songDuration ',
-                  songDuration
+                  `currentProgress ${currentProgress}, songDuration ${songDuration}`
                 );
               }}
               onChangeWaveformLoadState={state => {
@@ -203,13 +211,20 @@ const LivePlayerComponent = ({
 
   const handleRecorderAction = async () => {
     if (recorderState === RecorderState.stopped) {
-      let hasPermission = await checkHasAudioRecorderPermission();
+      // Stopping other player before starting recording
+      if (currentPlayingRef?.current?.currentState === PlayerState.playing) {
+        currentPlayingRef?.current?.stopPlayer();
+      }
+
+      const hasPermission = await checkHasAudioRecorderPermission();
 
       if (hasPermission === PermissionStatus.granted) {
+        currentPlayingRef = ref;
         startRecording();
       } else if (hasPermission === PermissionStatus.undetermined) {
         const permissionStatus = await getAudioRecorderPermission();
         if (permissionStatus === PermissionStatus.granted) {
+          currentPlayingRef = ref;
           startRecording();
         }
       } else {
@@ -219,6 +234,7 @@ const LivePlayerComponent = ({
       ref.current?.stopRecord().then(path => {
         setList(prev => [...prev, { fromCurrentUser: true, path }]);
       });
+      currentPlayingRef = undefined;
     }
   };
 
@@ -250,7 +266,6 @@ const LivePlayerComponent = ({
 
 const AppContainer = () => {
   const [shouldScroll, setShouldScroll] = useState<boolean>(true);
-  const [currentPlaying, setCurrentPlaying] = useState<string>('');
   const [list, setList] = useState<ListItem[]>([]);
   const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
@@ -350,8 +365,6 @@ const AppContainer = () => {
               {list.map(item => (
                 <RenderListItem
                   key={item.path}
-                  currentPlaying={currentPlaying}
-                  setCurrentPlaying={setCurrentPlaying}
                   item={item}
                   onPanStateChange={value => setShouldScroll(!value)}
                   {...{ currentPlaybackSpeed, changeSpeed }}
