@@ -258,8 +258,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           );
         }
       } catch (error) {
-        // If the player is not prepared, triggering the stop will reset the player for next click
-        await stopPlayerAction();
+        if (playerState === PlayerState.paused) {
+          // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
+          await stopPlayerAction();
+        }
 
         return Promise.reject(error);
       }
@@ -441,8 +443,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
               progress: clampedSeekAmount * songDuration,
             });
           } catch (e) {
-            // If the player is not prepared, triggering the stop will reset the player for next click
-            await stopPlayerAction();
+            if (playerState === PlayerState.paused) {
+              // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
+              await stopPlayerAction();
+            }
           }
 
           if (playerState === PlayerState.playing) {
