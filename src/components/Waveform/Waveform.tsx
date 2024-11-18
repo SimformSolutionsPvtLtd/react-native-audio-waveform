@@ -258,6 +258,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           );
         }
       } catch (error) {
+        // If the player is not prepared, triggering the stop will reset the player for next click
+        await stopPlayerAction();
+
         return Promise.reject(error);
       }
     } else {
@@ -423,7 +426,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewLayout?.width, mode, candleWidth, candleSpace]);
 
-  useEffect(() => {
+  const seekToPlayerAction = async () => {
     if (!isNil(seekPosition)) {
       if (mode === 'static') {
         const seekAmount =
@@ -432,10 +435,16 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const clampedSeekAmount = clamp(seekAmount, 0, 1);
 
         if (!panMoving) {
-          seekToPlayer({
-            playerKey: `PlayerFor${path}`,
-            progress: clampedSeekAmount * songDuration,
-          });
+          try {
+            await seekToPlayer({
+              playerKey: `PlayerFor${path}`,
+              progress: clampedSeekAmount * songDuration,
+            });
+          } catch (e) {
+            // If the player is not prepared, triggering the stop will reset the player for next click
+            await stopPlayerAction();
+          }
+
           if (playerState === PlayerState.playing) {
             startPlayerAction();
           }
@@ -444,6 +453,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         setCurrentProgress(clampedSeekAmount * songDuration);
       }
     }
+  };
+
+  useEffect(() => {
+    seekToPlayerAction();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seekPosition, panMoving, mode, songDuration]);
 
