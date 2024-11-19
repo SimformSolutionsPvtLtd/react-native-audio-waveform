@@ -17,6 +17,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.util.Collections
 import java.util.Date
 import java.util.Locale
 
@@ -234,11 +235,28 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun stopAllPlayers(promise: Promise) {
-        for ((key, _) in audioPlayers) {
-            audioPlayers[key]?.stop()
-            audioPlayers[key] = null
+        try {
+            audioPlayers.values.forEach{
+                player -> player?.stop()
+            }
+            audioPlayers.clear()
+            promise.resolve(true)
+        } catch (err: Exception) {
+            promise.reject("stopAllPlayers Error", "Error while stopping all players")
         }
-        promise.resolve(true)
+    }
+
+    @ReactMethod
+    fun stopAllWaveFormExtractors(promise: Promise) {
+        try {
+            extractors.values.forEach{
+                extractor -> extractor?.forceStop()
+            }
+            extractors.clear()
+            promise.resolve(true)
+        } catch (err: Exception) {
+            promise.reject("stopAllExtractors Error", "Error while stopping all extractors")
+        }
     }
 
     @ReactMethod
@@ -304,6 +322,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 }
                 override fun onResolve(value: MutableList<MutableList<Float>>) {
                     promise.resolve(Arguments.fromList(value))
+                }
+                override fun onForceStop() {
+                    promise.resolve(Arguments.fromList(mutableListOf(emptyList<Float>())))
                 }
             }
         )

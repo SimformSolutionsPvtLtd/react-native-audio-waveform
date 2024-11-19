@@ -231,8 +231,16 @@ class AudioWaveform: RCTEventEmitter {
   @objc func stopAllPlayers(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     for (playerKey,_) in audioPlayers{
       audioPlayers[playerKey]?.stopPlayer()
-      audioPlayers[playerKey] = nil
     }
+    audioPlayers.removeAll()
+    resolve(true)
+  }
+  
+  @objc func stopAllWaveFormExtractors(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+    for (extractorKey,_) in extractors{
+      extractors[extractorKey]?.cancel()
+    }
+    extractors.removeAll()
     resolve(true)
   }
   
