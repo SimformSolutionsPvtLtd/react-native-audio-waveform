@@ -104,8 +104,6 @@ const RenderListItem = React.memo(
 
         // Start player when it is a different one!
         if (currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey) {
-          // Because of a bug with the stopAllPlayer, cannot have multiple payers in paused state
-          await currentPlayingRef?.current?.stopPlayer();
           await startNewPlayer();
         }
       }
