@@ -159,13 +159,10 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun startPlayer(obj: ReadableMap, promise: Promise) {
         val finishMode = obj.getInt(Constants.finishMode)
-        val key = obj.getString(Constants.playerKey)
         val speed = obj.getDouble(Constants.speed)
-        if (key != null) {
-            audioPlayers[key]?.start(finishMode ?: 2, speed.toFloat(),promise)
-        } else {
-            promise.reject("startPlayer Error", "Player key can't be null")
-        }
+
+        val player = getPlayerOrReject(obj, promise, "startPlayer Error");
+        player?.start(finishMode ?: 2, speed.toFloat(),promise)
     }
 
     @ReactMethod
@@ -182,12 +179,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun pausePlayer(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.pause(promise)
-        } else {
-            promise.reject("pausePlayer Error", "Player key can't be null")
-        }
+        val player = getPlayerOrReject(obj, promise, "pausePlayer Error");
+        player?.pause(promise);
     }
 
     @ReactMethod
@@ -195,12 +188,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val progress = obj.getInt(Constants.progress)
-                val key = obj.getString(Constants.playerKey)
-                if (key != null) {
-                    audioPlayers[key]?.seekToPosition(progress.toLong(), promise)
-                } else {
-                    promise.reject("seekTo Error", "Player key can't be null")
-                }
+
+                val player = getPlayerOrReject(obj, promise, "seekTo Error");
+                player?.seekToPosition(progress.toLong(), promise)
             } else {
                 Log.e(
                     Constants.LOG_TAG,
@@ -216,24 +206,18 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun setVolume(obj: ReadableMap, promise: Promise) {
         val volume = obj.getInt(Constants.volume)
-        val key = obj.getString(Constants.playerKey)
-        if (key != null) {
-            audioPlayers[key]?.setVolume(volume.toFloat(), promise)
-        } else {
-            promise.reject("setVolume error", "Player key can't be null")
-        }
+
+        val player = getPlayerOrReject(obj, promise, "setVolume Error");
+        player?.setVolume(volume.toFloat(), promise)
     }
 
     @ReactMethod
     fun getDuration(obj: ReadableMap, promise: Promise) {
-        val key = obj.getString(Constants.playerKey)
         val duration = obj.getInt(Constants.durationType)
         val type = if (duration == 0) DurationType.Current else DurationType.Max
-        if (key != null) {
-            audioPlayers[key]?.getDuration(type, promise)
-        } else {
-            promise.reject("getDuration Error", "Player key can't be null")
-        }
+
+        val player = getPlayerOrReject(obj, promise, "getDuration Error");
+        player?.getDuration(type, promise)
     }
 
     @ReactMethod
@@ -316,7 +300,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     }
                 }
                 override fun onReject(error: String?, message: String?) {
-                    promise.reject(error, message)
+                    promise.reject(error ?: "Error", message ?: "An error is thrown while decoding the audio file")
                 }
                 override fun onResolve(value: MutableList<MutableList<Float>>) {
                     promise.resolve(Arguments.fromList(value))
@@ -429,4 +413,18 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         handler.removeCallbacks(emitLiveRecordValue)
     }
 
+    private fun getPlayerOrReject(arguments: ReadableMap, promise: Promise, errorCode: String): AudioPlayer? {
+        val key = getPlayerKeyOrReject(arguments, promise, errorCode)
+        return audioPlayers[key] ?: run {
+            promise.reject(errorCode, "$errorCode: Player not in the list")
+            null
+        }
+    }
+
+    private fun getPlayerKeyOrReject(arguments: ReadableMap, promise: Promise, errorCode: String): String? {
+        return arguments.getString(Constants.playerKey) ?: run {
+            promise.reject(errorCode, "$errorCode: Player key can't be null")
+            null
+        }
+    }
 }

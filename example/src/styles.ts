@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Colors, scale } from './theme';
+import { useColorScheme } from 'react-native';
+
 
 export type StyleSheetParams =
   | Partial<{
@@ -18,6 +20,7 @@ const styles = (params: StyleSheetParams = {}) =>
   StyleSheet.create({
     appContainer: {
       flex: 1,
+      backgroundColor: useColorScheme() === "dark" ? Colors.gray : Colors.white,
     },
     screenBackground: {
       flex: 1,
@@ -49,6 +52,17 @@ const styles = (params: StyleSheetParams = {}) =>
       height: scale(22),
       width: scale(22),
       tintColor: Colors.white,
+      alignSelf: 'flex-end',
+    },
+    stopButton: {
+      height: scale(22),
+      width: scale(22),
+      alignSelf: 'center',
+    },
+    pinkButtonImage: {
+      height: scale(22),
+      width: scale(22),
+      tintColor: Colors.pink,
       alignSelf: 'flex-end',
     },
     staticWaveformView: {
@@ -87,9 +101,18 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '100%',
       tintColor: Colors.pink,
     },
-    simformImageContainer: {
+    headerContainer: {
       alignItems: 'center',
-      justifyContent: 'center',
+    },
+    deleteRecordingContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    deleteRecordingTitle: {
+      fontSize: scale(20),
+      fontWeight: 'bold',
+      color: Colors.pink,
+      paddingLeft: scale(8),
     },
     loadingText: {
       color: Colors.black,

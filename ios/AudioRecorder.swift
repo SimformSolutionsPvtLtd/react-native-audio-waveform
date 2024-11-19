@@ -49,7 +49,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
    
     if (path == nil) {
       guard let newPath = self.createAudioRecordPath(fileNameFormat: fileNameFormat) else {
-        reject(Constants.audioWaveforms, "Failed to initialise file URL", NSError())
+        reject(Constants.audioWaveforms, "Failed to initialise file URL", nil)
         return
       }
       audioUrl = newPath
@@ -62,7 +62,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, options: options)
       try AVAudioSession.sharedInstance().setActive(true)
       guard let newPath = audioUrl else {
-        reject(Constants.audioWaveforms, "Failed to initialise file URL", NSError())
+        reject(Constants.audioWaveforms, "Failed to initialise file URL", nil)
         return
       }
       audioRecorder = try AVAudioRecorder(url: newPath, settings: settings as [String : Any])
@@ -116,7 +116,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
         resolve([asset.url.absoluteString,Int(recordedDuration.seconds * 1000).description])
       }
     } else {
-      reject(Constants.audioWaveforms, "Failed to stop recording", NSError())
+      reject(Constants.audioWaveforms, "Failed to stop recording", nil)
     }
     audioRecorder = nil
   }

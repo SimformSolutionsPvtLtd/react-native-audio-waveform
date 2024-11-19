@@ -51,4 +51,6 @@ export interface IWaveformRef {
   stopRecord: () => Promise<string>;
   pauseRecord: () => Promise<boolean>;
   resumeRecord: () => Promise<boolean>;
+  currentState: PlayerState | RecorderState;
+  playerKey: string;
 }
