@@ -1,11 +1,12 @@
 import fs from 'react-native-fs';
-import RNFetchBlob from 'rn-fetch-blob';
+import RNFetchBlob from 'react-native-blob-util';
 import { globalMetrics } from '../../src/theme';
 import { Platform } from 'react-native';
 
 export interface ListItem {
   fromCurrentUser: boolean;
   path: string;
+  isExternalUrl?: boolean;
 }
 
 /**
@@ -70,16 +71,26 @@ const audioAssetArray = [
   'file_example_mp3_15s.mp3',
 ];
 
+const externalAudioAssetArray = [
+  'https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3',
+  'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3',
+];
+
 /**
  * Retrieve previously recorded audio files from the cache/document directory.
- * @returns 
+ * @returns
  */
 export const getRecordedAudios = async (): Promise<string[]> => {
-  const recordingSavingPath = Platform.select({ ios: fs.DocumentDirectoryPath, default: fs.CachesDirectoryPath }) 
+  const recordingSavingPath = Platform.select({
+    ios: fs.DocumentDirectoryPath,
+    default: fs.CachesDirectoryPath,
+  });
 
-  const items = await fs.readDir(recordingSavingPath)
-  return items.filter(item =>  item.path.endsWith('.m4a')).map(item => item.path)
-}
+  const items = await fs.readDir(recordingSavingPath);
+  return items
+    .filter(item => item.path.endsWith('.m4a'))
+    .map(item => item.path);
+};
 
 /**
  * Generate a list of file objects with information about successfully copied files (Android)
@@ -87,13 +98,29 @@ export const getRecordedAudios = async (): Promise<string[]> => {
  * @returns {Promise<ListItem[]>} A Promise that resolves to the list of file objects.
  */
 export const generateAudioList = async (): Promise<ListItem[]> => {
-  const audioAssetPaths = (await copyFilesToNativeResources()).map(value => `${filePath}/${value}`);
-  const recordedAudios = await getRecordedAudios()
+  const audioAssetPaths = (await copyFilesToNativeResources()).map(
+    value => `${filePath}/${value}`
+  );
+  const recordedAudios = await getRecordedAudios();
 
   // Generate the final list based on the copied or available files
-  return [...audioAssetPaths, ...recordedAudios].map?.((value, index) => ({
-    fromCurrentUser: index % 2 !== 0,
+  const localAssetList = [...audioAssetPaths, ...recordedAudios].map?.(
+    value => ({
+      path: value,
+    })
+  );
+
+  const externalAudioList = externalAudioAssetArray.map(value => ({
     path: value,
+    isExternalUrl: true,
   }));
 
+  const finalAudios = [...localAssetList, ...externalAudioList].map(
+    (value, index) => ({
+      ...value,
+      fromCurrentUser: index % 2 !== 0,
+    })
+  );
+
+  return finalAudios;
 };

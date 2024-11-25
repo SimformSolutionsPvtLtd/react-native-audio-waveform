@@ -110,6 +110,7 @@
     ]
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-native-blob-util": "^0.19.11"
   }
 }

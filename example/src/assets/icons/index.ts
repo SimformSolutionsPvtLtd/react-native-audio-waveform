@@ -6,4 +6,5 @@ export const Icons = {
   logo: require('./logo.png'),
   delete: require('./delete.png'),
   pause: require('./pause.png'),
+  download: require('./download.png'),
 };

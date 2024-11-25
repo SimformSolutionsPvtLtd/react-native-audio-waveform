@@ -20,6 +20,8 @@ export interface StaticWaveform extends BaseWaveform {
   path: string;
   volume?: number;
   scrubColor?: string;
+  isExternalUrl?: boolean;
+  autoDownloadExternalAudio?: boolean;
   onPlayerStateChange?: (playerState: PlayerState) => void;
   onPanStateChange?: (panMoving: boolean) => void;
   onError?: (error: string) => void;
@@ -29,6 +31,8 @@ export interface StaticWaveform extends BaseWaveform {
   ) => void;
   onChangeWaveformLoadState?: (state: boolean) => void;
   playbackSpeed?: PlaybackSpeedType;
+  onDownloadingStateChange?: (state: boolean) => void;
+  onDownloadProgressChange?: (currentProgress: number) => void;
 }
 
 export interface LiveWaveform extends BaseWaveform {
@@ -53,4 +57,5 @@ export interface IWaveformRef {
   resumeRecord: () => Promise<boolean>;
   currentState: PlayerState | RecorderState;
   playerKey: string;
+  downloadExternalAudio: () => Promise<boolean>;
 }
