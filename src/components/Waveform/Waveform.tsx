@@ -479,6 +479,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       if (data.playerKey === `PlayerFor${path}`) {
         if (data.finishType === FinishMode.stop) {
           stopPlayerAction();
+        } else if (data.finishType === FinishMode.pause) {
+          setPlayerState(PlayerState.paused);
         }
       }
     });
