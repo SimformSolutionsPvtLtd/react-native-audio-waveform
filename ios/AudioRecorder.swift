@@ -45,8 +45,8 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
     ]
     
-    let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth]
-   
+    let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth, .mixWithOthers]
+
     if (path == nil) {
       guard let newPath = self.createAudioRecordPath(fileNameFormat: fileNameFormat) else {
         reject(Constants.audioWaveforms, "Failed to initialise file URL", nil)
