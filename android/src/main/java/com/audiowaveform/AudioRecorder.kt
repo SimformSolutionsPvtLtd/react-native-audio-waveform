@@ -178,9 +178,10 @@ class AudioRecorder {
     fun pauseRecording(recorder: MediaRecorder?, promise: Promise) {
         try {
             recorder?.pause()
-            promise.resolve(false)
+            promise.resolve(true)
         } catch (e: IllegalStateException) {
             Log.e(Constants.LOG_TAG, "Failed to pause recording")
+            promise.resolve(false)
         }
     }
 
