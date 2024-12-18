@@ -8,6 +8,7 @@ import {
   UpdateFrequency,
   Waveform,
   useAudioPermission,
+  useAudioPlayer,
 } from '@simform_solutions/react-native-audio-waveform';
 import React, {
   Dispatch,
@@ -41,7 +42,6 @@ import {
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
-import FastImage from 'react-native-fast-image';
 import fs from 'react-native-fs';
 
 let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
@@ -78,6 +78,13 @@ const RenderListItem = React.memo(
           await ref.current?.startPlayer({
             finishMode: FinishMode.stop,
           });
+
+          // If the player took too much time to initialize and another player started instead we pause the former one!
+          if (
+            currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey
+          ) {
+            await ref?.current?.pausePlayer();
+          }
         }
       };
 
@@ -117,7 +124,7 @@ const RenderListItem = React.memo(
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
               ) : (
-                <FastImage
+                <Image
                   source={
                     playerState !== PlayerState.playing
                       ? Icons.play
@@ -132,20 +139,16 @@ const RenderListItem = React.memo(
               disabled={PlayerState.stopped == playerState}
               onPress={handleStopAction}
               style={styles.playBackControlPressable}>
-              {isLoading ? (
-                <ActivityIndicator color={'#FFFFFF'} />
-              ) : (
-                <FastImage
-                  source={Icons.stop}
-                  style={[
-                    styles.stopButton,
-                    {
-                      opacity: playerState === PlayerState.stopped ? 0.5 : 1,
-                    },
-                  ]}
-                  resizeMode="contain"
-                />
-              )}
+              <Image
+                source={Icons.stop}
+                style={[
+                  styles.stopButton,
+                  {
+                    opacity: playerState === PlayerState.stopped ? 0.5 : 1,
+                  },
+                ]}
+                resizeMode="contain"
+              />
             </Pressable>
             <Waveform
               containerStyle={styles.staticWaveformView}
@@ -162,12 +165,12 @@ const RenderListItem = React.memo(
               onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
               onError={error => {
-                console.log(error, 'we are in example');
+                console.log('Error in static player:', error);
               }}
-              onCurrentProgressChange={(currentProgress, songDuration) => {
-                console.log(
-                  `currentProgress ${currentProgress}, songDuration ${songDuration}`
-                );
+              onCurrentProgressChange={(_currentProgress, _songDuration) => {
+                // console.log(
+                //   `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                // );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
@@ -270,6 +273,8 @@ const AppContainer = () => {
   const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
     useState<PlaybackSpeedType>(1.0);
+  const [showAdvancedOptions, setShowAdvancedOptions] =
+    useState<boolean>(false);
 
   const { top, bottom } = useSafeAreaInsets();
   const styles = stylesheet({ top, bottom });
@@ -327,6 +332,31 @@ const AppContainer = () => {
     );
   };
 
+  const toggleAdvancedOptions = () => {
+    setShowAdvancedOptions(!showAdvancedOptions);
+  };
+
+  const handleStopPlayersAndExtractors = async () => {
+    await currentPlayingRef?.current?.stopPlayer();
+
+    const { stopPlayersAndExtractors } = useAudioPlayer();
+    const hasStoppedAll: boolean[] = await stopPlayersAndExtractors();
+
+    if (hasStoppedAll.every(Boolean)) {
+      Alert.alert(
+        'Everything stopped',
+        'All players and extractors have been stopped!',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Error stopping everything',
+        'An error occurred when trying to stop players or extractors',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <View style={styles.appContainer}>
       <StatusBar
@@ -338,29 +368,47 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <View style={styles.headerContainer}>
+            <Pressable
+              style={styles.simformImageContainer}
+              onPress={toggleAdvancedOptions}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
-              <Pressable
-                style={[
-                  styles.deleteRecordingContainer,
-                  { opacity: nbOfRecording ? 1 : 0.5 },
-                ]}
-                onPress={handleDeleteRecordings}
-                disabled={!nbOfRecording}>
-                <Image
-                  source={Icons.delete}
-                  style={styles.pinkButtonImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.deleteRecordingTitle}>
-                  {'Delete recorded audio files'}
-                </Text>
-              </Pressable>
-            </View>
+            </Pressable>
+            {showAdvancedOptions && (
+              <View style={styles.advancedOptionsContainer}>
+                <Pressable
+                  style={[
+                    styles.advancedOptionItem,
+                    { opacity: nbOfRecording ? 1 : 0.5 },
+                  ]}
+                  onPress={handleDeleteRecordings}
+                  disabled={!nbOfRecording}>
+                  <Image
+                    source={Icons.delete}
+                    style={styles.pinkButtonImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.advancedOptionItemTitle}>
+                    {'Delete recorded audio files'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={styles.advancedOptionItem}
+                  onPress={handleStopPlayersAndExtractors}>
+                  <Image
+                    source={Icons.stop}
+                    style={[styles.pinkButtonImage]}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.advancedOptionItemTitle}>
+                    {'Stop all players and extractors'}
+                  </Text>
+                </Pressable>
+              </View>
+            )}
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
                 <RenderListItem

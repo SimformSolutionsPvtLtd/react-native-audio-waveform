@@ -101,21 +101,21 @@ const styles = (params: StyleSheetParams = {}) =>
       width: '100%',
       tintColor: Colors.pink,
     },
-    headerContainer: {
+    simformImageContainer: {
       alignItems: 'center',
     },
-    deleteRecordingContainer: {
+    advancedOptionsContainer: {
+      gap: scale(8),
+    },
+    advancedOptionItem: {
       alignItems: 'center',
       flexDirection: 'row',
     },
-    deleteRecordingTitle: {
+    advancedOptionItemTitle: {
       fontSize: scale(20),
       fontWeight: 'bold',
       color: Colors.pink,
       paddingLeft: scale(8),
-    },
-    loadingText: {
-      color: Colors.black,
     },
     speedBox: {
       height: scale(28),

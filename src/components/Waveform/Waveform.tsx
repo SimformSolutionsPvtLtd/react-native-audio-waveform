@@ -59,10 +59,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onPlayerStateChange,
     onRecorderStateChange,
     onPanStateChange = () => {},
-    onError = () => {},
+    onError = (_error: Error) => {},
     onCurrentProgressChange = () => {},
     candleHeightScale = 3,
-    onChangeWaveformLoadState,
+    onChangeWaveformLoadState = (_state: boolean) => {},
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -80,6 +80,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const [panMoving, setPanMoving] = useState(false);
   const [playerState, setPlayerState] = useState(PlayerState.stopped);
   const [recorderState, setRecorderState] = useState(RecorderState.stopped);
+  const [isWaveformExtracted, setWaveformExtracted] = useState(false);
   const audioSpeed: number =
     playbackSpeed > playbackSpeedThreshold ? 1.0 : playbackSpeed;
 
@@ -174,39 +175,37 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         }
       }
     } catch (err) {
-      console.error(err);
-      (onError as Function)(err);
+      onError(err as Error);
     }
   };
 
   const getAudioWaveFormForPath = async (noOfSample: number) => {
     if (!isNil(path) && !isEmpty(path)) {
       try {
-        (onChangeWaveformLoadState as Function)?.(true);
+        onChangeWaveformLoadState(true);
         const result = await extractWaveformData({
           path: path,
           playerKey: `PlayerFor${path}`,
           noOfSamples: Math.max(noOfSample, 1),
         });
-        (onChangeWaveformLoadState as Function)?.(false);
+        onChangeWaveformLoadState(false);
 
         if (!isNil(result) && !isEmpty(result)) {
           const waveforms = head(result);
           if (!isNil(waveforms) && !isEmpty(waveforms)) {
             setWaveform(waveforms);
             await preparePlayerAndGetDuration();
+            setWaveformExtracted(true);
           }
         }
       } catch (err) {
-        (onError as Function)(err);
-        (onChangeWaveformLoadState as Function)?.(false);
-        console.error(err);
+        onChangeWaveformLoadState(false);
+        onError(err as Error);
       }
     } else {
-      (onError as Function)(
-        `Can not find waveform for mode ${mode} path: ${path}`
+      onError(
+        new Error(`Can not find waveform for mode ${mode} path: ${path}`)
       );
-      console.error(`Can not find waveform for mode ${mode} path: ${path}`);
     }
   };
 
@@ -244,7 +243,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       try {
         isAudioPlaying.current = true;
         if (playerState === PlayerState.stopped) {
-          await preparePlayerForPath(currentProgress);
+          if (isWaveformExtracted) {
+            await preparePlayerForPath(currentProgress);
+          } else {
+            await getAudioWaveFormForPath(noOfSamples);
+          }
         }
 
         const play = await playPlayer({
