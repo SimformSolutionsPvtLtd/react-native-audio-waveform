@@ -191,6 +191,33 @@ resumePlayer(): Promise<boolean>
 
 It returns a boolean indicating whether playback is resumed again.
 
+#### stopAllPlayers()
+
+```ts
+stopAllPlayers(): Promise<boolean>
+```
+
+Stops all the players at once and frees their native resources. Useful on unmount!
+It returns a boolean indicating that all players were stopped.
+
+#### stopAllWaveFormExtractors()
+
+```ts
+stopAllWaveFormExtractors(): Promise<boolean>
+```
+
+Stops all the extractors used to build the audio waveform and frees its native resource. Useful on unmount!
+It returns a boolean indicating that all extractors were stopped.
+
+#### stopPlayersAndExtractors()
+
+```ts
+stopPlayersAndExtractors(): Promise<[boolean, boolean]>
+```
+
+Combined the `stopAllWaveFormExtractors` and `stopAllPlayers` in one call to free up the maximum possible resources. Very useful on unmount!
+It returns an array of two booleans indicating if all players and all waveform extractors were stopped.
+
 #### For Live mode
 
 #### startRecord()
