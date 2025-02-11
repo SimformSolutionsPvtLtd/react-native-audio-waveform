@@ -68,6 +68,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const scrollRef = useRef<ScrollView>(null);
   const isLayoutCalculated = useRef<boolean>(false);
   const isAutoPaused = useRef<boolean>(false);
+  const isAudioPlaying = useRef<boolean>(false);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [viewLayout, setViewLayout] = useState<LayoutRectangle | null>(null);
   const [seekPosition, setSeekPosition] = useState<NativeTouchEvent | null>(
@@ -215,6 +216,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         const result = await stopPlayer({
           playerKey: `PlayerFor${path}`,
         });
+        isAudioPlaying.current = false;
         if (!isNil(result) && result) {
           if (resetProgress) {
             setCurrentProgress(0);
@@ -240,6 +242,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const startPlayerAction = async (args?: IStartPlayerRef) => {
     if (mode === 'static') {
       try {
+        isAudioPlaying.current = true;
         if (playerState === PlayerState.stopped) {
           await preparePlayerForPath(currentProgress);
         }
@@ -278,6 +281,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const pausePlayerAction = async (changePlayerState = true) => {
     if (mode === 'static') {
       try {
+        isAudioPlaying.current = false;
         const pause = await pausePlayer({
           playerKey: `PlayerFor${path}`,
         });
@@ -474,8 +478,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     const tracePlayerState = onDidFinishPlayingAudio(async data => {
       if (data.playerKey === `PlayerFor${path}`) {
         if (data.finishType === FinishMode.stop) {
-          setPlayerState(PlayerState.stopped);
-          setCurrentProgress(0);
+          stopPlayerAction();
+        } else if (data.finishType === FinishMode.pause) {
+          setPlayerState(PlayerState.paused);
         }
       }
     });
@@ -599,6 +604,20 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       (onCurrentProgressChange as Function)(currentProgress, songDuration);
     }
   }, [currentProgress, songDuration, onCurrentProgressChange]);
+
+  /* Ensure that the audio player is released (or stopped) once the song's duration is determined, 
+  especially if the audio is not playing immediately after loading */
+  useEffect(() => {
+    if (
+      songDuration !== 0 &&
+      mode === 'static' &&
+      isAudioPlaying.current !== true
+    ) {
+      isAudioPlaying.current = false;
+      stopPlayerAction(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [songDuration]);
 
   useImperativeHandle(ref, () => ({
     startPlayer: startPlayerAction,

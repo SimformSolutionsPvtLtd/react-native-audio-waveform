@@ -1,6 +1,11 @@
 package com.audiowaveform
 
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
 import android.os.CountDownTimer
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -18,6 +23,8 @@ class AudioPlayer(
 ) {
     private val appContext = context
     private lateinit var player: ExoPlayer
+    private var audioManager: AudioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var audioFocusRequest: AudioFocusRequest? = null
     private var playerListener: Player.Listener? = null
     private var isPlayerPrepared: Boolean = false
     private var finishMode = FinishMode.Stop
@@ -25,6 +32,84 @@ class AudioPlayer(
     private var updateFrequency = UpdateFrequency.Low
     private lateinit var audioPlaybackListener: CountDownTimer
     private var isComponentMounted = true // Flag to track mounting status
+    private var isAudioFocusGranted=false
+
+    init {
+        // Set up the audio focus request
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                ).setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener { focusChange ->
+                    handleAudioFocusChange(focusChange)
+                }
+                .build()
+        }
+    }
+
+    private fun handleAudioFocusChange(focusChange: Int) {
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                // Audio focus granted; resume playback if necessary
+                if (!player.isPlaying) {
+                    player.play()
+                }
+                player.volume = 1.0f // Restore full volume
+            }
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                // Permanent loss of audio focus; pause playback
+                if (player.isPlaying) {
+                    val args: WritableMap = Arguments.createMap()
+                    stopListening()
+                    player.pause()
+                    abandonAudioFocus()
+                    args.putInt(Constants.finishType, 1)
+                    args.putString(Constants.playerKey, key)
+                    appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // Temporary loss of audio focus; pause playback
+                if (player.isPlaying) {
+                    player.pause()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Temporarily loss of audio focus; but can continue playing at a lower volume.
+                player.volume = 0.2f
+            }
+        }
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest?.let {
+                val result = audioManager.requestAudioFocus(it)
+                isAudioFocusGranted = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+                return isAudioFocusGranted
+            } ?: false
+        } else {
+            val result = audioManager.requestAudioFocus(
+                { focusChange -> handleAudioFocusChange(focusChange) },
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+            )
+            isAudioFocusGranted = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            return isAudioFocusGranted
+        }
+    }
+
+    private fun abandonAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioManager.abandonAudioFocusRequest(audioFocusRequest!!)
+        }
+        isAudioFocusGranted = false
+    }
+
 
     fun markPlayerAsUnmounted() {
         isComponentMounted = false
@@ -134,12 +219,15 @@ class AudioPlayer(
                 this.finishMode = FinishMode.Stop
             }
 
-           validateAndSetPlaybackSpeed(player, speed)
-
-            player.playWhenReady = true
-            player.play()
-            promise.resolve(true)
-            startListening(promise)
+            validateAndSetPlaybackSpeed(player, speed)
+            if (requestAudioFocus()) {
+                player.playWhenReady = true
+                player.play()
+                promise.resolve(true)
+                startListening(promise)}
+            else {
+                promise.reject("AudioFocusError", "Failed to gain audio focus")
+            }
         } catch (e: Exception) {
             promise.reject("Can not start the player", e.toString())
         }
@@ -153,15 +241,17 @@ class AudioPlayer(
         isPlayerPrepared = false
         player.stop()
         player.release()
+        abandonAudioFocus()
     }
 
-    fun pause(promise: Promise) {
+    fun pause(promise: Promise?) {
         try {
             stopListening()
             player.pause()
-            promise.resolve(true)
+            abandonAudioFocus()
+            promise?.resolve(true)
         } catch (e: Exception) {
-            promise.reject("Failed to pause the player", e.toString())
+            promise?.reject("Failed to pause the player", e.toString())
         }
 
     }
