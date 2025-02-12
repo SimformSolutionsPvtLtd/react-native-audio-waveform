@@ -20,7 +20,7 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-ios/.xcode.env.local
+**/.xcode.env.local
 ios/link-assets-manifest.json
 
 # Android/IntelliJ
@@ -33,6 +33,8 @@ local.properties
 *.hprof
 .cxx/
 android/link-assets-manifest.json
+*.keystore
+!debug.keystore
 
 # node.js
 #
@@ -63,5 +65,19 @@ buck-out/
 *.jsbundle
 
 # Ruby / CocoaPods
-/ios/Pods/
+**/Pods/
 /vendor/bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+.metro-health-check*
+
+# testing
+/coverage
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

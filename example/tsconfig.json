@@ -1,31 +1,9 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "jsx": "react-native",
-    "lib": ["ESNext"],
-    "module": "CommonJS",
-    "noEmit": true,
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {   
     "paths": {
       "@simform_solutions/react-native-audio-waveform": ["../src"]
-    },
-    "declaration": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "Node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "resolveJsonModule": true,
-    "noEmitOnError": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "ESNext",
-    "noUncheckedIndexedAccess": true
+    }
   }
+  
 }
