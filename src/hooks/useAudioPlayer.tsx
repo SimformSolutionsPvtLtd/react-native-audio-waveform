@@ -40,6 +40,12 @@ export const useAudioPlayer = () => {
 
   const stopAllPlayers = () => AudioWaveform.stopAllPlayers();
 
+  const stopAllWaveFormExtractors = () =>
+    AudioWaveform.stopAllWaveFormExtractors();
+
+  const stopPlayersAndExtractors = () =>
+    Promise.all([stopAllPlayers(), stopAllWaveFormExtractors()]);
+
   const getDuration = (args: IGetDuration) => AudioWaveform.getDuration(args);
 
   const onDidFinishPlayingAudio = (
@@ -96,5 +102,7 @@ export const useAudioPlayer = () => {
     onCurrentRecordingWaveformData,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
+    stopAllWaveFormExtractors,
+    stopPlayersAndExtractors,
   };
 };
