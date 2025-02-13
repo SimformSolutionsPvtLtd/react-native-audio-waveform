@@ -28,6 +28,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import fs from 'react-native-fs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
@@ -36,13 +37,12 @@ import {
 import { Icons } from './assets';
 import {
   generateAudioList,
-  playbackSpeedSequence,
   getRecordedAudios,
+  playbackSpeedSequence,
   type ListItem,
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
-import fs from 'react-native-fs';
 
 let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
 const RenderListItem = React.memo(
@@ -273,8 +273,6 @@ const AppContainer = () => {
   const [nbOfRecording, setNumberOfRecording] = useState<number>(0);
   const [currentPlaybackSpeed, setCurrentPlaybackSpeed] =
     useState<PlaybackSpeedType>(1.0);
-  const [showAdvancedOptions, setShowAdvancedOptions] =
-    useState<boolean>(false);
 
   const { top, bottom } = useSafeAreaInsets();
   const styles = stylesheet({ top, bottom });
@@ -332,10 +330,6 @@ const AppContainer = () => {
     );
   };
 
-  const toggleAdvancedOptions = () => {
-    setShowAdvancedOptions(!showAdvancedOptions);
-  };
-
   const handleStopPlayersAndExtractors = async () => {
     await currentPlayingRef?.current?.stopPlayer();
 
@@ -368,47 +362,45 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <Pressable
-              style={styles.simformImageContainer}
-              onPress={toggleAdvancedOptions}>
+            <View style={styles.simformImageContainer}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
-            </Pressable>
-            {showAdvancedOptions && (
-              <View style={styles.advancedOptionsContainer}>
-                <Pressable
-                  style={[
-                    styles.advancedOptionItem,
-                    { opacity: nbOfRecording ? 1 : 0.5 },
-                  ]}
-                  onPress={handleDeleteRecordings}
-                  disabled={!nbOfRecording}>
-                  <Image
-                    source={Icons.delete}
-                    style={styles.pinkButtonImage}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.advancedOptionItemTitle}>
-                    {'Delete recorded audio files'}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={styles.advancedOptionItem}
-                  onPress={handleStopPlayersAndExtractors}>
-                  <Image
-                    source={Icons.stop}
-                    style={[styles.pinkButtonImage]}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.advancedOptionItemTitle}>
-                    {'Stop all players and extractors'}
-                  </Text>
-                </Pressable>
-              </View>
-            )}
+            </View>
+
+            <View style={styles.advancedOptionsContainer}>
+              <Pressable
+                style={[
+                  styles.advancedOptionItem,
+                  { opacity: nbOfRecording ? 1 : 0.5 },
+                ]}
+                onPress={handleDeleteRecordings}
+                disabled={!nbOfRecording}>
+                <Image
+                  source={Icons.delete}
+                  style={styles.pinkButtonImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.advancedOptionItemTitle}>
+                  {'Delete recorded audio files'}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.advancedOptionItem}
+                onPress={handleStopPlayersAndExtractors}>
+                <Image
+                  source={Icons.stop}
+                  style={[styles.pinkButtonImage]}
+                  resizeMode="contain"
+                />
+                <Text style={styles.advancedOptionItemTitle}>
+                  {'Stop all players and extractors'}
+                </Text>
+              </Pressable>
+            </View>
+
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
                 <RenderListItem
