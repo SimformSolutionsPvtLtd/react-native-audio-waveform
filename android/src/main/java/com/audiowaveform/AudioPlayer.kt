@@ -223,6 +223,7 @@ class AudioPlayer(
             if (requestAudioFocus()) {
                 player.playWhenReady = true
                 player.play()
+                emitCurrentDuration()
                 promise.resolve(true)
                 startListening(promise)}
             else {
@@ -235,6 +236,7 @@ class AudioPlayer(
 
     fun stop() {
         stopListening()
+        emitCurrentDuration()
         if (playerListener != null) {
             player.removeListener(playerListener!!)
         }
@@ -248,6 +250,7 @@ class AudioPlayer(
         try {
             stopListening()
             player.pause()
+            emitCurrentDuration()
             abandonAudioFocus()
             promise?.resolve(true)
         } catch (e: Exception) {
@@ -273,17 +276,22 @@ class AudioPlayer(
         return validateAndSetPlaybackSpeed(player, speed)
     }
 
+
+    fun emitCurrentDuration() {
+        val currentPosition = player.currentPosition.toString()
+        val args: WritableMap = Arguments.createMap()
+        args.putString(Constants.currentDuration, currentPosition)
+        args.putString(Constants.playerKey, key)
+        if (isComponentMounted) {
+            appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onCurrentDuration", args)
+        }
+    }
+
     private fun startListening(promise: Promise) {
         try {
             audioPlaybackListener = object : CountDownTimer(player.duration, UpdateFrequency.Low.value) {
                 override fun onTick(millisUntilFinished: Long) {
-                    val currentPosition = player.currentPosition.toString()
-                    val args: WritableMap = Arguments.createMap()
-                    args.putString(Constants.currentDuration, currentPosition)
-                    args.putString(Constants.playerKey, key)
-                    if (isComponentMounted) {
-                        appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onCurrentDuration", args)
-                    }
+                    emitCurrentDuration()
                 }
                 override fun onFinish() {}
             }.start()
