@@ -98,6 +98,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
       player?.play()
       player?.delegate = self
       player?.rate = Float(speed)
+      timerUpdate()
       startListening()
       result(player?.isPlaying)
   }
@@ -105,12 +106,14 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   func pausePlayer(result: @escaping RCTPromiseResolveBlock) {
     stopListening()
     player?.pause()
+    timerUpdate()
     result(true)
   }
   
   func stopPlayer() {
     stopListening()
     player?.stop()
+    timerUpdate()
     player = nil
     timer = nil
   }
@@ -139,7 +142,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     }
   }
   
-    @objc func timerUpdate(_ sender:Timer) {
+    @objc func timerUpdate() {
         let ms = (self.player?.currentTime ?? 0) * 1000
         self.sendEvent(withName: Constants.onCurrentDuration, body: [ Constants.currentDuration: Int(ms), Constants.playerKey: self.playerKey] as [String : Any])
     }
@@ -148,7 +151,7 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
       stopListening()
         DispatchQueue.main.async { [weak self] in
           guard let strongSelf = self else {return }
-            strongSelf.timer = Timer.scheduledTimer(timeInterval: TimeInterval((Float(strongSelf.updateFrequency.rawValue) / 1000)), target: strongSelf, selector: #selector(strongSelf.timerUpdate(_:)), userInfo: nil, repeats: true)
+            strongSelf.timer = Timer.scheduledTimer(timeInterval: TimeInterval((Float(strongSelf.updateFrequency.rawValue) / 1000)), target: strongSelf, selector: #selector(strongSelf.timerUpdate), userInfo: nil, repeats: true)
         }
     }
     
