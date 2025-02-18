@@ -22,7 +22,7 @@ export interface StaticWaveform extends BaseWaveform {
   scrubColor?: string;
   onPlayerStateChange?: (playerState: PlayerState) => void;
   onPanStateChange?: (panMoving: boolean) => void;
-  onError?: (error: string) => void;
+  onError?: (error: Error) => void;
   onCurrentProgressChange?: (
     currentProgress: number,
     songDuration: number

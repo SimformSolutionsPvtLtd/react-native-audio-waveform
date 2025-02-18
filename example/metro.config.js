@@ -1,45 +1,42 @@
-/**
- * Metro configuration for React Native
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
+const escape = require('escape-string-regexp');
+const exclusionList = require('metro-config/src/defaults/exclusionList');
 const rootPackage = require('../package.json');
-const blacklist = require('metro-config/src/defaults/exclusionList');
 const rootModules = Object.keys({
   ...rootPackage.peerDependencies,
 });
-const moduleRoot = path.resolve(__dirname, '..');
+
 /**
- * Only load one version for peerDependencies and alias them to the versions in example's node_modules"
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * @type {import('@react-native/metro-config').MetroConfig}
  */
-module.exports = {
-  watchFolders: [moduleRoot],
+const root = path.resolve(__dirname, '..');
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), {
+  projectRoot: __dirname,
+  watchFolders: [root],
+
+  // We need to make sure that only one version is loaded for peerDependencies
+  // So we block them at the root, and alias them to the versions in example project's node_modules
   resolver: {
-    blacklistRE: blacklist([
-      ...rootModules.map(
-        m =>
-          new RegExp(
-            `^${escape(path.join(moduleRoot, 'node_modules', m))}\\/.*$`
-          )
-      ),
-      /^((?!example).)+[\/\\]node_modules[/\\]react[/\\].*/,
-      /^((?!example).)+[\/\\]node_modules[/\\]react-native[/\\].*/,
-    ]),
+    blacklistRE: exclusionList(
+      rootModules.map(
+        m => new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
+      )
+    ),
+
     extraNodeModules: {
       ...rootModules.reduce((acc, name) => {
         acc[name] = path.join(__dirname, 'node_modules', name);
         return acc;
       }, {}),
+      '@simform_solutions/react-native-audio-waveform': path.resolve(
+        __dirname,
+        '..'
+      ),
     },
   },
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-};
+});

@@ -58,6 +58,7 @@ struct Constants {
     static let currentDecibel = "currentDecibel"
   static let playerKey = "playerKey"
   static let stopAllPlayers = "stopAllPlayers"
+  static let stopAllWaveFormExtractors = "stopAllWaveFormExtractors"
   static let onDidFinishPlayingAudio = "onDidFinishPlayingAudio"
   static let finishMode = "finishMode"
   static let speed = "speed"

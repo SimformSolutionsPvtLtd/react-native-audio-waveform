@@ -8,6 +8,7 @@ import {
   UpdateFrequency,
   Waveform,
   useAudioPermission,
+  useAudioPlayer,
 } from '@simform_solutions/react-native-audio-waveform';
 import React, {
   Dispatch,
@@ -27,6 +28,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import fs from 'react-native-fs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
@@ -35,14 +37,12 @@ import {
 import { Icons } from './assets';
 import {
   generateAudioList,
-  playbackSpeedSequence,
   getRecordedAudios,
+  playbackSpeedSequence,
   type ListItem,
 } from './constants';
 import stylesheet from './styles';
 import { Colors } from './theme';
-import FastImage from 'react-native-fast-image';
-import fs from 'react-native-fs';
 
 let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
 const RenderListItem = React.memo(
@@ -78,6 +78,13 @@ const RenderListItem = React.memo(
           await ref.current?.startPlayer({
             finishMode: FinishMode.stop,
           });
+
+          // If the player took too much time to initialize and another player started instead we pause the former one!
+          if (
+            currentPlayingRef?.current?.playerKey !== ref?.current?.playerKey
+          ) {
+            await ref?.current?.pausePlayer();
+          }
         }
       };
 
@@ -117,7 +124,7 @@ const RenderListItem = React.memo(
               {isLoading ? (
                 <ActivityIndicator color={'#FFFFFF'} />
               ) : (
-                <FastImage
+                <Image
                   source={
                     playerState !== PlayerState.playing
                       ? Icons.play
@@ -132,20 +139,16 @@ const RenderListItem = React.memo(
               disabled={PlayerState.stopped == playerState}
               onPress={handleStopAction}
               style={styles.playBackControlPressable}>
-              {isLoading ? (
-                <ActivityIndicator color={'#FFFFFF'} />
-              ) : (
-                <FastImage
-                  source={Icons.stop}
-                  style={[
-                    styles.stopButton,
-                    {
-                      opacity: playerState === PlayerState.stopped ? 0.5 : 1,
-                    },
-                  ]}
-                  resizeMode="contain"
-                />
-              )}
+              <Image
+                source={Icons.stop}
+                style={[
+                  styles.stopButton,
+                  {
+                    opacity: playerState === PlayerState.stopped ? 0.5 : 1,
+                  },
+                ]}
+                resizeMode="contain"
+              />
             </Pressable>
             <Waveform
               containerStyle={styles.staticWaveformView}
@@ -162,12 +165,12 @@ const RenderListItem = React.memo(
               onPlayerStateChange={setPlayerState}
               onPanStateChange={onPanStateChange}
               onError={error => {
-                console.log(error, 'we are in example');
+                console.log('Error in static player:', error);
               }}
-              onCurrentProgressChange={(currentProgress, songDuration) => {
-                console.log(
-                  `currentProgress ${currentProgress}, songDuration ${songDuration}`
-                );
+              onCurrentProgressChange={(_currentProgress, _songDuration) => {
+                // console.log(
+                //   `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                // );
               }}
               onChangeWaveformLoadState={state => {
                 setIsLoading(state);
@@ -327,6 +330,27 @@ const AppContainer = () => {
     );
   };
 
+  const handleStopPlayersAndExtractors = async () => {
+    await currentPlayingRef?.current?.stopPlayer();
+
+    const { stopPlayersAndExtractors } = useAudioPlayer();
+    const hasStoppedAll: boolean[] = await stopPlayersAndExtractors();
+
+    if (hasStoppedAll.every(Boolean)) {
+      Alert.alert(
+        'Everything stopped',
+        'All players and extractors have been stopped!',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Error stopping everything',
+        'An error occurred when trying to stop players or extractors',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <View style={styles.appContainer}>
       <StatusBar
@@ -338,15 +362,18 @@ const AppContainer = () => {
       <GestureHandlerRootView style={styles.appContainer}>
         <View style={styles.screenBackground}>
           <View style={styles.container}>
-            <View style={styles.headerContainer}>
+            <View style={styles.simformImageContainer}>
               <Image
                 source={Icons.simform}
                 style={styles.simformImage}
                 resizeMode="contain"
               />
+            </View>
+
+            <View style={styles.advancedOptionsContainer}>
               <Pressable
                 style={[
-                  styles.deleteRecordingContainer,
+                  styles.advancedOptionItem,
                   { opacity: nbOfRecording ? 1 : 0.5 },
                 ]}
                 onPress={handleDeleteRecordings}
@@ -356,11 +383,24 @@ const AppContainer = () => {
                   style={styles.pinkButtonImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.deleteRecordingTitle}>
+                <Text style={styles.advancedOptionItemTitle}>
                   {'Delete recorded audio files'}
                 </Text>
               </Pressable>
+              <Pressable
+                style={styles.advancedOptionItem}
+                onPress={handleStopPlayersAndExtractors}>
+                <Image
+                  source={Icons.stop}
+                  style={[styles.pinkButtonImage]}
+                  resizeMode="contain"
+                />
+                <Text style={styles.advancedOptionItemTitle}>
+                  {'Stop all players and extractors'}
+                </Text>
+              </Pressable>
             </View>
+
             <ScrollView scrollEnabled={shouldScroll}>
               {list.map(item => (
                 <RenderListItem
