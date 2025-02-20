@@ -63,6 +63,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState = (_state: boolean) => {},
+    showsHorizontalScrollIndicator = false,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -644,6 +645,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         {...(mode === 'static' ? panResponder.panHandlers : {})}>
         <ScrollView
           horizontal
+          showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
           ref={scrollRef}
           style={styles.scrollContainer}
           scrollEnabled={mode === 'live'}>
