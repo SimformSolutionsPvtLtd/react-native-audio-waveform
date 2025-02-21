@@ -17,6 +17,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   var recordedDuration: CMTime = CMTime.zero
   private var timer: Timer?
     var updateFrequency = UpdateFrequency.medium
+  var startTime: DispatchTime?
   
   private func createAudioRecordPath(fileNameFormat: String?) -> URL? {
     let format = DateFormatter()
@@ -70,6 +71,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       audioRecorder?.isMeteringEnabled = true
       audioRecorder?.record()
         startListening()
+      startTime = DispatchTime.now() // Initialize startTime
       resolve(true)
     } catch let error as NSError {
       print(error.localizedDescription)
@@ -79,7 +81,9 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
     
     @objc func timerUpdate(_ sender:Timer) {
         if (audioRecorder?.isRecording ?? false) {
-            EventEmitter.sharedInstance.dispatch(name: Constants.onCurrentRecordingWaveformData, body: [Constants.currentDecibel: getDecibelLevel()])
+            let currentTime = DispatchTime.now()
+            let progress = Double(currentTime.uptimeNanoseconds - startTime!.uptimeNanoseconds) / 1_000_000 // Convert to millisecond
+            EventEmitter.sharedInstance.dispatch(name: Constants.onCurrentRecordingWaveformData, body: [Constants.currentDecibel: getDecibelLevel(), Constants.progress: progress])
         }
     }
     

@@ -108,13 +108,13 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         }
 
         try {
+            stopEmittingRecorderValue()
             val currentTime = System.currentTimeMillis()
             if (currentTime - startTime < 500) {
                 promise.reject("SHORT_RECORDING", "Recording is too short")
                 return
             }
 
-            stopEmittingRecorderValue()
             audioRecorder.stopRecording(recorder, path!!, promise)
             recorder = null
             path = null
@@ -414,6 +414,9 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         override fun run() {
             val currentDecibel = getDecibel()
             val args: WritableMap = Arguments.createMap()
+            val currentTime = System.currentTimeMillis()
+            val progress =  currentTime - startTime
+            args.putInt(Constants.progress, progress.toInt())
             if (currentDecibel == Double.NEGATIVE_INFINITY) {
                 args.putDouble(Constants.currentDecibel, 0.0)
             } else {

@@ -69,6 +69,7 @@ export interface IOnCurrentExtractedWaveForm extends IPlayerKey {
 
 export interface IOnCurrentRecordingWaveForm {
   currentDecibel: number;
+  progress: number;
 }
 
 export interface ISetPlaybackSpeed extends IPlayerKey {
