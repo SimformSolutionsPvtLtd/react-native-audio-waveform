@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.CountDownTimer
+import android.os.Handler
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -54,33 +55,41 @@ class AudioPlayer(
     private fun handleAudioFocusChange(focusChange: Int) {
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
-                // Audio focus granted; resume playback if necessary
-                if (!player.isPlaying) {
-                    player.play()
-                }
-                player.volume = 1.0f // Restore full volume
+                player.applicationLooper.let { looper -> Handler(looper).post {
+                    // Audio focus granted; resume playback if necessary
+                    if (!player.isPlaying) {
+                        player.play()
+                    }
+                    player.volume = 1.0f // Restore full volume
+                }}
             }
             AudioManager.AUDIOFOCUS_LOSS -> {
-                // Permanent loss of audio focus; pause playback
-                if (player.isPlaying) {
-                    val args: WritableMap = Arguments.createMap()
-                    stopListening()
-                    player.pause()
-                    abandonAudioFocus()
-                    args.putInt(Constants.finishType, 1)
-                    args.putString(Constants.playerKey, key)
-                    appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
-                }
+                player.applicationLooper.let { looper -> Handler(looper).post {
+                    // Permanent loss of audio focus; pause playback
+                    if (player.isPlaying) {
+                        val args: WritableMap = Arguments.createMap()
+                        stopListening()
+                        player.pause()
+                        abandonAudioFocus()
+                        args.putInt(Constants.finishType, 1)
+                        args.putString(Constants.playerKey, key)
+                        appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit("onDidFinishPlayingAudio", args)
+                    }
+                }}
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                // Temporary loss of audio focus; pause playback
-                if (player.isPlaying) {
-                    player.pause()
-                }
+                player.applicationLooper.let { looper -> Handler(looper).post {
+                    // Temporary loss of audio focus; pause playback
+                    if (player.isPlaying) {
+                        player.pause()
+                    }
+                }}
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // Temporarily loss of audio focus; but can continue playing at a lower volume.
-                player.volume = 0.2f
+                player.applicationLooper.let { looper -> Handler(looper).post {
+                    // Temporarily loss of audio focus; but can continue playing at a lower volume.
+                    player.volume = 0.2f
+                }}
             }
         }
     }
