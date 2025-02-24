@@ -115,6 +115,7 @@ class AudioWaveform: RCTEventEmitter {
         let audioUrl = URL.init(string: path!)
         if(audioUrl == nil){
           reject(Constants.audioWaveforms, "Failed to initialise Url from provided audio file If path contains `file://` try removing it", nil)
+            return
         }
         let newExtractor = try WaveformExtractor(url: audioUrl!, channel: self, resolve: resolve, rejecter: reject)
         extractors[playerKey] = newExtractor
