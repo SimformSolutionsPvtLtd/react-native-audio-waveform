@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 import { Colors, scale } from './theme';
 import { useColorScheme } from 'react-native';
 
-
 export type StyleSheetParams =
   | Partial<{
       currentUser: boolean;
@@ -20,7 +19,7 @@ const styles = (params: StyleSheetParams = {}) =>
   StyleSheet.create({
     appContainer: {
       flex: 1,
-      backgroundColor: useColorScheme() === "dark" ? Colors.gray : Colors.white,
+      backgroundColor: useColorScheme() === 'dark' ? Colors.gray : Colors.white,
     },
     screenBackground: {
       flex: 1,
@@ -78,6 +77,11 @@ const styles = (params: StyleSheetParams = {}) =>
       height: scale(40),
       width: scale(40),
       padding: scale(8),
+    },
+    recordPauseResumeAudioPressable: {
+      height: scale(40),
+      width: scale(40),
+      justifyContent: 'center',
     },
     liveWaveformContainer: {
       flexDirection: 'row',
