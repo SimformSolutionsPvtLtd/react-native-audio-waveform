@@ -251,6 +251,9 @@ const LivePlayerComponent = ({
         candleWidth={4}
         waveColor={Colors.pink}
         onRecorderStateChange={setRecorderState}
+        onRecordingProgressChange={currentProgress => {
+          console.log(`currentProgress ${currentProgress}`);
+        }}
       />
       <Pressable
         onPress={handleRecorderAction}
