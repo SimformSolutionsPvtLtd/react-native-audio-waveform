@@ -121,6 +121,43 @@ const ref = useRef<IWaveformRef>(null);
 />;
 ```
 
+#### 3. Use recording functions without use WaveForm Component
+
+If you want to use our library to record audio but you do not need or do not want to display a live Waveform Component while recording you can use useAudioRecorder hook to extract all necessary functions to record voice
+
+```tsx
+import { useAudioRecorder } from '@simform_solutions/react-native-audio-waveform';
+import React, { useEffect } from 'react';
+import { View, Text } from 'react-native';
+
+export default () => {
+  const {
+    recorderState,
+    getDecibel,
+    pauseRecording,
+    resumeRecording,
+    startRecording,
+    stopRecording,
+    onCurrentRecordingWaveformData,
+  } = useAudioRecorder();
+
+  useEffect(() => {
+    const audioRecordingListener = onCurrentRecordingWaveformData(result => {
+      console.log(result);
+    });
+    return () => {
+      audioRecordingListener.remove();
+    };
+  }, []);
+
+  return (
+    <View>
+      <Text>My recording voice component</Text>
+    </View>
+  );
+};
+```
+
 You can check out the full example at [Example](./example/src/App.tsx).
 
 ---
