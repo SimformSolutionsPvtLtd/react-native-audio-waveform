@@ -17,6 +17,8 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   var recordedDuration: CMTime = CMTime.zero
   private var timer: Timer?
     var updateFrequency = UpdateFrequency.medium
+  var emittingRecorderValueLastTime: DispatchTime?
+  var totalRecordingTime: Int = 0
   
   private func createAudioRecordPath(fileNameFormat: String?) -> URL? {
     let format = DateFormatter()
@@ -68,6 +70,7 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       audioRecorder = try AVAudioRecorder(url: newPath, settings: settings as [String : Any])
       audioRecorder?.delegate = self
       audioRecorder?.isMeteringEnabled = true
+      totalRecordingTime = 0
       audioRecorder?.record()
         startListening()
       resolve(true)
@@ -79,12 +82,16 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
     
     @objc func timerUpdate(_ sender:Timer) {
         if (audioRecorder?.isRecording ?? false) {
-            EventEmitter.sharedInstance.dispatch(name: Constants.onCurrentRecordingWaveformData, body: [Constants.currentDecibel: getDecibelLevel()])
+            let currentTime = DispatchTime.now()
+            let timeFromLastEmitting = Int(currentTime.uptimeNanoseconds - emittingRecorderValueLastTime!.uptimeNanoseconds) / 1_000_000
+            totalRecordingTime += timeFromLastEmitting
+            emittingRecorderValueLastTime = currentTime
+            EventEmitter.sharedInstance.dispatch(name: Constants.onCurrentRecordingWaveformData, body: [Constants.currentDecibel: getDecibelLevel(), Constants.progress: totalRecordingTime])
         }
     }
     
     func startListening() {
-      stopListening()
+      emittingRecorderValueLastTime = DispatchTime.now()
         DispatchQueue.main.async { [weak self] in
           guard let strongSelf = self else {return }
             strongSelf.timer = Timer.scheduledTimer(timeInterval: TimeInterval((Float(strongSelf.updateFrequency.rawValue) / 1000)), target: strongSelf, selector: #selector(strongSelf.timerUpdate(_:)), userInfo: nil, repeats: true)
@@ -123,11 +130,13 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   
   public func pauseRecording(_ resolve: RCTPromiseResolveBlock) -> Void {
     audioRecorder?.pause()
+    stopListening()
     resolve(true)
   }
   
   public func resumeRecording(_ resolve: RCTPromiseResolveBlock) -> Void {
     audioRecorder?.record()
+    startListening()
     resolve(true)
   }
     

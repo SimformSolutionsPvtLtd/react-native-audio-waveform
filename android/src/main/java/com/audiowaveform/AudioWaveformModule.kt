@@ -17,7 +17,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Collections
 import java.util.Date
 import java.util.Locale
 
@@ -33,6 +32,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
     private var startTime: Long = 0
+    private var emittingRecorderValueLastTime: Long = 0
+    private var totalRecodingTime: Long = 0
 
     companion object {
         const val NAME = "AudioWaveform"
@@ -83,6 +84,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
         startTime = System.currentTimeMillis() // Initialize startTime
+        totalRecodingTime = 0
         startEmittingRecorderValue()
     }
 
@@ -108,13 +110,13 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         }
 
         try {
+            stopEmittingRecorderValue()
             val currentTime = System.currentTimeMillis()
             if (currentTime - startTime < 500) {
                 promise.reject("SHORT_RECORDING", "Recording is too short")
                 return
             }
 
-            stopEmittingRecorderValue()
             audioRecorder.stopRecording(recorder, path!!, promise)
             recorder = null
             path = null
@@ -415,6 +417,10 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         override fun run() {
             val currentDecibel = getDecibel()
             val args: WritableMap = Arguments.createMap()
+            val currentTime = System.currentTimeMillis()
+            val timeFromLastEmitting =  currentTime - emittingRecorderValueLastTime
+            totalRecodingTime += timeFromLastEmitting
+            args.putInt(Constants.progress, totalRecodingTime.toInt())
             if (currentDecibel == Double.NEGATIVE_INFINITY) {
                 args.putDouble(Constants.currentDecibel, 0.0)
             } else {
@@ -422,12 +428,14 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     args.putDouble(Constants.currentDecibel, currentDecibel/1000)
                 }
             }
+            emittingRecorderValueLastTime = currentTime
             handler.postDelayed(this, UpdateFrequency.Low.value)
             reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(Constants.onCurrentRecordingWaveformData, args)
         }
     }
 
     private fun startEmittingRecorderValue() {
+        emittingRecorderValueLastTime = System.currentTimeMillis()
         handler.postDelayed(emitLiveRecordValue, UpdateFrequency.Low.value)
     }
 

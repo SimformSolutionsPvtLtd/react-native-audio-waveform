@@ -241,6 +241,14 @@ const LivePlayerComponent = ({
     }
   };
 
+  const handlePauseResumeRecording = async () => {
+    if (ref.current?.currentState === RecorderState.paused) {
+      await ref.current?.resumeRecord();
+    } else {
+      await ref.current?.pauseRecord();
+    }
+  };
+
   return (
     <View style={styles.liveWaveformContainer}>
       <Waveform
@@ -251,7 +259,19 @@ const LivePlayerComponent = ({
         candleWidth={4}
         waveColor={Colors.pink}
         onRecorderStateChange={setRecorderState}
+        onRecordingProgressChange={currentProgress => {
+          console.log(`currentProgress ${currentProgress}`);
+        }}
       />
+      {recorderState !== RecorderState.stopped && (
+        <Pressable
+          onPress={handlePauseResumeRecording}
+          style={styles.recordPauseResumeAudioPressable}>
+          <Text>
+            {recorderState === RecorderState.paused ? 'Resume' : 'Pause'}
+          </Text>
+        </Pressable>
+      )}
       <Pressable
         onPress={handleRecorderAction}
         style={styles.recordAudioPressable}>

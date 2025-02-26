@@ -118,6 +118,9 @@ const ref = useRef<IWaveformRef>(null);
   candleSpace={2}
   candleWidth={4}
   onRecorderStateChange={recorderState => console.log(recorderState)}
+  onRecordingProgressChange={currentProgress => {
+    console.log(`currentProgress ${currentProgress}`);
+  }}
 />;
 ```
 
@@ -145,6 +148,7 @@ You can check out the full example at [Example](./example/src/App.tsx).
 | onRecorderStateChange          | -           | ❌              | ✅            | ( recorderState : RecorderState ) => void                  | callback function which returns the recorder state whenever the recorder state changes. Check RecorderState for more details                                                                                                                    |
 | onCurrentProgressChange        | -           | ✅              | ❌            | ( currentProgress : number, songDuration: number ) => void | callback function, which returns current progress of audio and total song duration.                                                                                                                                                             |
 | onChangeWaveformLoadState      | -           | ✅              | ❌            | ( state : boolean ) => void                                | callback function which returns the loading state of waveform candlestick.                                                                                                                                                                      |
+| onRecordingProgressChange      | -           | ❌              | ✅            | ( currentProgress : number ) => void                       | callback function which returns current progress of recording audio.                                                                                                                                                                            |
 | onError                        | -           | ✅              | ❌            | ( error : Error ) => void                                  | callback function which returns the error for static audio waveform                                                                                                                                                                             |
 | showsHorizontalScrollIndicator | false       | ❌              | ✅            | boolean                                                    | whether to show scroll indicator when live waveform is being recorded and total width is more than parent view width                                                                                                                            |
 

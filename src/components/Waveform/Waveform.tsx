@@ -61,6 +61,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onPanStateChange = () => {},
     onError = (_error: Error) => {},
     onCurrentProgressChange = () => {},
+    onRecordingProgressChange = () => {},
     candleHeightScale = 3,
     onChangeWaveformLoadState = (_state: boolean) => {},
     showsHorizontalScrollIndicator = false,
@@ -504,6 +505,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     const traceRecorderWaveformValue = onCurrentRecordingWaveformData(
       result => {
         if (mode === 'live') {
+          if (!isNil(onRecordingProgressChange)) {
+            (onRecordingProgressChange as Function)(result.progress);
+          }
           if (!isNil(result.currentDecibel)) {
             setWaveform((previousWaveform: number[]) => {
               // Add the new decibel to the waveform
