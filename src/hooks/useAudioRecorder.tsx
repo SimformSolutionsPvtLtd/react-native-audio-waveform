@@ -25,6 +25,7 @@ export const useAudioRecorder = () => {
   const stopRecording = async () => {
     const data = await AudioWaveform.stopRecording();
     if (!isNil(data) && !isEmpty(data)) {
+      setRecorderState(RecorderState.stopped);
       return Promise.resolve(data);
     } else {
       return Promise.reject(

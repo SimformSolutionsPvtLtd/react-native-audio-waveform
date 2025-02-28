@@ -96,30 +96,28 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
     timer = nil
   }
   
-  public func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-      stopListening()
-    audioRecorder?.stop()
-    if(audioUrl != nil) {
-      let asset = AVURLAsset(url:  audioUrl!)
-      if #available(iOS 15.0, *) {
-        Task {
-          do {
-            recordedDuration = try await asset.load(.duration)
-            resolve([asset.url.absoluteString,Int(recordedDuration.seconds * 1000).description])
-          } catch let err {
-            debugPrint(err.localizedDescription)
-            reject(Constants.audioWaveforms, "Failed to stop recording 3", err)
-          }
+    public func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let audioUrl = audioUrl, let audioRecorder = audioRecorder  else {
+            reject(Constants.audioWaveforms, "No audio recording is running", nil)
+            return
         }
-      } else {
-        recordedDuration = asset.duration
-        resolve([asset.url.absoluteString,Int(recordedDuration.seconds * 1000).description])
-      }
-    } else {
-      reject(Constants.audioWaveforms, "Failed to stop recording", nil)
+        
+        guard audioRecorder.isRecording else  {
+            reject(Constants.audioWaveforms, "Recorder is not recording or has already been stopped", nil)
+            return
+        }
+
+        stopListening()
+        audioRecorder.stop()
+        self.audioRecorder = nil
+
+        let asset = AVURLAsset(url: audioUrl)
+        let recordedDuration = asset.duration
+        let durationMs = Int(CMTimeGetSeconds(recordedDuration) * 1000)
+        
+        self.audioUrl = nil
+        resolve([asset.url.absoluteString, String(durationMs)])
     }
-    audioRecorder = nil
-  }
   
   public func pauseRecording(_ resolve: RCTPromiseResolveBlock) -> Void {
     audioRecorder?.pause()

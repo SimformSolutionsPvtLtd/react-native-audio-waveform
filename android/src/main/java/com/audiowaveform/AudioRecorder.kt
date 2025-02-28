@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.util.Log
@@ -130,11 +131,14 @@ class AudioRecorder {
                     release()
                 }
                 isRecording = false
-                val tempArrayForCommunication : MutableList<String> = mutableListOf()
                 val duration = getDuration(path)
-                tempArrayForCommunication.add(path)
-                tempArrayForCommunication.add(duration.toString())
-                promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                val response = Arguments.createArray().apply {
+                    pushString(path)
+                    pushString(duration.toString())
+                }
+
+                promise.resolve(response)
+
             } else {
                 promise.reject("Error", "Recorder is not recording or has already been stopped")
             }
@@ -146,18 +150,21 @@ class AudioRecorder {
         }
     }
 
-    private fun getDuration(path: String): String {
-        val mediaMetadataRetriever = MediaMetadataRetriever()
-        try {
-            mediaMetadataRetriever.setDataSource(path)
-            val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            return duration ?: "-1"
+    /**
+     * Helper function to get the actual audio duration.
+     */
+    private fun getDuration(filePath: String): Int {
+        val mediaPlayer = MediaPlayer()
+        return try {
+            mediaPlayer.setDataSource(filePath)
+            mediaPlayer.prepare()
+            val duration = mediaPlayer.duration
+            mediaPlayer.release()
+            duration
         } catch (e: Exception) {
-            Log.e(Constants.LOG_TAG, "Failed to get recording duration")
-        } finally {
-            mediaMetadataRetriever.release()
+            Log.e(Constants.LOG_TAG, "Failed to get audio duration", e)
+            0
         }
-        return "-1"
     }
 
     fun startRecorder(recorder: MediaRecorder?, useLegacy: Boolean, promise: Promise) {

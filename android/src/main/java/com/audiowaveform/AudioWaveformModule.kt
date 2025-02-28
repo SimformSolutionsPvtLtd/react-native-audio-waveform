@@ -112,18 +112,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun stopRecording(promise: Promise) {
-        if (audioRecorder == null || recorder == null || path == null) {
-            promise.reject("STOP_RECORDING_ERROR", "Recording resources not properly initialized")
+        if (recorder == null || path == null) {
+            promise.reject("STOP_RECORDING_ERROR", "No audio recording is running")
             return
         }
 
         try {
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - startTime < 500) {
-                promise.reject("SHORT_RECORDING", "Recording is too short")
-                return
-            }
-
             stopEmittingRecorderValue()
             audioRecorder.stopRecording(recorder, path!!, promise)
             recorder = null
