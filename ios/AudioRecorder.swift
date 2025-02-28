@@ -143,8 +143,13 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
         }
     }
   
-  public func getDecibel(_ resolve: RCTPromiseResolveBlock) -> Void {
-      resolve(getDecibelLevel())
+  public func getDecibel(_ resolve: RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+      if (audioRecorder != nil) {
+          resolve(getDecibelLevel())
+      } else {
+          reject(Constants.audioWaveforms, "No audio recording is running", nil)
+      }
+      
   }
   
   public func checkHasAudioRecorderPermission(_ resolve: RCTPromiseResolveBlock) -> Void{

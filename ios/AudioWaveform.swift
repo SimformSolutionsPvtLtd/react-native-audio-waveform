@@ -94,8 +94,8 @@ class AudioWaveform: RCTEventEmitter {
     audioRecorder.resumeRecording(resolve)
   }
   
-  @objc func getDecibel(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
-    audioRecorder.getDecibel(resolve)
+  @objc func getDecibel(_ resolve: RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+      audioRecorder.getDecibel(resolve, rejecter: reject)
   }
   
   @objc func extractWaveformData(_ args: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {

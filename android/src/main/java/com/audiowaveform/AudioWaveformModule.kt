@@ -73,7 +73,17 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun getDecibel(): Double? {
+    fun getDecibel(promise: Promise) {
+        if ( recorder == null || path == null) {
+            promise.reject("GET_DECIBEL", "No audio recording is running" )
+            return
+        }
+
+        val decibel = getDecibelLevel()
+        promise.resolve(decibel)
+    }
+
+    private fun getDecibelLevel(): Double? {
         return audioRecorder.getDecibel(recorder)
     }
 
@@ -365,7 +375,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
         if(obj != null) {
             if(obj.hasKey(Constants.bitRate)){
-                bitRateVal = obj.getInt(Constants.bitRate);                
+                bitRateVal = obj.getInt(Constants.bitRate);
             }
 
             if(obj.hasKey(Constants.sampleRate)){
@@ -413,7 +423,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     private val emitLiveRecordValue = object : Runnable {
         override fun run() {
-            val currentDecibel = getDecibel()
+            val currentDecibel = getDecibelLevel()
             val args: WritableMap = Arguments.createMap()
             if (currentDecibel == Double.NEGATIVE_INFINITY) {
                 args.putDouble(Constants.currentDecibel, 0.0)
