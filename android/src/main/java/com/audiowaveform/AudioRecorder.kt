@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.util.Log
@@ -54,10 +55,10 @@ class AudioRecorder {
     }
 
     fun getDecibel(recorder: MediaRecorder?): Double? {
-        if (useLegacyNormalization) {
-            if (recorder != null) {
+        if (recorder != null) {
+            if (useLegacyNormalization) {
                 try {
-                    val db = 20 * log10((recorder?.maxAmplitude?.toDouble() ?: (0.0 / 32768.0)))
+                    val db = 20 * log10((recorder.maxAmplitude.toDouble() ?: (0.0 / 32768.0)))
                     if (db == Double.NEGATIVE_INFINITY) {
                         Log.e(Constants.LOG_TAG, "Microphone might be turned off")
                     } else {
@@ -68,21 +69,16 @@ class AudioRecorder {
                     e.printStackTrace()
                     return null
                 }
-            }
-            else {
-                return null
-            }
-        } else {
-            if (recorder != null) {
+            } else {
                 try {
-                    return recorder?.maxAmplitude?.toDouble() ?: 0.0
+                    return recorder.maxAmplitude.toDouble() ?: 0.0
                 } catch (e: IllegalStateException) {
                     e.printStackTrace()
                     return null
                 }
-            } else {
-                return null
             }
+        } else {
+            return null
         }
     }
 
@@ -114,7 +110,10 @@ class AudioRecorder {
                 promise.resolve(true)
             } catch (e: IllegalArgumentException) {
                 Log.e(Constants.LOG_TAG, "Invalid MediaRecorder configuration", e)
-                promise.reject("CONFIGURATION_ERROR", "Invalid MediaRecorder configuration: ${e.message}")
+                promise.reject(
+                    "CONFIGURATION_ERROR",
+                    "Invalid MediaRecorder configuration: ${e.message}"
+                )
             } catch (e: IOException) {
                 Log.e(Constants.LOG_TAG, "Failed to stop initialize recorder")
             }
@@ -130,34 +129,40 @@ class AudioRecorder {
                     release()
                 }
                 isRecording = false
-                val tempArrayForCommunication : MutableList<String> = mutableListOf()
                 val duration = getDuration(path)
-                tempArrayForCommunication.add(path)
-                tempArrayForCommunication.add(duration.toString())
-                promise.resolve(Arguments.fromList(tempArrayForCommunication))
+                val response = Arguments.createArray().apply {
+                    pushString(path)
+                    pushString(duration.toString())
+                }
+
+                promise.resolve(response)
+
             } else {
                 promise.reject("Error", "Recorder is not recording or has already been stopped")
             }
         } catch (e: IllegalStateException) {
-            Log.e(Constants.LOG_TAG, "Failed to stop recording",e)
+            Log.e(Constants.LOG_TAG, "Failed to stop recording", e)
         } catch (e: RuntimeException) {
             Log.e(Constants.LOG_TAG, "Runtime exception when stopping recording", e)
             promise.reject("Error", "Runtime exception: ${e.message}")
         }
     }
 
-    private fun getDuration(path: String): String {
-        val mediaMetadataRetriever = MediaMetadataRetriever()
-        try {
-            mediaMetadataRetriever.setDataSource(path)
-            val duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            return duration ?: "-1"
+    /**
+     * Helper function to get the actual audio duration.
+     */
+    private fun getDuration(filePath: String): Int {
+        val mediaPlayer = MediaPlayer()
+        return try {
+            mediaPlayer.setDataSource(filePath)
+            mediaPlayer.prepare()
+            val duration = mediaPlayer.duration
+            mediaPlayer.release()
+            duration
         } catch (e: Exception) {
-            Log.e(Constants.LOG_TAG, "Failed to get recording duration")
-        } finally {
-            mediaMetadataRetriever.release()
+            Log.e(Constants.LOG_TAG, "Failed to get audio duration", e)
+            0
         }
-        return "-1"
     }
 
     fun startRecorder(recorder: MediaRecorder?, useLegacy: Boolean, promise: Promise) {
@@ -210,6 +215,7 @@ class AudioRecorder {
                     MediaRecorder.AudioEncoder.AAC
                 }
             }
+
             Constants.vorbis -> MediaRecorder.AudioEncoder.VORBIS
             else -> MediaRecorder.AudioEncoder.AAC
         }
@@ -227,6 +233,7 @@ class AudioRecorder {
                     MediaRecorder.OutputFormat.MPEG_4
                 }
             }
+
             Constants.amr_wb -> MediaRecorder.OutputFormat.AMR_WB
             Constants.amr_nb -> MediaRecorder.OutputFormat.AMR_NB
             Constants.webm -> MediaRecorder.OutputFormat.WEBM
@@ -234,10 +241,14 @@ class AudioRecorder {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     MediaRecorder.OutputFormat.MPEG_2_TS
                 } else {
-                    Log.e(Constants.LOG_TAG, "Minimum android Q is required, Setting MPEG_4 output format.")
+                    Log.e(
+                        Constants.LOG_TAG,
+                        "Minimum android Q is required, Setting MPEG_4 output format."
+                    )
                     MediaRecorder.OutputFormat.MPEG_4
                 }
             }
+
             Constants.aac_adts -> MediaRecorder.OutputFormat.AAC_ADTS
             else -> MediaRecorder.OutputFormat.MPEG_4
         }

@@ -21,7 +21,7 @@ import java.util.Collections
 import java.util.Date
 import java.util.Locale
 
-class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJavaModule(context) {
+class AudioWaveformModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
     private var extractors = mutableMapOf<String, WaveformExtractor?>()
     private var audioPlayers = mutableMapOf<String, AudioPlayer?>()
     private var audioRecorder: AudioRecorder = AudioRecorder()
@@ -73,7 +73,27 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun getDecibel(): Double? {
+    fun getDecibel(promise: Promise) {
+        // Check if recorder is initialized and recording
+        if (recorder == null || path == null) {
+            promise.reject("GET_DECIBEL", "No audio recording is running")
+            return
+        }
+
+        try {
+            // Get the decibel level
+            val decibel = getDecibelLevel()
+
+            // Resolve the promise with the decibel value
+            promise.resolve(decibel)
+        } catch (e: Exception) {
+            // Handle any exceptions and reject the promise
+            Log.e(Constants.LOG_TAG, "Failed to get decibel level", e)
+            promise.reject("GET_DECIBEL_ERROR", "Failed to retrieve decibel level: ${e.message}")
+        }
+    }
+
+    private fun getDecibelLevel(): Double? {
         return audioRecorder.getDecibel(recorder)
     }
 
@@ -88,37 +108,31 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @RequiresApi(Build.VERSION_CODES.N)
     @ReactMethod
-    fun pauseRecording(promise: Promise){
+    fun pauseRecording(promise: Promise) {
         audioRecorder.pauseRecording(recorder, promise)
         stopEmittingRecorderValue()
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     @ReactMethod
-    fun resumeRecording(promise: Promise){
+    fun resumeRecording(promise: Promise) {
         audioRecorder.resumeRecording(recorder, promise)
         startEmittingRecorderValue()
     }
 
     @ReactMethod
     fun stopRecording(promise: Promise) {
-        if (audioRecorder == null || recorder == null || path == null) {
-            promise.reject("STOP_RECORDING_ERROR", "Recording resources not properly initialized")
+        if (recorder == null || path == null) {
+            promise.reject("STOP_RECORDING_ERROR", "No audio recording is running")
             return
         }
 
         try {
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - startTime < 500) {
-                promise.reject("SHORT_RECORDING", "Recording is too short")
-                return
-            }
-
             stopEmittingRecorderValue()
             audioRecorder.stopRecording(recorder, path!!, promise)
             recorder = null
             path = null
-        }   catch (e: Exception) {
+        } catch (e: Exception) {
             Log.e(Constants.LOG_TAG, "Failed to stop recording", e)
             promise.reject("Error", "Failed to stop recording: ${e.message}")
         }
@@ -129,8 +143,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         obj: ReadableMap,
         promise: Promise
     ) {
-        if(audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
-            promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
+        if (audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }
+                .count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
+            promise.reject(
+                Constants.LOG_TAG,
+                "Too many players have been initialized. Please stop some players before continuing"
+            )
             return
         }
 
@@ -164,7 +182,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val speed = obj.getDouble(Constants.speed)
 
         val player = getPlayerOrReject(obj, promise, "startPlayer Error");
-        player?.start(finishMode ?: 2, speed.toFloat(),promise)
+        player?.start(finishMode ?: 2, speed.toFloat(), promise)
     }
 
     @ReactMethod
@@ -200,7 +218,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 )
                 promise.resolve(false)
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             promise.reject("seekTo Error", e.toString())
         }
     }
@@ -227,7 +245,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         val key = obj.getString(Constants.playerKey)
         val path = obj.getString(Constants.path)
         val noOfSamples = obj.getInt(Constants.noOfSamples)
-        if(key != null) {
+        if (key != null) {
             createOrUpdateExtractor(key, noOfSamples, path, promise)
         } else {
             Log.e(Constants.LOG_TAG, "Can not get waveform data Player key is null")
@@ -237,8 +255,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun stopAllPlayers(promise: Promise) {
         try {
-            audioPlayers.values.forEach{
-                player -> player?.stop()
+            audioPlayers.values.forEach { player ->
+                player?.stop()
             }
             audioPlayers.clear()
             promise.resolve(true)
@@ -250,8 +268,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     @ReactMethod
     fun stopAllWaveFormExtractors(promise: Promise) {
         try {
-            extractors.values.forEach{
-                extractor -> extractor?.forceStop()
+            extractors.values.forEach { extractor ->
+                extractor?.forceStop()
             }
             extractors.clear()
             promise.resolve(true)
@@ -277,7 +295,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             } else {
                 promise.reject("setPlaybackSpeed Error", "Player key can't be null")
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             promise.reject("setPlaybackSpeed Error", e.toString())
         }
     }
@@ -300,7 +318,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         promise: Promise,
     ) {
         if (path == null) {
-            promise.reject("createOrUpdateExtractor Error" , "No Path Provided")
+            promise.reject("createOrUpdateExtractor Error", "No Path Provided")
             return
         }
         extractors[playerKey] = WaveformExtractor(
@@ -310,20 +328,27 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             key = playerKey,
             extractorCallBack = object : ExtractorCallBack {
                 override fun onProgress(value: Float) {
-                     if (value == 1.0F) {
+                    if (value == 1.0F) {
                         extractors[playerKey]?.sampleData?.let { data ->
                             val normalizedData = normalizeWaveformData(data, 0.12f)
-                            val tempArrayForCommunication: MutableList<MutableList<Float>> = mutableListOf(normalizedData)
+                            val tempArrayForCommunication: MutableList<MutableList<Float>> =
+                                mutableListOf(normalizedData)
                             promise.resolve(Arguments.fromList(tempArrayForCommunication))
                         }
                     }
                 }
+
                 override fun onReject(error: String?, message: String?) {
-                    promise.reject(error ?: "Error", message ?: "An error is thrown while decoding the audio file")
+                    promise.reject(
+                        error ?: "Error",
+                        message ?: "An error is thrown while decoding the audio file"
+                    )
                 }
+
                 override fun onResolve(value: MutableList<MutableList<Float>>) {
                     promise.resolve(Arguments.fromList(value))
                 }
+
                 override fun onForceStop() {
                     promise.resolve(Arguments.fromList(mutableListOf(emptyList<Float>())))
                 }
@@ -332,11 +357,16 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         extractors[playerKey]?.startDecode();
     }
 
-    private fun normalizeWaveformData(data: MutableList<Float>, scale: Float = 0.25f, threshold: Float = 0.01f): MutableList<Float> {
+    private fun normalizeWaveformData(
+        data: MutableList<Float>,
+        scale: Float = 0.25f,
+        threshold: Float = 0.01f
+    ): MutableList<Float> {
         val filteredData = data.filter { kotlin.math.abs(it) >= threshold }
         val maxAmplitude = filteredData.maxOrNull() ?: 1.0f
         return if (maxAmplitude > 0) {
-            data.map { if (kotlin.math.abs(it) < threshold) 0.0f else (it / maxAmplitude) * scale }.toMutableList()
+            data.map { if (kotlin.math.abs(it) < threshold) 0.0f else (it / maxAmplitude) * scale }
+                .toMutableList()
         } else {
             data
         }
@@ -363,12 +393,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         var sampleRateVal = sampleRate.toInt();
         var bitRateVal = bitRate.toInt();
 
-        if(obj != null) {
-            if(obj.hasKey(Constants.bitRate)){
-                bitRateVal = obj.getInt(Constants.bitRate);                
+        if (obj != null) {
+            if (obj.hasKey(Constants.bitRate)) {
+                bitRateVal = obj.getInt(Constants.bitRate);
             }
 
-            if(obj.hasKey(Constants.sampleRate)){
+            if (obj.hasKey(Constants.sampleRate)) {
                 sampleRateVal = obj.getInt(Constants.sampleRate);
             }
         }
@@ -413,17 +443,18 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     private val emitLiveRecordValue = object : Runnable {
         override fun run() {
-            val currentDecibel = getDecibel()
+            val currentDecibel = getDecibelLevel()
             val args: WritableMap = Arguments.createMap()
             if (currentDecibel == Double.NEGATIVE_INFINITY) {
                 args.putDouble(Constants.currentDecibel, 0.0)
             } else {
                 if (currentDecibel != null) {
-                    args.putDouble(Constants.currentDecibel, currentDecibel/1000)
+                    args.putDouble(Constants.currentDecibel, currentDecibel / 1000)
                 }
             }
             handler.postDelayed(this, UpdateFrequency.Low.value)
-            reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(Constants.onCurrentRecordingWaveformData, args)
+            reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit(Constants.onCurrentRecordingWaveformData, args)
         }
     }
 
@@ -435,7 +466,11 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         handler.removeCallbacks(emitLiveRecordValue)
     }
 
-    private fun getPlayerOrReject(arguments: ReadableMap, promise: Promise, errorCode: String): AudioPlayer? {
+    private fun getPlayerOrReject(
+        arguments: ReadableMap,
+        promise: Promise,
+        errorCode: String
+    ): AudioPlayer? {
         val key = getPlayerKeyOrReject(arguments, promise, errorCode)
         return audioPlayers[key] ?: run {
             promise.reject(errorCode, "$errorCode: Player not in the list")
@@ -443,7 +478,11 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         }
     }
 
-    private fun getPlayerKeyOrReject(arguments: ReadableMap, promise: Promise, errorCode: String): String? {
+    private fun getPlayerKeyOrReject(
+        arguments: ReadableMap,
+        promise: Promise,
+        errorCode: String
+    ): String? {
         return arguments.getString(Constants.playerKey) ?: run {
             promise.reject(errorCode, "$errorCode: Player key can't be null")
             null
