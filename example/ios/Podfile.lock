@@ -1222,7 +1222,7 @@ PODS:
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
-  - react-native-audio-waveform (2.1.3):
+  - react-native-audio-waveform (2.1.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1904,7 +1904,7 @@ SPEC CHECKSUMS:
   React-logger: 9a0c4e1e41cd640ac49d69aacadab783f7e0096b
   React-Mapbuffer: 6993c785c22a170c02489bc78ed207814cbd700f
   React-microtasksnativemodule: 19230cd0933df6f6dc1336c9a9edc382d62638ae
-  react-native-audio-waveform: 37744a7dfd0ae7b7dbab14cfa59c1dbe2cb0b20c
+  react-native-audio-waveform: 76e2a504df52d7b124699cc35fec3491303577a3
   react-native-safe-area-context: 9c33120e9eac7741a5364cc2d9f74665049b76b3
   React-nativeconfig: cd0fbb40987a9658c24dab5812c14e5522a64929
   React-NativeModulesApple: 45187d13c68d47250a7416b18ff082c7cc07bff7

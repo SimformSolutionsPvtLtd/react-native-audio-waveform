@@ -33,6 +33,7 @@ export interface StaticWaveform extends BaseWaveform {
 
 export interface LiveWaveform extends BaseWaveform {
   mode: 'live';
+  showsHorizontalScrollIndicator?: boolean;
   maxCandlesToRender?: number;
   onRecorderStateChange?: (recorderState: RecorderState) => void;
 }

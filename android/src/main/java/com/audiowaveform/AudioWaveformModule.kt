@@ -131,6 +131,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     ) {
         if(audioPlayers.filter { it.value?.isHoldingAudioTrack() == true }.count() >= MAX_NUMBER_OF_AUDIO_PLAYER) {
             promise.reject(Constants.LOG_TAG, "Too many players have been initialized. Please stop some players before continuing")
+            return
         }
 
         val path = obj.getString(Constants.path)
