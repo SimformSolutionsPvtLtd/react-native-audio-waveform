@@ -136,8 +136,8 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   }
   
   func seekTo(_ time: Double?, _ result: @escaping RCTPromiseResolveBlock) {
-    if(time != 0 && time != nil) {
-      player?.currentTime = Double(time! / 1000)
+    if let time = time {
+      player?.currentTime = Double(time / 1000)
       result(true)
     } else {
       result(false)
