@@ -7,7 +7,6 @@ import {
   type IGetDuration,
   type IOnCurrentDurationChange,
   type IOnCurrentExtractedWaveForm,
-  type IOnCurrentRecordingWaveForm,
   type IPausePlayer,
   type IPreparePlayer,
   type ISeekPlayer,
@@ -71,14 +70,6 @@ export const useAudioPlayer = () => {
       result => callback(result)
     );
 
-  const onCurrentRecordingWaveformData = (
-    callback: (result: IOnCurrentRecordingWaveForm) => void
-  ) =>
-    audioPlayerEmitter.addListener(
-      NativeEvents.onCurrentRecordingWaveformData,
-      result => callback(result)
-    );
-
   const setPlaybackSpeed = (args: ISetPlaybackSpeed) =>
     AudioWaveform.setPlaybackSpeed(args);
 
@@ -99,7 +90,6 @@ export const useAudioPlayer = () => {
     onCurrentDuration,
     onCurrentExtractedWaveformData,
     getDuration,
-    onCurrentRecordingWaveformData,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
     stopAllWaveFormExtractors,
