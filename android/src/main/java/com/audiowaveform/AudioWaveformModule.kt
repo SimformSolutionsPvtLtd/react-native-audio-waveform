@@ -59,12 +59,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun checkHasAudioRecorderPermission(promise: Promise) {
-        audioRecorder.checkPermission(currentActivity, promise)
+        audioRecorder.checkPermission(reactApplicationContext.currentActivity, promise)
     }
 
     @ReactMethod
     fun getAudioRecorderPermission(promise: Promise) {
-        audioRecorder.getPermission(currentActivity, promise)
+        audioRecorder.getPermission(reactApplicationContext.currentActivity, promise)
     }
 
     @ReactMethod
@@ -73,8 +73,8 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun getDecibel(): Double? {
-        return audioRecorder.getDecibel(recorder)
+    fun getDecibel(promise: Promise) {
+        promise.resolve(audioRecorder.getDecibel(recorder))
     }
 
     @ReactMethod
@@ -379,7 +379,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             Log.e(Constants.LOG_TAG, "Failed to initialise Recorder")
         }
         if (path == null) {
-            val outputDir = currentActivity?.cacheDir
+            val outputDir = reactApplicationContext.currentActivity?.cacheDir
             val outputFile: File?
             val dateTimeInstance = SimpleDateFormat(Constants.fileNameFormat, Locale.US)
             val currentDate = dateTimeInstance.format(Date())
@@ -413,7 +413,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     private val emitLiveRecordValue = object : Runnable {
         override fun run() {
-            val currentDecibel = getDecibel()
+            val currentDecibel = audioRecorder.getDecibel(recorder)
             val args: WritableMap = Arguments.createMap()
             if (currentDecibel == Double.NEGATIVE_INFINITY) {
                 args.putDouble(Constants.currentDecibel, 0.0)
