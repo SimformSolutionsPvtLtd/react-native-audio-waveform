@@ -73,11 +73,6 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     }
 
     @ReactMethod
-    fun getDecibel(promise: Promise) {
-        promise.resolve(audioRecorder.getDecibel(recorder))
-    }
-
-    @ReactMethod
     fun startRecording(obj: ReadableMap?, promise: Promise) {
         initRecorder(obj, promise)
         val useLegacyNormalization = true
