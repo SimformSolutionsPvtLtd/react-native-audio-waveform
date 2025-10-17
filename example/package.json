@@ -15,7 +15,7 @@
     "react-native": "0.77.0",
     "react-native-fast-image": "^8.6.3",
     "react-native-fs": "^2.20.0",
-    "react-native-gesture-handler": "^2.23.1",
+    "react-native-gesture-handler": "2.25.0",
     "react-native-safe-area-context": "^5.2.0",
     "rn-fetch-blob": "^0.12.0"
   },
