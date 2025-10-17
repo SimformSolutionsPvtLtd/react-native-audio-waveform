@@ -39,6 +39,8 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
       }
      
       do {
+        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+        try AVAudioSession.sharedInstance().setActive(true)
         player = try AVAudioPlayer(contentsOf: audioUrl!)
         player?.prepareToPlay()
         player?.volume = Float(volume ?? 100.0)
@@ -134,8 +136,8 @@ class AudioPlayer: NSObject, AVAudioPlayerDelegate {
   }
   
   func seekTo(_ time: Double?, _ result: @escaping RCTPromiseResolveBlock) {
-    if(time != 0 && time != nil) {
-      player?.currentTime = Double(time! / 1000)
+    if let time = time {
+      player?.currentTime = Double(time / 1000)
       result(true)
     } else {
       result(false)
