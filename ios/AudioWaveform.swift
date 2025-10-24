@@ -234,7 +234,13 @@ class AudioWaveform: RCTEventEmitter {
       audioPlayers[playerKey]?.stopPlayer()
     }
     audioPlayers.removeAll()
-    resolve(true)
+    
+    if audioPlayers.isEmpty {
+        EventEmitter.sharedInstance.dispatch(name: Constants.onResetAllWaveforms, body: ["clearedPlayers": true])
+        resolve(true)
+    } else {
+        reject("REMOVE_FAILED", "Failed to clear all audio players", nil)
+    }
   }
   
   @objc func stopAllWaveFormExtractors(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
@@ -242,7 +248,13 @@ class AudioWaveform: RCTEventEmitter {
       extractors[extractorKey]?.cancel()
     }
     extractors.removeAll()
-    resolve(true)
+
+    if extractors.isEmpty {
+        EventEmitter.sharedInstance.dispatch(name: Constants.onResetAllWaveforms, body: ["clearedExtractors": true])
+        resolve(true)
+    } else {
+        reject("REMOVE_FAILED", "Failed to clear all extractors", nil)
+    }
   }
   
   

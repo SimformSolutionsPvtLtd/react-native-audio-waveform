@@ -44,6 +44,7 @@ object Constants {
     const val bitRate = "bitRate"
     const val sampleRate = "sampleRate"
     const val speed = "speed"
+    const val onResetAllWaveforms = "onResetAllWaveforms"
 }
 
 enum class FinishMode(val value:Int) {

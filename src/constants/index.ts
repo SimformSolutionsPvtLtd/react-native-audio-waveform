@@ -8,6 +8,7 @@ export enum NativeEvents {
   onCurrentDuration = 'onCurrentDuration',
   onCurrentExtractedWaveformData = 'onCurrentExtractedWaveformData',
   onCurrentRecordingWaveformData = 'onCurrentRecordingWaveformData',
+  onResetAllWaveforms = 'onResetAllWaveforms',
 }
 
 export enum PermissionStatus {
