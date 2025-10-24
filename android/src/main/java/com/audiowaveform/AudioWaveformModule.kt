@@ -236,7 +236,19 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 player -> player?.stop()
             }
             audioPlayers.clear()
-            promise.resolve(true)
+
+            if (audioPlayers.isEmpty()) {
+                val args: WritableMap = Arguments.createMap()
+                args.putBoolean("clearedPlayers", true)
+
+                reactApplicationContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    ?.emit(Constants.onResetAllWaveforms, args)
+
+                promise.resolve(true)
+            } else {
+                promise.reject("REMOVE_FAILED", "Failed to clear all audio players")
+            }
         } catch (err: Exception) {
             promise.reject("stopAllPlayers Error", "Error while stopping all players")
         }
@@ -249,7 +261,18 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                 extractor -> extractor?.forceStop()
             }
             extractors.clear()
-            promise.resolve(true)
+            if (audioPlayers.isEmpty()) {
+                val args: WritableMap = Arguments.createMap()
+                args.putBoolean("clearedExtractors", true)
+
+                reactApplicationContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    ?.emit(Constants.onResetAllWaveforms, args)
+
+                promise.resolve(true)
+            } else {
+                promise.reject("REMOVE_FAILED", "Failed to clear all audio players")
+            }
         } catch (err: Exception) {
             promise.reject("stopAllExtractors Error", "Error while stopping all extractors")
         }

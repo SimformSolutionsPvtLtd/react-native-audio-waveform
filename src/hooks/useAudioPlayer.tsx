@@ -86,6 +86,13 @@ export const useAudioPlayer = () => {
     AudioWaveform.markPlayerAsUnmounted();
   };
 
+  const onResetAllWaveforms = (
+    callback: (result: IOnCurrentRecordingWaveForm) => void
+  ) =>
+    audioPlayerEmitter.addListener(NativeEvents.onResetAllWaveforms, result =>
+      callback(result)
+    );
+
   return {
     extractWaveformData,
     pausePlayer,
@@ -104,5 +111,6 @@ export const useAudioPlayer = () => {
     markPlayerAsUnmounted,
     stopAllWaveFormExtractors,
     stopPlayersAndExtractors,
+    onResetAllWaveforms,
   };
 };

@@ -98,6 +98,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentRecordingWaveformData,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
+    onResetAllWaveforms,
   } = useAudioPlayer();
 
   const { startRecording, stopRecording, pauseRecording, resumeRecording } =
@@ -532,6 +533,19 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const traceAllWaveformReset = onResetAllWaveforms(() => {
+      // This component (and maybe others) should reset progress to 0
+      if (playerState !== PlayerState.stopped || currentProgress !== 0) {
+        stopPlayerAction();
+      }
+    });
+    return () => {
+      traceAllWaveformReset.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerState, currentProgress]);
 
   useEffect(() => {
     if (!isNil(onPlayerStateChange)) {
