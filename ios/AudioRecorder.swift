@@ -10,6 +10,8 @@ import Accelerate
 import UIKit
 
 public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
+  static let INTERRUPTION_STOP_SIGNAL: Float = -999.0
+  
   var audioRecorder: AVAudioRecorder?
   var path: String?
   var useLegacyNormalization: Bool = false
@@ -17,6 +19,74 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   var recordedDuration: CMTime = CMTime.zero
   private var timer: Timer?
     var updateFrequency = UpdateFrequency.medium
+  private let instanceId = UUID().uuidString.prefix(8)
+  
+  override init() {
+    super.init()
+    print("AudioRecorder: Instance created with ID: \(instanceId)")
+    setupAudioSessionNotifications()
+  }
+  
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+  
+  private func setupAudioSessionNotifications() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleAudioSessionInterruption(_:)),
+      name: AVAudioSession.interruptionNotification,
+      object: AVAudioSession.sharedInstance()
+    )
+  }
+  
+  @objc private func handleAudioSessionInterruption(_ notification: Notification) {
+    guard let typeValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+          let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+      return
+    }
+    
+    switch type {
+    case .began:
+      guard let recorder = audioRecorder, recorder.isRecording else {
+        print("AudioRecorder: [\(instanceId)] Interruption began but not recording")
+        return
+      }
+      
+      print("AudioRecorder: [\(instanceId)] Interruption began, stopping recording due to call")
+      
+      // Stop recording immediately and notify React Native
+      recorder.stop()
+      stopListening()
+      audioRecorder = nil
+      
+      DispatchQueue.main.async { [weak self] in
+        guard let self = self else { return }
+        
+        if let currentUrl = self.audioUrl {
+          EventEmitter.sharedInstance.dispatch(
+            name: Constants.onCurrentRecordingWaveformData, 
+            body: [
+              Constants.currentDecibel: Self.INTERRUPTION_STOP_SIGNAL,
+              Constants.filePath: currentUrl.absoluteString
+            ]
+          )
+        } else {
+          EventEmitter.sharedInstance.dispatch(
+            name: Constants.onCurrentRecordingWaveformData, 
+            body: [Constants.currentDecibel: Self.INTERRUPTION_STOP_SIGNAL]
+          )
+        }
+      }
+      
+    case .ended:
+      print("AudioRecorder: [\(instanceId)] Interruption ended")
+      // No longer need to do anything here since we stopped recording
+      
+    @unknown default:
+      break
+    }
+  }
   
   private func createAudioRecordPath(fileNameFormat: String?) -> URL? {
     let format = DateFormatter()
@@ -30,19 +100,15 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
     func startRecording(_ path: String?, encoder : Int?, updateFrequency: UpdateFrequency, sampleRate : Int?, bitRate : Int?, fileNameFormat: String?, useLegacy: Bool?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
     useLegacyNormalization = useLegacy ?? false
       self.updateFrequency = updateFrequency
+    
+    print("AudioRecorder: [\(instanceId)] Starting new recording")
+    
     let settings = [
       AVFormatIDKey: getEncoder(encoder ?? 0),
       AVSampleRateKey: sampleRate ?? 44100,
       AVNumberOfChannelsKey: 1,
       AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
       AVEncoderBitRateKey: bitRate ?? 128000
-    ]
-    let settingsWithBitrate = [
-      AVEncoderBitRateKey: bitRate ?? 128000,
-      AVFormatIDKey: getEncoder(encoder ?? 0),
-      AVSampleRateKey: sampleRate ?? 44100,
-      AVNumberOfChannelsKey: 1,
-      AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
     ]
     
     let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth, .mixWithOthers]
@@ -97,27 +163,33 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   }
   
   public func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-      stopListening()
+    stopListening()
     audioRecorder?.stop()
-    if(audioUrl != nil) {
-      let asset = AVURLAsset(url:  audioUrl!)
+    
+    print("AudioRecorder: [\(instanceId)] Recording stopped")
+    
+    // Return the current recording file if it exists
+    if let audioUrl = audioUrl {
+      print("AudioRecorder: [\(instanceId)] Returning recorded file: \(audioUrl.lastPathComponent)")
+      let asset = AVURLAsset(url: audioUrl)
       if #available(iOS 15.0, *) {
         Task {
           do {
             recordedDuration = try await asset.load(.duration)
-            resolve([asset.url.absoluteString,Int(recordedDuration.seconds * 1000).description])
+            resolve([audioUrl.absoluteString, Int(recordedDuration.seconds * 1000).description])
           } catch let err {
             debugPrint(err.localizedDescription)
-            reject(Constants.audioWaveforms, "Failed to stop recording 3", err)
+            reject(Constants.audioWaveforms, "Failed to stop recording", err)
           }
         }
       } else {
         recordedDuration = asset.duration
-        resolve([asset.url.absoluteString,Int(recordedDuration.seconds * 1000).description])
+        resolve([audioUrl.absoluteString, Int(recordedDuration.seconds * 1000).description])
       }
     } else {
       reject(Constants.audioWaveforms, "Failed to stop recording", nil)
     }
+    
     audioRecorder = nil
   }
   
@@ -205,3 +277,4 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   }
 }
 
+s

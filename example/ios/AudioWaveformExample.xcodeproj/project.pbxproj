@@ -25,15 +25,15 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AudioWaveformExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = AudioWaveformExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		491A63433D9BA1E7C931BF83 /* libPods-AudioWaveformExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudioWaveformExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AAB83C5BD4B4DC9A53FBA34 /* index.ts */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = index.ts; path = ../src/assets/audio/index.ts; sourceTree = "<group>"; };
+		4AAB83C5BD4B4DC9A53FBA34 /* index.ts */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = index.ts; path = ../src/assets/audio/index.ts; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AudioWaveformExample/AppDelegate.swift; sourceTree = "<group>"; };
-		7AB4E598590647B1BFA50B27 /* file_example_mp3_15s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_15s.mp3; path = ../src/assets/audio/file_example_mp3_15s.mp3; sourceTree = "<group>"; };
+		7AB4E598590647B1BFA50B27 /* file_example_mp3_15s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_15s.mp3; path = ../src/assets/audio/file_example_mp3_15s.mp3; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AudioWaveformExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AECB05BC87A5791FBBCDD3CA /* Pods-AudioWaveformExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioWaveformExample.release.xcconfig"; path = "Target Support Files/Pods-AudioWaveformExample/Pods-AudioWaveformExample.release.xcconfig"; sourceTree = "<group>"; };
 		BDBC0A7B509E3E2047901108 /* Pods-AudioWaveformExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioWaveformExample.debug.xcconfig"; path = "Target Support Files/Pods-AudioWaveformExample/Pods-AudioWaveformExample.debug.xcconfig"; sourceTree = "<group>"; };
-		C40A19B8CE7D4A21AD6E7FAE /* file_example_mp3_700kb.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_700kb.mp3; path = ../src/assets/audio/file_example_mp3_700kb.mp3; sourceTree = "<group>"; };
-		E1A9CF405AC446C9911EEFF4 /* file_example_mp3_12s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_12s.mp3; path = ../src/assets/audio/file_example_mp3_12s.mp3; sourceTree = "<group>"; };
-		E7F2ACB37C4241D2B88696CA /* file_example_mp3_1mg.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_1mg.mp3; path = ../src/assets/audio/file_example_mp3_1mg.mp3; sourceTree = "<group>"; };
+		C40A19B8CE7D4A21AD6E7FAE /* file_example_mp3_700kb.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_700kb.mp3; path = ../src/assets/audio/file_example_mp3_700kb.mp3; sourceTree = "<group>"; };
+		E1A9CF405AC446C9911EEFF4 /* file_example_mp3_12s.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_12s.mp3; path = ../src/assets/audio/file_example_mp3_12s.mp3; sourceTree = "<group>"; };
+		E7F2ACB37C4241D2B88696CA /* file_example_mp3_1mg.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = file_example_mp3_1mg.mp3; path = ../src/assets/audio/file_example_mp3_1mg.mp3; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -110,7 +110,6 @@
 				4AAB83C5BD4B4DC9A53FBA34 /* index.ts */,
 			);
 			name = Resources;
-			path = "";
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -289,6 +288,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K7XJG666ZW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudioWaveformExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -302,7 +302,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.simform.itb;
 				PRODUCT_NAME = AudioWaveformExample;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -317,6 +317,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K7XJG666ZW;
 				INFOPLIST_FILE = AudioWaveformExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -329,7 +330,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.simform.itb;
 				PRODUCT_NAME = AudioWaveformExample;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

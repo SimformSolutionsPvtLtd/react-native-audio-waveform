@@ -67,6 +67,7 @@ struct Constants {
   static let noOfSamples = "noOfSamples"
   static let onCurrentExtractedWaveformData = "onCurrentExtractedWaveformData"
     static let onCurrentRecordingWaveformData = "onCurrentRecordingWaveformData"
+  static let filePath = "filePath"
   static let waveformData = "waveformData"
   static let onExtractionProgressUpdate = "onExtractionProgressUpdate"
   static let useLegacyNormalization = "useLegacyNormalization"

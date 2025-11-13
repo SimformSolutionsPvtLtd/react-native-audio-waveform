@@ -9,7 +9,7 @@ import {
   Waveform,
   useAudioPermission,
   useAudioPlayer,
-} from '@simform_solutions/react-native-audio-waveform';
+} from '../../src';
 import React, {
   Dispatch,
   SetStateAction,
@@ -234,8 +234,8 @@ const LivePlayerComponent = ({
         Linking.openSettings();
       }
     } else {
-      ref.current?.stopRecord().then(path => {
-        setList(prev => [...prev, { fromCurrentUser: true, path }]);
+      ref.current?.stopRecord().then(() => {
+        // The onRecordingComplete callback will handle adding to the list
       });
       currentPlayingRef = undefined;
     }
@@ -251,6 +251,9 @@ const LivePlayerComponent = ({
         candleWidth={4}
         waveColor={Colors.pink}
         onRecorderStateChange={setRecorderState}
+        onRecordingComplete={(path) => {
+          setList(prev => [...prev, { fromCurrentUser: true, path }]);
+        }}
       />
       <Pressable
         onPress={handleRecorderAction}

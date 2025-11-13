@@ -44,12 +44,10 @@ import {
 
 export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const {
-    // The maximum number of candles set in the waveform. Once this limit is reached, the oldest candle will be removed as a new one is added to the waveform.
     maxCandlesToRender = 300,
     mode,
     path,
     volume = 3,
-    // The playback speed of the audio player. A value of 1.0 represents normal playback speed.
     playbackSpeed = 1.0,
     candleSpace = 2,
     candleWidth = 5,
@@ -58,6 +56,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     scrubColor,
     onPlayerStateChange,
     onRecorderStateChange,
+    onRecordingComplete,
     onPanStateChange = () => {},
     onError = (_error: Error) => {},
     onCurrentProgressChange = () => {},
@@ -105,18 +104,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
 
-  /**
-   * Updates the playback speed of the audio player.
-   *
-   * @param speed - The new playback speed to set.
-   * @returns A Promise that resolves when the playback speed has been updated.
-   * @throws An error if there was a problem updating the playback speed.
-   */
   const updatePlaybackSpeed = async (speed: number) => {
     try {
       await setPlaybackSpeed({ speed, playerKey: `PlayerFor${path}` });
     } catch (error) {
-      console.error('Error updating playback speed', error);
+      // Silently handle error
     }
   };
 
@@ -269,7 +261,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         }
       } catch (error) {
         if (playerState === PlayerState.paused) {
-          // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
           await stopPlayerAction();
         }
 
@@ -349,6 +340,9 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
           const pathData = head(data);
           if (!isNil(pathData)) {
             setRecorderState(RecorderState.stopped);
+            if (onRecordingComplete) {
+              (onRecordingComplete as (filePath: string) => void)(pathData);
+            }
             return Promise.resolve(pathData);
           } else {
             return Promise.reject(
@@ -458,7 +452,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
             });
           } catch (e) {
             if (playerState === PlayerState.paused) {
-              // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
               await stopPlayerAction(false);
             }
           }
@@ -479,6 +472,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   }, [seekPosition, panMoving, mode, songDuration]);
 
   useEffect(() => {
+    const INTERRUPTION_STOP_SIGNAL = -999.0;
+
     const tracePlayerState = onDidFinishPlayingAudio(async data => {
       if (data.playerKey === `PlayerFor${path}`) {
         if (data.finishType === FinishMode.stop) {
@@ -504,15 +499,21 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     const traceRecorderWaveformValue = onCurrentRecordingWaveformData(
       result => {
         if (mode === 'live') {
-          if (!isNil(result.currentDecibel)) {
+          if (result.currentDecibel === INTERRUPTION_STOP_SIGNAL) {
+            setRecorderState(RecorderState.stopped);
+            setWaveform([]);
+            if (result.filePath && onRecordingComplete) {
+              (onRecordingComplete as (filePath: string) => void)(
+                result.filePath
+              );
+            }
+          } else if (!isNil(result.currentDecibel)) {
             setWaveform((previousWaveform: number[]) => {
-              // Add the new decibel to the waveform
               const updatedWaveform: number[] = [
                 ...previousWaveform,
                 result.currentDecibel,
               ];
 
-              // Limit the size of the waveform array to 'maxCandlesToRender'
               return updatedWaveform.length > maxCandlesToRender
                 ? updatedWaveform.slice(1)
                 : updatedWaveform;
@@ -567,7 +568,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     viewRef.current?.measureInWindow((x, y, width, height) => {
       setViewLayout({ x, y, width, height });
       if (x !== 0 || y !== 0) {
-        // found the position of view in window
         isLayoutCalculated.current = true;
       }
     });
@@ -609,8 +609,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     }
   }, [currentProgress, songDuration, onCurrentProgressChange]);
 
-  /* Ensure that the audio player is released (or stopped) once the song's duration is determined, 
-  especially if the audio is not playing immediately after loading */
+  /* Ensure audio player is released once duration is determined */
   useEffect(() => {
     if (
       songDuration !== 0 &&
