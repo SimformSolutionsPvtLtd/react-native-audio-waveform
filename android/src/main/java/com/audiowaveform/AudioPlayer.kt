@@ -30,7 +30,7 @@ class AudioPlayer(
     private var isPlayerPrepared: Boolean = false
     private var finishMode = FinishMode.Stop
     private val key = playerKey
-    private var updateFrequency = UpdateFrequency.Low
+    private var updateFrequency = UpdateFrequency.Medium
     private lateinit var audioPlaybackListener: CountDownTimer
     private var isComponentMounted = true // Flag to track mounting status
     private var isAudioFocusGranted=false
@@ -298,7 +298,7 @@ class AudioPlayer(
 
     private fun startListening(promise: Promise) {
         try {
-            audioPlaybackListener = object : CountDownTimer(player.duration, UpdateFrequency.Low.value) {
+            audioPlaybackListener = object : CountDownTimer(player.duration, updateFrequency.value) {
                 override fun onTick(millisUntilFinished: Long) {
                     emitCurrentDuration()
                 }

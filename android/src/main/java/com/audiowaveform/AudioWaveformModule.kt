@@ -33,6 +33,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
     private var bitRate: Int = 128000
     private val handler = Handler(Looper.getMainLooper())
     private var startTime: Long = 0
+    private var recordingUpdateFrequency: UpdateFrequency = UpdateFrequency.Medium
 
     companion object {
         const val NAME = "AudioWaveform"
@@ -74,6 +75,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
     @ReactMethod
     fun startRecording(obj: ReadableMap?, promise: Promise) {
+        val frequencyValue = if (obj != null && obj.hasKey(Constants.updateFrequency) && !obj.isNull(Constants.updateFrequency)) {
+            obj.getInt(Constants.updateFrequency)
+        } else {
+            null
+        }
+        recordingUpdateFrequency = getUpdateFrequency(frequencyValue)
         initRecorder(obj, promise)
         val useLegacyNormalization = true
         audioRecorder.startRecorder(recorder, useLegacyNormalization, promise)
@@ -131,7 +138,12 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
 
         val path = obj.getString(Constants.path)
         val key = obj.getString(Constants.playerKey)
-        val frequency = obj.getInt(Constants.updateFrequency)
+        val frequencyValue = if (obj.hasKey(Constants.updateFrequency) && !obj.isNull(Constants.updateFrequency)) {
+            obj.getInt(Constants.updateFrequency)
+        } else {
+            null
+        }
+        val updateFrequency = getUpdateFrequency(frequencyValue)
         val volume = obj.getInt(Constants.volume)
         val progress = if (!obj.hasKey(Constants.progress) || obj.isNull(Constants.progress)) {
             0 // Set default progress to zero if null, undefined, or missing
@@ -144,7 +156,7 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
             audioPlayers[key]?.preparePlayer(
                 path,
                 volume,
-                getUpdateFrequency(frequency),
+                updateFrequency,
                 progress,
                 promise
             )
@@ -337,13 +349,13 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
         }
     }
 
-    private fun getUpdateFrequency(frequency: Int?): UpdateFrequency {
-        if (frequency == 2) {
-            return UpdateFrequency.High
-        } else if (frequency == 1) {
-            return UpdateFrequency.Medium
+    private fun getUpdateFrequency(value: Int?): UpdateFrequency {
+        return when (value) {
+            250 -> UpdateFrequency.High
+            500 -> UpdateFrequency.Medium
+            1000 -> UpdateFrequency.Low
+            else -> UpdateFrequency.Medium
         }
-        return UpdateFrequency.Low
     }
 
     private fun checkPathAndInitialiseRecorder(
@@ -417,13 +429,13 @@ class AudioWaveformModule(context: ReactApplicationContext): ReactContextBaseJav
                     args.putDouble(Constants.currentDecibel, currentDecibel/1000)
                 }
             }
-            handler.postDelayed(this, UpdateFrequency.Low.value)
+            handler.postDelayed(this, recordingUpdateFrequency.value)
             reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(Constants.onCurrentRecordingWaveformData, args)
         }
     }
 
     private fun startEmittingRecorderValue() {
-        handler.postDelayed(emitLiveRecordValue, UpdateFrequency.Low.value)
+        handler.postDelayed(emitLiveRecordValue, recordingUpdateFrequency.value)
     }
 
     private fun stopEmittingRecorderValue() {
