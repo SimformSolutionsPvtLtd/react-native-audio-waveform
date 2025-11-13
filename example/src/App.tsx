@@ -44,7 +44,7 @@ import {
 import stylesheet from './styles';
 import { Colors } from './theme';
 
-let currentPlayingRef: React.RefObject<IWaveformRef> | undefined;
+let currentPlayingRef: React.RefObject<IWaveformRef | null> | undefined;
 const RenderListItem = React.memo(
   ({
     item,
@@ -169,7 +169,7 @@ const RenderListItem = React.memo(
               }}
               onCurrentProgressChange={(_currentProgress, _songDuration) => {
                 // console.log(
-                //   `currentProgress ${currentProgress}, songDuration ${songDuration}`
+                //   `currentProgress ${_currentProgress}, songDuration ${_songDuration}`
                 // );
               }}
               onChangeWaveformLoadState={state => {

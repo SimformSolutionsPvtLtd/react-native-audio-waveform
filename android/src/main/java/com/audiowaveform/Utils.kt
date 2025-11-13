@@ -53,7 +53,7 @@ enum class FinishMode(val value:Int) {
 }
 
 enum class UpdateFrequency(val value:Long) {
-    High(50),
-    Medium(100),
-    Low(200),
+    High(250),
+    Medium(500),
+    Low(1000)
 }
