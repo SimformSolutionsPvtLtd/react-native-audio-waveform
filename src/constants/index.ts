@@ -8,6 +8,7 @@ export enum NativeEvents {
   onCurrentDuration = 'onCurrentDuration',
   onCurrentExtractedWaveformData = 'onCurrentExtractedWaveformData',
   onCurrentRecordingWaveformData = 'onCurrentRecordingWaveformData',
+  onDidFinishRecordingAudio = 'onDidFinishRecordingAudio',
 }
 
 export enum PermissionStatus {
@@ -32,6 +33,11 @@ export enum RecorderState {
   recording = 'recording',
   paused = 'paused',
   stopped = 'stopped',
+}
+
+export enum RecorderFinishType {
+  pause = 0,
+  resume = 1,
 }
 
 //Note: If you are making change here, please make sure to make change in iOS and Android side as well other wise there will be mismatch in value

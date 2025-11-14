@@ -16,7 +16,8 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   var audioUrl: URL?
   var recordedDuration: CMTime = CMTime.zero
   private var timer: Timer?
-    var updateFrequency = UpdateFrequency.medium
+  var updateFrequency = UpdateFrequency.medium
+  private var isRecordingActive = false
   
   private func createAudioRecordPath(fileNameFormat: String?) -> URL? {
     let format = DateFormatter()
@@ -65,11 +66,20 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
         reject(Constants.audioWaveforms, "Failed to initialise file URL", nil)
         return
       }
+      
+      NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(handleInterruption),
+        name: AVAudioSession.interruptionNotification,
+        object: AVAudioSession.sharedInstance()
+      )
+      
       audioRecorder = try AVAudioRecorder(url: newPath, settings: settings as [String : Any])
       audioRecorder?.delegate = self
       audioRecorder?.isMeteringEnabled = true
       audioRecorder?.record()
-        startListening()
+      isRecordingActive = true
+      startListening()
       resolve(true)
     } catch let error as NSError {
       print(error.localizedDescription)
@@ -97,7 +107,9 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   }
   
   public func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-      stopListening()
+    stopListening()
+    isRecordingActive = false
+    NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
     audioRecorder?.stop()
     if(audioUrl != nil) {
       let asset = AVURLAsset(url:  audioUrl!)
@@ -122,13 +134,25 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
   }
   
   public func pauseRecording(_ resolve: RCTPromiseResolveBlock) -> Void {
-    audioRecorder?.pause()
+    pauseActiveRecording()
     resolve(true)
   }
   
   public func resumeRecording(_ resolve: RCTPromiseResolveBlock) -> Void {
-    audioRecorder?.record()
+    resumeActiveRecording()
     resolve(true)
+  }
+  
+  private func pauseActiveRecording() {
+    audioRecorder?.pause()
+    isRecordingActive = false
+    stopListening()
+  }
+  
+  private func resumeActiveRecording() {
+    audioRecorder?.record()
+    isRecordingActive = true
+    startListening()
   }
     
     func getDecibelLevel() -> Float {
@@ -201,6 +225,27 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       return Int(kAudioFormatMPEG4AAC_HE_V2)
     default:
       return Int(kAudioFormatMPEG4AAC)
+    }
+  }
+  
+  @objc private func handleInterruption(notification: Notification) {
+    guard let userInfo = notification.userInfo,
+          let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+          let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+      return
+    }
+    
+    switch type {
+    case .began:
+      if isRecordingActive {
+        pauseActiveRecording()
+        EventEmitter.sharedInstance.dispatch(
+          name: Constants.onDidFinishRecordingAudio,
+          body: ["finishType": RecorderFinishType.pause.rawValue]
+        )
+      }
+    @unknown default:
+      break
     }
   }
 }

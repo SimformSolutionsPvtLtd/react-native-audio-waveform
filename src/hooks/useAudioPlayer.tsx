@@ -79,6 +79,14 @@ export const useAudioPlayer = () => {
       result => callback(result)
     );
 
+  const onDidFinishRecordingAudio = (
+    callback: (result: { finishType: number }) => void
+  ) =>
+    audioPlayerEmitter.addListener(
+      NativeEvents.onDidFinishRecordingAudio,
+      result => callback(result)
+    );
+
   const setPlaybackSpeed = (args: ISetPlaybackSpeed) =>
     AudioWaveform.setPlaybackSpeed(args);
 
@@ -100,6 +108,7 @@ export const useAudioPlayer = () => {
     onCurrentExtractedWaveformData,
     getDuration,
     onCurrentRecordingWaveformData,
+    onDidFinishRecordingAudio,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
     stopAllWaveFormExtractors,

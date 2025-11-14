@@ -24,6 +24,7 @@ import {
   playbackSpeedThreshold,
   PlayerState,
   RecorderState,
+  RecorderFinishType,
   UpdateFrequency,
 } from '../../constants';
 import {
@@ -96,6 +97,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     onCurrentDuration,
     onDidFinishPlayingAudio,
     onCurrentRecordingWaveformData,
+    onDidFinishRecordingAudio,
     setPlaybackSpeed,
     markPlayerAsUnmounted,
   } = useAudioPlayer();
@@ -524,10 +526,20 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         }
       }
     );
+
+    const traceRecordingFinish = onDidFinishRecordingAudio(data => {
+      if (data.finishType === RecorderFinishType.pause) {
+        setRecorderState(RecorderState.paused);
+      } else if (data.finishType === RecorderFinishType.resume) {
+        setRecorderState(RecorderState.recording);
+      }
+    });
+
     return () => {
       tracePlayerState.remove();
       tracePlaybackValue.remove();
       traceRecorderWaveformValue.remove();
+      traceRecordingFinish.remove();
       markPlayerAsUnmounted();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
