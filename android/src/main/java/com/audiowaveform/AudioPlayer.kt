@@ -132,6 +132,22 @@ class AudioPlayer(
         promise: Promise
     ) {
         if (path != null) {
+            // Stop and release any existing player before creating a new one
+            if (::player.isInitialized) {
+                try {
+                    stopListening()
+                    if (playerListener != null) {
+                        player.removeListener(playerListener!!)
+                        playerListener = null
+                    }
+                    player.stop()
+                    player.release()
+                    abandonAudioFocus()
+                } catch (e: Exception) {
+                    // continue with new player creation
+                }
+            }
+            
             isPlayerPrepared = false
             isComponentMounted = true
             updateFrequency = frequency
