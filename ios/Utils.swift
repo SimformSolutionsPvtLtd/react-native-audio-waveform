@@ -55,7 +55,7 @@ struct Constants {
   static let preparePlayer = "preparePlayer"
   static let onCurrentDuration = "onCurrentDuration"
   static let currentDuration = "currentDuration"
-    static let currentDecibel = "currentDecibel"
+  static let currentDecibel = "currentDecibel"
   static let playerKey = "playerKey"
   static let stopAllPlayers = "stopAllPlayers"
   static let stopAllWaveFormExtractors = "stopAllWaveFormExtractors"
@@ -66,7 +66,8 @@ struct Constants {
   static let extractWaveformData = "extractWaveformData"
   static let noOfSamples = "noOfSamples"
   static let onCurrentExtractedWaveformData = "onCurrentExtractedWaveformData"
-    static let onCurrentRecordingWaveformData = "onCurrentRecordingWaveformData"
+  static let onCurrentRecordingWaveformData = "onCurrentRecordingWaveformData"
+  static let onDidFinishRecordingAudio = "onDidFinishRecordingAudio"
   static let waveformData = "waveformData"
   static let onExtractionProgressUpdate = "onExtractionProgressUpdate"
   static let useLegacyNormalization = "useLegacyNormalization"
@@ -78,6 +79,11 @@ enum FinishMode : Int{
   case loop = 0
   case pause = 1
   case stop = 2
+}
+
+enum RecorderFinishType : Int{
+  case pause = 0
+  case resume = 1
 }
 
 //Note: If you are making change here, please make sure to make change in Android and React Native side as well other wise there will be mismatch in value
