@@ -29,6 +29,7 @@ export interface StaticWaveform extends BaseWaveform {
   ) => void;
   onChangeWaveformLoadState?: (state: boolean) => void;
   playbackSpeed?: PlaybackSpeedType;
+  isInHorizontalList?: boolean;
 }
 
 export interface LiveWaveform extends BaseWaveform {

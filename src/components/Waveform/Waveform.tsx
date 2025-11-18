@@ -64,6 +64,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     candleHeightScale = 3,
     onChangeWaveformLoadState = (_state: boolean) => {},
     showsHorizontalScrollIndicator = false,
+    isInHorizontalList = false,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -576,7 +577,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => {
-        if (!isLayoutCalculated.current) {
+        if (!isLayoutCalculated.current || isInHorizontalList) {
           calculateLayout();
         }
 
@@ -584,6 +585,10 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       },
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
+        if (isInHorizontalList) {
+          calculateLayout();
+        }
+
         setPanMoving(true);
         (onPanStateChange as Function)(true);
       },
