@@ -137,9 +137,11 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
           let amp = audioRecorder?.averagePower(forChannel: 0) ?? 0.0
             return amp
         } else {
-          let amp = audioRecorder?.peakPower(forChannel: 0) ?? 0.0
-          let linear = pow(10, amp / 20);
-            return linear
+          // Use averagePower for instant response
+          let amp = audioRecorder?.averagePower(forChannel: 0) ?? -160.0
+          // Convert dB to linear and apply 3x boost to match peakPower range
+          let linear = pow(10, amp / 20) * 3.0
+          return linear
         }
     }
   
