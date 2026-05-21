@@ -45,7 +45,13 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
       AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
     ]
     
-    let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth, .mixWithOthers]
+    // Don't pass .mixWithOthers when configuring an audio-recording session:
+    // mixing means other apps (Spotify, Apple Music, Podcasts, …) keep
+    // playing through the speaker while recording, and that audio bleeds
+    // straight into the recorded file via the device microphone. Starting
+    // a recording should interrupt other audio so the mic captures only the
+    // user's voice.
+    let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth]
 
     if (path == nil) {
       guard let newPath = self.createAudioRecordPath(fileNameFormat: fileNameFormat) else {
